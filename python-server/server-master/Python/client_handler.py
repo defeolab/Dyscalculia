@@ -9,9 +9,7 @@ from threading import Thread
 from trial import Trial
 from trial_result import TrialResult
 from correlated_data_generator import generate_correlated_trials
-from trial_util import convert_trials_to_json#, convert_matrix_to_trials
-from play_game import PlayGame
-
+from trial_util import convert_trials_to_json, convert_matrix_to_trials
 
 
 def calculate_next_correlation(average_decision_time, correct_answer_ratio):
@@ -49,6 +47,29 @@ def calculate_next_correlation(average_decision_time, correct_answer_ratio):
 
 
 class ClientHandler(Thread):
+    trials_matrix = []
+    n = 20
+    for i in range (n):
+        ratio = round (random.uniform(0,2), 1)
+        average_space_between = round (random.uniform(1,2), 1)
+        size_of_chicken = round (random.uniform(0.5,2), 1)
+        total_area_occupied = round (random.uniform(2,3))
+        circle_radius = round (math.sqrt(total_area_occupied / math.pi), 1)
+        chicken_show_time = round (random.uniform(2,5))
+        max_trial_time = round (random.uniform(8,10))
+        ratio_area = round (random.randint(0, 1))
+    
+        trials_list = []
+        
+        trials_list.append(ratio)
+        trials_list.append(average_space_between)
+        trials_list.append(size_of_chicken)
+        trials_list.append(circle_radius)
+        trials_list.append(chicken_show_time)
+        trials_list.append(max_trial_time)
+        trials_list.append(ratio_area)
+     
+        trials_matrix.append(trials_list)
 
     def __init__(self, connection, db, player_id):
         super().__init__()
@@ -81,12 +102,15 @@ class ClientHandler(Thread):
         elif "SETTINGS:" in data:
             return self.handle_settings_message(data[9:])
         return 'Server Says: ' + data
-
-    def handle_trials_message(self, data):
+    
+    def PlayGame (self, trials_matrix):
+        return convert_matrix_to_trials(trials_matrix) 
+     
+    def handle_trials_message(self,data):
         number_of_trials = int(data[1])
         if len(self.results) == 0:
              print("GENERATING UNCORRELATED TRIALS")
-             trials = PlayGame(number_of_trials)
+             trials = self.PlayGame(number_of_trials)
              #return PlayGame(number_of_trials)
         else:
             print("GAME ENDED")
@@ -120,8 +144,6 @@ class ClientHandler(Thread):
         print(results)
         results_array = [result.get_answer() for result in self.results]
         print (results_array)
-        # results_array = round (np.random.uniform(2, size=(100))) 
-        # print (results_array)
 
     def save_settings(self, settings):
         self.settings.ratio_min = settings["RatioMin"]

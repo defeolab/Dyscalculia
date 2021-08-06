@@ -39,6 +39,3 @@ def PlayGame (self):
     #       #print (trials_matrix)
      
     return convert_matrix_to_trials(trials_matrix) 
- 
-     
-     

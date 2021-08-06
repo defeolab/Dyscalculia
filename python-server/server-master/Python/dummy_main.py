@@ -15,17 +15,6 @@ trials_matrix = []
 correct = []
 n = 10
 
-n_1 = []
-d = []
-c = []
-
-tmp = 0
-tmp1 = 0
-tmp2 = 0
-tmp3 = 0
-
-my_colors = {0:'red', 1:'green'}
-
 for i in range (n):
     ratio = round (random.uniform(0.2,2), 1)
     average_space_between = round (random.uniform(1,2), 1)

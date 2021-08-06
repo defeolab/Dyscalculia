@@ -31,4 +31,8 @@ def convert_matrix_to_trials(matrix):
 
 def create_trial_from_array(array):
     number_of_chickens = random.randint(2, 8)
-    return Trial(ratio=array[0], average_space_between=array[1], size_of_chicken=array[2], circle_radius=array[3], chicken_show_time=array[4], max_trial_time=array[5], ratio_area=array[6], number_of_chickens=number_of_chickens)
+    return Trial (ratio=array[0], average_space_between=array[1], 
+                 size_of_chicken=array[2], circle_radius=array[3], 
+                 chicken_show_time=array[4], max_trial_time=array[5], 
+                 ratio_area=array[6], number_of_chickens=number_of_chickens
+                 )
