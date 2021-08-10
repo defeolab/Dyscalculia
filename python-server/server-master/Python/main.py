@@ -1,30 +1,34 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Jul 23 19:40:41 2021
+Created on Tue Aug 10 10:30:57 2021
 
 @author: oyekp
 """
-import numpy as np
-from game_dummy import GameDummy
+import socket
+from db.db_connector import DBConnector
+from server import Flag
 
-trial_matrix = [[1.8, 1.3, 1.9, 0.8, 3, 9, 1], 
-                       [1.8, 1.9, 1.8, 1.0, 2, 9, 1], 
-                       [1.4, 1.7, 1.0, 1.0, 4, 8, 0], 
-                       [1.2, 1.6, 1.3, 1.0, 3, 8, 0], 
-                       [1.5, 1.5, 1.3, 0.8, 4, 9, 1], 
-                       [1.2, 1.4, 0.9, 0.8, 3, 9, 0], 
-                       [1.3, 1.9, 0.7, 0.8, 5, 10, 1], 
-                       [1.3, 1.2, 0.9, 0.8, 4, 10, 0], 
-                       [1.6, 1.4, 2.0, 0.8, 5, 8, 1], 
-                       [1.5, 1.9, 1.4, 0.8, 2, 10, 1], 
-                       [1.3, 1.2, 1.4, 1.0, 2, 9, 0], 
-                       [1.5, 1.5, 0.9, 1.0, 2, 9, 1], 
-                       [1.7, 1.4, 1.3, 0.8, 5, 8, 1], 
-                       [1.7, 1.7, 0.6, 0.8, 2, 9, 0], 
-                       [1.5, 1.6, 1.3, 0.8, 3, 10, 1], 
-                       [1.7, 1.8, 0.8, 0.8, 2, 9, 1], 
-                       [1.0, 1.3, 1.0, 1.0, 4, 9, 0], 
-                       [1.9, 1.9, 1.2, 0.8, 5, 10, 1], 
-                       [1.3, 1.4, 1.2, 0.8, 3, 9, 1], 
-                       [1.3, 1.0, 1.6, 1.0, 3, 8, 1]]
-GameDummy(trial_matrix)
+ServerSocket = socket.socket()
+DB = DBConnector()
+host = '127.0.0.1'
+port = 65432
+ThreadCount = 0
+flag = 0 # 1 means REAL, 0 means DUMMY
+
+
+# DEFINE TRIALS_MATRIX HERE MANUALLY and pass as parameter to the RUN method
+# --> 
+
+
+game = Flag()
+game.run(flag, ServerSocket, host, port, DB, ThreadCount)
+
+# response_vector (it was result_array before) = game.run (params + trials_matrix)
+
+
+# ANALYSIS MUST BE DONE HERE, NOT IN THE DUMMY, because it must be general, because
+# it must not know if it is the dummy or the real game which is played
+
+
+# NEXT --> random generation of trials in all the space
+# dyscalculia factor to be added later on

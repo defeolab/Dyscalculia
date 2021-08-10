@@ -6,50 +6,27 @@ Created on Fri Jul 30 21:25:36 2021
 """
 import numpy as np
 import pandas as pd
-import random
 import math
 import matplotlib.pyplot as plt
 
-def generate_random_trial_matrix(n):
-    trials_matrix = []
-    for i in range (n):
-        ratio = round (random.uniform(0.2,2), 1)
-        average_space_between = round (random.uniform(1,2), 1)
-        size_of_chicken = round (random.uniform(0.5,2), 1)
-        total_area_occupied = round (random.uniform(2,3))
-        circle_radius = round (math.sqrt(total_area_occupied / math.pi), 1)
-        number_of_chickens = random.randint(2, 8)
-        number_of_chickens2 = round (int(number_of_chickens * ratio))
-    
-        trials_list1 = []
-        
-        trials_list1.append(circle_radius)
-        trials_list1.append(size_of_chicken)
-        trials_list1.append(average_space_between)
-        
-        trials_list2 = [i * ratio for i in trials_list1]
-        trials_list1.append(number_of_chickens)
-        trials_list1.extend(trials_list2)
-        trials_list1.append(number_of_chickens2)
-        trials_list1.append(ratio)
-     
-        trials_matrix.append(trials_list1)
-    return trials_matrix
             
 class DummyClientHandler():
     
-    def __init__ (self, trials_matrix):
+    def __init__ (self, connection, db, player_id, trials_matrix):
         self.trials_matrix = trials_matrix
     
-    def Run(self, n):
+    def Run(self, trials_matrix):
         results_array = []
-        for i in range (n):
+        
+        for i in range (len(trials_matrix)):
+
             answer = self.Correct(self.trials_matrix)
             results_array.append (answer)
         print ('Result Array: ' + str(results_array))
-        Dataframe = self.GenerateDataframe(results_array)
-        print (Dataframe)
+        self.GenerateDataframe(results_array)
         return self.Analysis(self.trials_matrix)
+        #return results_array
+
     
     def Correct(self, trials_matrix):
         for i in range (0, len(self.trials_matrix)):
@@ -66,7 +43,8 @@ class DummyClientHandler():
                             "area_2_circle_radius", "area_2_size_of_chicken", 
                             "area_2_average_space_between", "area_2_number_of_chickens", 
                             "ratio", "correct"]
-        print (trials_table)   
+        #print (trials_table) 
+        return (trials_table)
     
     def Analysis (self, trials_matrix):
         a = []
@@ -78,6 +56,8 @@ class DummyClientHandler():
             a.append(math.log(results[7]/results[3]))
             d.append(math.log(results[5]/results[1]))
             c.append(results[9])
+        print (a)
+        print (d) 
             
         # Plot various projections of the samples.
         for i in range (len(a)):

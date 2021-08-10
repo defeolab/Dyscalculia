@@ -9,7 +9,9 @@ from threading import Thread
 from trial import Trial
 from trial_result import TrialResult
 from correlated_data_generator import generate_correlated_trials
-from trial_util import convert_trials_to_json, convert_matrix_to_trials
+from trial_util import convert_trials_to_json#, convert_matrix_to_trials
+from play_game import PlayGame
+
 
 
 def calculate_next_correlation(average_decision_time, correct_answer_ratio):
@@ -48,14 +50,13 @@ def calculate_next_correlation(average_decision_time, correct_answer_ratio):
 
 class ClientHandler(Thread):
 
-    def __init__(self, connection, db, player_id, trials_matrix):
+    def __init__(self, connection, db, player_id):
         super().__init__()
         self.connection = connection
         self.db = db
         self.player_id = player_id
         self.settings = settings_manager.load_from_xml()
         self.results = list()
-        self.trials_matrix = trials_matrix
 
     def run(self):
         while True:
@@ -80,15 +81,12 @@ class ClientHandler(Thread):
         elif "SETTINGS:" in data:
             return self.handle_settings_message(data[9:])
         return 'Server Says: ' + data
-    
-    def PlayGame (self, trials_matrix):
-        return convert_matrix_to_trials(self.trials_matrix) 
-     
-    def handle_trials_message(self,data):
+
+    def handle_trials_message(self, data):
         number_of_trials = int(data[1])
         if len(self.results) == 0:
              print("GENERATING UNCORRELATED TRIALS")
-             trials = self.PlayGame(number_of_trials)
+             trials = PlayGame(number_of_trials)
              #return PlayGame(number_of_trials)
         else:
             print("GAME ENDED")
@@ -122,6 +120,8 @@ class ClientHandler(Thread):
         print(results)
         results_array = [result.get_answer() for result in self.results]
         print (results_array)
+        # results_array = round (np.random.uniform(2, size=(100))) 
+        # print (results_array)
 
     def save_settings(self, settings):
         self.settings.ratio_min = settings["RatioMin"]
