@@ -7,6 +7,7 @@ Created on Tue Aug 10 10:30:57 2021
 import socket
 from db.db_connector import DBConnector
 from server import Flag
+from trial_util import generate_dummy_random_trial_matrix 
 
 ServerSocket = socket.socket()
 DB = DBConnector()
@@ -14,21 +15,31 @@ host = '127.0.0.1'
 port = 65432
 ThreadCount = 0
 flag = 0 # 1 means REAL, 0 means DUMMY
+if flag == 1:
+    trials_matrix = [[1.7, 1.3, 1.0, 1.0, 2, 9, 1]] #[1.3, 1.9, 1.6, 0.8, 4, 9, 0]] 
+                  # [1.8, 1.0, 1.5, 0.8, 5, 9, 1], [1.3, 1.8, 0.6, 1.0, 4, 10, 1], 
+                  # [1.5, 1.7, 1.7, 1.0, 5, 9, 0], [1.8, 1.7, 0.7, 0.8, 4, 10, 1], 
+                  # [1.3, 1.0, 1.3, 0.8, 4, 9, 1], [1.6, 1.6, 1.6, 0.8, 3, 9, 1], 
+                  # [1.9, 1.7, 0.9, 1.0, 4, 9, 1], [1.4, 1.3, 1.3, 0.8, 4, 10, 0], 
+                  # [1.4, 1.3, 0.7, 0.8, 3, 9, 1], [1.5, 1.6, 2.0, 0.8, 3, 9, 1], 
+                  # [1.9, 1.6, 1.0, 1.0, 2, 9, 1], [1.6, 1.0, 0.6, 0.8, 3, 10, 1], 
+                  # [1.2, 1.3, 1.1, 0.8, 2, 9, 1], [1.2, 1.2, 0.7, 0.8, 5, 10, 1], 
+                  # [1.3, 1.1, 1.4, 1.0, 4, 8, 1], [1.6, 1.6, 2.0, 1.0, 4, 9, 1], 
+                  # [1.9, 1.1, 1.4, 1.0, 3, 9, 1], [1.2, 1.5, 1.6, 1.0, 4, 9, 0]]
+else:
+    trials_matrix = generate_dummy_random_trial_matrix(); 
+                    # [[1.0, 0, 1.5, 14, 1.4, 0.0, 2.0, 19, 1.4], [1.0, 1, 1.8, 13, 1.3, 1.3, 2.3, 16, 1.3], 
+                    # [0.8, 0, 1.8, 13, 0.96, 0.0, 2.16, 15, 1.2], [0.8, 0, 1.6, 10, 1.2, 0.0, 2.4, 15, 1.5], 
+                    # [0.8, 1, 1.7, 8, 0.96, 1.2, 2.04, 9, 1.2], [1.0, 0, 1.9, 14, 1.9, 0.0, 3.61, 26, 1.9], 
+                    # [0.8, 1, 1.0, 10, 1.1, 1.4, 1.4, 14, 1.4], [0.8, 1, 1.0, 15, 1.2, 1.5, 1.5, 22, 1.5], 
+                    # [1.0, 1, 1.1, 15, 1.9, 1.9, 2.09, 28, 1.9], [0.8, 0, 1.2, 13, 1.52, 0.0, 2.28, 24, 1.9], 
+                    # [1.0, 0, 1.5, 9, 1.5, 0.0, 2.25, 13, 1.5], [0.8, 2, 1.7, 10, 1.28, 3.2, 2.72, 16, 1.6], 
+                    # [1.0, 1, 1.3, 12, 1.7, 1.7, 2.21, 20, 1.7], [1.0, 1, 1.4, 9, 1.9, 1.9, 2.65, 17, 1.9], 
+                    # [0.8, 2, 1.2, 14, 1.36, 3.4, 2.04, 23, 1.7], [1.0, 1, 1.5, 9, 1.2, 1.2, 1.79, 10, 1.2], 
+                    # [0.8, 1, 1.4, 14, 1.04, 1.3, 1.81, 18, 1.3], [0.8, 1, 1.0, 8, 1.52, 1.9, 1.9, 15, 1.9], 
+                    # [1.0, 0, 1.8, 13, 1.4, 0.0, 2.52, 18, 1.4], [0.8, 0, 1.4, 8, 1.11, 0.0, 1.95, 11, 1.4]]
 
+game = Flag(trials_matrix)
+response_vector = game.run(flag, ServerSocket, host, port, DB, ThreadCount)
+print ('Response Vector: ' + str(response_vector))
 
-# DEFINE TRIALS_MATRIX HERE MANUALLY and pass as parameter to the RUN method
-# --> 
-
-
-game = Flag()
-game.run(flag, ServerSocket, host, port, DB, ThreadCount)
-
-# response_vector (it was result_array before) = game.run (params + trials_matrix)
-
-
-# ANALYSIS MUST BE DONE HERE, NOT IN THE DUMMY, because it must be general, because
-# it must not know if it is the dummy or the real game which is played
-
-
-# NEXT --> random generation of trials in all the space
-# dyscalculia factor to be added later on

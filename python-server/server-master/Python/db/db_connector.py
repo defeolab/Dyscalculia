@@ -84,8 +84,8 @@ class DBConnector:
 
         results = list()
         for (trial_result_id, correct, decision_time, area_1_circle_radius, area_1_size_of_chicken, area_1_average_space_between, area_1_number_of_chickens, area_2_circle_radius, area_2_size_of_chicken, area_2_average_space_between, area_2_number_of_chickens, ratio, chicken_show_time) in cursor:
-            print("{}, {}, {}, {}, {}, {}, {}, {}".format(
-                trial_result_id, correct, decision_time, area_1_circle_radius, area_1_size_of_chicken, area_1_average_space_between, ratio, chicken_show_time))
+            # print("{}, {}, {}, {}, {}, {}, {}, {}".format(
+            #     trial_result_id, correct, decision_time, area_1_circle_radius, area_1_size_of_chicken, area_1_average_space_between, ratio, chicken_show_time))
             area_1_data = AreaData(area_1_circle_radius, area_1_size_of_chicken, area_1_average_space_between, area_1_number_of_chickens)
             area_2_data = AreaData(area_2_circle_radius, area_2_size_of_chicken, area_2_average_space_between, area_2_number_of_chickens)
             trial_data = Trial(area_1_data=area_1_data, area_2_data=area_2_data, chicken_show_time=chicken_show_time, ratio=ratio)

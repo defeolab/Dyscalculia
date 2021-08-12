@@ -120,8 +120,8 @@ class ClientHandler(Thread):
             self.results.append(TrialResult(decision_time=result['DecisionTime'], correct=result['Correct'], raw_trial_data=result['TrialData']))
         self.db.add_results(self.player_id, self.results)
         print(results)
-        results_array = [result.get_answer() for result in self.results]
-        print (results_array)
+        response_vector = [result.get_answer() for result in self.results]
+        return response_vector
 
     def save_settings(self, settings):
         self.settings.ratio_min = settings["RatioMin"]
