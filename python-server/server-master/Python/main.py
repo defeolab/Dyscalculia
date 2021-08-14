@@ -14,9 +14,9 @@ DB = DBConnector()
 host = '127.0.0.1'
 port = 65432
 ThreadCount = 0
-flag = 0 # 1 means REAL, 0 means DUMMY
+flag = 1 # 1 means REAL, 0 means DUMMY
 if flag == 1:
-    trials_matrix = [[1.7, 1.3, 1.0, 1.0, 2, 9, 1]] #[1.3, 1.9, 1.6, 0.8, 4, 9, 0]] 
+    trials_matrix = [[1.7, 1.3, 1.0, 1.0, 2, 9, 1], [1.3, 1.9, 1.6, 0.8, 4, 9, 0]] 
                   # [1.8, 1.0, 1.5, 0.8, 5, 9, 1], [1.3, 1.8, 0.6, 1.0, 4, 10, 1], 
                   # [1.5, 1.7, 1.7, 1.0, 5, 9, 0], [1.8, 1.7, 0.7, 0.8, 4, 10, 1], 
                   # [1.3, 1.0, 1.3, 0.8, 4, 9, 1], [1.6, 1.6, 1.6, 0.8, 3, 9, 1], 
@@ -43,3 +43,4 @@ game = Flag(trials_matrix)
 response_vector = game.run(flag, ServerSocket, host, port, DB, ThreadCount)
 print ('Response Vector: ' + str(response_vector))
 
+# complete cover of the space

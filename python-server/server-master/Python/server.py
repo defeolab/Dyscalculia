@@ -19,7 +19,6 @@ class Flag():
             ServerSocket.listen(5)
             
             while True:
-                #trials_matrix = self.generate_random_trial_matrix();
                 Client, address = ServerSocket.accept()
                 print('Connected to: ' + address[0] + ':' + str(address[1]))
                 player_id = DB.get_player(address[0])
@@ -32,7 +31,6 @@ class Flag():
             DB.close()
             ServerSocket.close()
         else:
-            #trials_matrix = self.generate_dummy_random_trial_matrix();
             print('Connected to: ' + host)
             Client = ''
             player_id = 1
