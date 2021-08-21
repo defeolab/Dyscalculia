@@ -42,8 +42,7 @@ def generate_random_trial_matrix():
         ratio = round (random.uniform(0,2), 1)
         average_space_between = round (random.uniform(1,2), 1)
         size_of_chicken = round (random.uniform(0.5,2), 1)
-        total_area_occupied = round (random.uniform(2,3))
-        circle_radius = round (math.sqrt(total_area_occupied / math.pi), 1)
+        circle_radius = round (random.uniform(1,2),1)
         chicken_show_time = round (random.uniform(2,5))
         max_trial_time = round (random.uniform(8,10))
         ratio_area = round (random.randint(0, 1))
@@ -63,7 +62,7 @@ def generate_random_trial_matrix():
 
 #create the matrix for the dummy game 
 def generate_dummy_random_trial_matrix():
-    n = round(random.uniform(1, 100)) #gives a random length for the rows of the matrix
+    n = round(random.uniform(1, 20)) #gives a random length for the rows of the matrix
     trials_matrix = []
     for i in range (n):
         ratio = round (random.uniform(1.1,2), 1)

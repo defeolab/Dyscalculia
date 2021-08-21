@@ -7,7 +7,7 @@ from trial_result import TrialResult
 class DBConnector:
 
     def __init__(self):
-        self.cnx = mysql.connector.connect(user='root', password='IvanaOrefice180496.',
+        self.cnx = mysql.connector.connect(user='root', password='Vjtp1998first!',
                                       host='127.0.0.1',
                                       database='dyscalculia')
 

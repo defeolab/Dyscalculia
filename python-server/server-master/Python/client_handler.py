@@ -60,9 +60,7 @@ class ClientHandler(Thread):
     def run(self):
         while True:
             data = self.connection.recv(2048)
-            print("DATA1: " + str(data))
             reply = self.get_reply(data.decode('utf-8'))
-            print("DATA2: " + str(data))
             if not data:
                 break
             self.connection.send(str.encode(reply))
@@ -83,20 +81,20 @@ class ClientHandler(Thread):
             return self.handle_settings_message(data[9:])
         return 'Server Says: ' + data
     
-    def PlayGame (self):
+    def PlayGame (self, trials_matrix):
         return convert_matrix_to_trials(self.trials_matrix) 
      
-    def handle_trials_message(self, data):
-        # number_of_trials = int(data[1])
-        print("NUMBER OF TRIALS")
-        print(int(data[1]))
+    def handle_trials_message(self,data):
+        number_of_trials = int(data[1])
         if len(self.results) == 0:
              print("GENERATING UNCORRELATED TRIALS")
-             trials = self.PlayGame()
+             trials = self.PlayGame(number_of_trials)
              #return PlayGame(number_of_trials)
         else:
             print("GAME ENDED")
             exit()
+            # print("GENERATING CORRELATED TRIALS")
+            #trials = self.generate_trials_from_results(number_of_trials)
         return convert_trials_to_json(trials)
         
     
@@ -125,7 +123,7 @@ class ClientHandler(Thread):
         self.db.add_results(self.player_id, self.results)
         print(results)
         response_vector = [result.get_answer() for result in self.results]
-        return response_vector
+        print (response_vector)
 
     def save_settings(self, settings):
         self.settings.ratio_min = settings["RatioMin"]
