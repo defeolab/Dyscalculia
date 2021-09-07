@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on Tue Aug 10 10:30:57 2021
 
@@ -16,7 +15,7 @@ host = '127.0.0.1'
 port = 65432
 ThreadCount = 0
 flag = 0 # 1 means REAL, 0 means DUMMY
-indicator = 3 #1 means map_matrix_radius(), 2 means map_matrix_size(), 3 means map_matrix_space()
+indicator = 1 #1 means map_matrix_radius(), 2 means map_matrix_size(), 3 means map_matrix_space()
 
 
 if flag == 1:
@@ -32,4 +31,3 @@ else:
 game = Flag(trials_matrix)
 response_vector = game.run(flag, indicator, ServerSocket, host, port, DB, ThreadCount)
 print ('Response Vector: ' + str(response_vector))
-

@@ -45,4 +45,3 @@ class Flag():
                 thread = DummyClientHandler(Client, DB, player_id, self.trials_matrix)
                 response_vector = thread.Run(self.trials_matrix, indicator)
         return response_vector
-            

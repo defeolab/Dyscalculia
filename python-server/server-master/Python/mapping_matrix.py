@@ -12,7 +12,7 @@ dummy_trials_matrix = ["area_1_circle_radius", "area_1_size_of_chicken","area_1_
                             "ratio"]
 '''
 #import random
-n = 5
+n = 15
 ratio = 1
 
 def map_matrix_radius():
