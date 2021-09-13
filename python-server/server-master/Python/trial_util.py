@@ -2,6 +2,7 @@ import numpy as np
 import random
 import math
 from trial import Trial
+from trial_new import Trial_New
 
 def convert_trials_to_json(trials):
     message = "["
@@ -27,14 +28,33 @@ def convert_matrix_to_trials(matrix):
     trials = []
     for i in range(0, len(matrix)):
         trial = matrix[i]
-        trials.append(create_trial_from_array(trial))
+        trials.append(create_trial_from_array_new(trial))
+        #trials.append(create_trial_from_array(trial))
     return trials
 
 def create_trial_from_array(array):
+    # server sceglie un valore tra 2 e 8 per il 1* gruppo di galline, e il secondo viene calco
+    # lato con il rapporto --> NO! Noi vorremmo scegliere il numero di polletti by us
+    
+    # OBIETTIVO FINALE: tutto viene scelto dal server, il client non sceglie niente
+    
+    # DOBBIAMO ESSERE NOI AD ASSEGNARE CIASCUN VALORE, SIA A DESTRA CHE A SINISTRA SENZA ARBITRARIETà
+    # --> CAMBIARE LA CLASSE TRIAL (trial.py) IN MODO CHE NON GENERI NULLA DAL PARAMETRO ratio MA 
+    # MANUALMENTE
+    
     number_of_chickens = random.randint(2, 8)
     return Trial(ratio=array[0], average_space_between=array[1], size_of_chicken=array[2], circle_radius=array[3], chicken_show_time=array[4], max_trial_time=array[5], ratio_area=array[6], number_of_chickens=number_of_chickens)
 
-#create the random matrix for the real game 
+def create_trial_from_array_new(array):
+    
+    return Trial_New(area_1_circle_radius=array[0], area_2_circle_radius=array[1]
+                 , area_1_size_of_chicken=array[2], area_2_size_of_chicken=array[3]
+                 , area_1_average_space_between=array[4], area_2_average_space_between=array[5]
+                 , area_1_number_of_chickens=array[6], area_2_number_of_chickens=array[7]
+                 , chicken_show_time=array[8], max_trial_time=array[9])
+
+
+# create the random matrix for the real game (NOT USED)
 def generate_random_trial_matrix():
     n = round(random.uniform(1, 10)) #gives a random length for the rows of the matrix
     trials_matrix = []
@@ -60,7 +80,7 @@ def generate_random_trial_matrix():
         trials_matrix.append(trials_list)
     return trials_matrix
 
-#create the matrix for the dummy game 
+# create the matrix for the dummy game (NOT USED)
 def generate_dummy_random_trial_matrix():
     n = round(random.uniform(1, 20)) #gives a random length for the rows of the matrix
     trials_matrix = []

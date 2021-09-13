@@ -97,5 +97,3 @@ class DBConnector:
 
     def close(self):
         self.cnx.close()
-
-

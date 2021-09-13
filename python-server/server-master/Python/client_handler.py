@@ -58,8 +58,10 @@ class ClientHandler(Thread):
         self.trials_matrix = trials_matrix
 
     def run(self):
+        print("1 RUN FUNCTION")
+        # penso che, ai fini del cambiamento della Trial class, questa va bene così
         while True:
-            data = self.connection.recv(2048)
+            data = self.connection.recv(2048) # breakpoint da inserire
             reply = self.get_reply(data.decode('utf-8'))
             if not data:
                 break
@@ -69,6 +71,8 @@ class ClientHandler(Thread):
         self.connection.close()
 
     def get_reply(self, data):
+        print("2 GET REPLY")
+        # anche questa
         # Must terminate reply with \n
         if data.strip() == 'TRIAL':
             trial = self.generate_random_trial()
@@ -85,6 +89,7 @@ class ClientHandler(Thread):
         return convert_matrix_to_trials(self.trials_matrix) 
      
     def handle_trials_message(self,data):
+        print("3 handle_trials_message FUNCTION")
         number_of_trials = int(data[1])
         if len(self.results) == 0:
              print("GENERATING UNCORRELATED TRIALS")
@@ -93,15 +98,17 @@ class ClientHandler(Thread):
         else:
             print("GAME ENDED")
             exit()
-            # print("GENERATING CORRELATED TRIALS")
+            #print("GENERATING CORRELATED TRIALS")
             #trials = self.generate_trials_from_results(number_of_trials)
         return convert_trials_to_json(trials)
         
     
     def handle_complete_message(self, data):
+        print("4 handle_complete_message FUNCTION")
+        # questa dovrebbe rimanere così come è
         while data[-1] != "}":
             old_string = data
-            new_data = self.connection.recv(2048)
+            new_data = self.connection.recv(2048)     # breakpoint da inserire
             data = new_data.decode('utf-8')
             data = old_string + data.strip()
         try:
@@ -112,20 +119,25 @@ class ClientHandler(Thread):
         return "SUCCESS" + '\n'
 
     def handle_settings_message(self, data):
+        print("5 handle_settings_message FUNCTION")
         result = json.loads(data)
         self.save_settings(result)
         return "SUCCESS" + '\n'
 
     def add_results(self, results):
+        print("6 add_results FUNCTION")
         self.results = []
         for result in results:
             self.results.append(TrialResult(decision_time=result['DecisionTime'], correct=result['Correct'], raw_trial_data=result['TrialData']))
         self.db.add_results(self.player_id, self.results)
+        print("THIS IS THE RESULT ARRAY")
         print(results)
         response_vector = [result.get_answer() for result in self.results]
+        print("THIS IS THE RESPONSE VECTOR")
         print (response_vector)
 
     def save_settings(self, settings):
+        print("7 save_settings FUNCTION")
         self.settings.ratio_min = settings["RatioMin"]
         self.settings.ratio_max = settings["RatioMax"]
         self.settings.average_space_between_min = settings["AverageSpaceBetweenMin"]
@@ -137,6 +149,7 @@ class ClientHandler(Thread):
         settings_manager.save_to_xml(self.settings)
 
     def generate_random_trial(self):
+        print("8 generate_random_trial FUNCTION")
         """
         Generates a completely random trial based on settings values. Parameters are:
 
@@ -165,6 +178,7 @@ class ClientHandler(Thread):
    
 
     def generate_trials_from_results(self, number_of_trials):
+        print("9 generate_trials_from_results FUNCTION")
         """
         Generates the next set of trials based on the persons results so far currently this is done by using a very
         simple AI with conditional statements to pick the next correlation and then generate a set of trials based
@@ -194,6 +208,7 @@ class ClientHandler(Thread):
         return generate_correlated_trials(number_of_trials, next_correlation, self.settings)
 
     def get_next_correlation(self):
+        print("10 get_next_correlation FUNCTION")
         total_decision_time = 0
         number_of_correct_answers = 0
         for result in self.results:
