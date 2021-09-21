@@ -4,23 +4,23 @@ USE dyscalculia;
 
 select * from trial_result;
 
-UPDATE trial_result SET correct = 1 WHERE (trial_result_id = 3);
-UPDATE trial_result SET correct = 1 WHERE (trial_result_id = 5);
-UPDATE trial_result SET correct = 1 WHERE (trial_result_id = 8);
+select * from trial_result_new;
+drop table trial_result_new;
 
-UPDATE trial_result SET area_2_size_of_chicken = 1.0 WHERE (trial_result_id = 1);
-UPDATE trial_result SET area_2_size_of_chicken = 1.6 WHERE (trial_result_id = 2);
-UPDATE trial_result SET area_2_size_of_chicken = 1.5 WHERE (trial_result_id = 3);
-UPDATE trial_result SET area_2_size_of_chicken = 0.6 WHERE (trial_result_id = 4);
-UPDATE trial_result SET area_2_size_of_chicken = 1.7 WHERE (trial_result_id = 5);
-UPDATE trial_result SET area_2_size_of_chicken = 0.7 WHERE (trial_result_id = 6);
-UPDATE trial_result SET area_2_size_of_chicken = 1.3 WHERE (trial_result_id = 7);
-
-UPDATE trial_result SET area_1_size_of_chicken = 0.9 WHERE (trial_result_id = 1);
-UPDATE trial_result SET area_1_size_of_chicken = 0.2 WHERE (trial_result_id = 2);
-UPDATE trial_result SET area_1_size_of_chicken = 1.7 WHERE (trial_result_id = 3);
-UPDATE trial_result SET area_1_size_of_chicken = 0.1 WHERE (trial_result_id = 4);
-UPDATE trial_result SET area_1_size_of_chicken = 1.1 WHERE (trial_result_id = 5);
-UPDATE trial_result SET area_1_size_of_chicken = 0.3 WHERE (trial_result_id = 6);
-UPDATE trial_result SET area_1_size_of_chicken = 1.9 WHERE (trial_result_id = 7);
-UPDATE trial_result SET area_1_size_of_chicken = 1.5 WHERE (trial_result_id = 9);
+CREATE TABLE trial_result_new (
+    trial_result_id bigint(20) unsigned auto_increment,
+    player_id bigint(20) unsigned,
+    correct bit(1),
+    decision_time bigint(20),
+    area_1_circle_radius decimal (5,2),
+    area_1_size_of_chicken decimal (5,2),
+    area_1_average_space_between decimal (5,2),
+    area_1_number_of_chickens int(11),
+    area_2_circle_radius decimal (5,2),
+    area_2_size_of_chicken decimal (5,2),
+    area_2_average_space_between decimal (5,2),
+    area_2_number_of_chickens int(11),
+    chicken_show_time decimal(5,2),
+    created datetime,
+    PRIMARY KEY (trial_result_id)
+);

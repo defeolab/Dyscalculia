@@ -6,7 +6,11 @@ from area_data import AreaData
 
 class Trial:
 
-    def __init__(self, area_1_data=None, area_2_data=None, circle_radius=None, size_of_chicken=None, average_space_between=None, ratio=None, chicken_show_time=None, max_trial_time=None, number_of_chickens=None, ratio_area=None):
+    def __init__(self, area_1_data=None, area_2_data=None, circle_radius=None
+                 , size_of_chicken=None, average_space_between=None, ratio=None
+                 , chicken_show_time=None, max_trial_time=None, number_of_chickens=None
+                 , ratio_area=None):
+        
         if area_1_data is None or area_2_data is None:
             if ratio_area == None:
                 ratio_area = random.choice([0, 1])

@@ -5,7 +5,6 @@ Created on Fri Jul 30 21:25:36 2021
 @author: oyekp
 """
 import numpy as np
-#import pandas as pd
 import matplotlib.pyplot as plt
 
             
@@ -59,9 +58,6 @@ class DummyClientHandler():
         c = []
         
         my_colors = {0:'red',1:'green'}
-        
-        # indagare meglio su math.log function, per vedere 
-        # se è in base 10 o meno
         
         for results in trials_matrix:
             a.append(np.log10(results[7]/results[3])) #number_of_chickens

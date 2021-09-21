@@ -75,11 +75,13 @@ class ClientHandler(Thread):
         # anche questa
         # Must terminate reply with \n
         if data.strip() == 'TRIAL':
+            print("ENTRATA NEL POSTO RANDOM")
             trial = self.generate_random_trial()
             return json.dumps(trial.__dict__) + '\n'
         elif "TRIALS:" in data:
             return self.handle_trials_message(data.split(":"))
         elif "COMPLETE:" in data:
+            print(data)
             return self.handle_complete_message(data[9:].strip())
         elif "SETTINGS:" in data:
             return self.handle_settings_message(data[9:])
