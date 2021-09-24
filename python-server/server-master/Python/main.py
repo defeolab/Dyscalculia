@@ -21,16 +21,6 @@ flag = 0
 # 3 means matrix_space_between()
 indicator = 3
 
-# COMMENTO SU I VARI INDICATORS E I PLOT CHE OTTENGO
-# Il risultato miglione lo ottengo con indicator = 3, questo perchè space between
-# assume dei valori che sono lontani gli uni dagli altri, mentre circle radius
-# e size chicken non li faccio "crescere" così tanto.
-# Per quanto riguarda il # di chickens, non sono riuscita a ottenere un risultato
-# buono, ma questo probabilmente perchè non posso assegnare valori troppo alti
-# a tale parametro, o meglio potrei ma non entrerebbero nel recinto. Comunque
-# giusto per fare una prova con valori alti vedere sempre indicator = 3 
-# --> prova fatta (init = 5, crescita a +3) e fallita, meno valori vengono esplorati
-
 if flag == 1:
     
 # area_1_circle_radius=array[0], area_2_circle_radius=array[1], area_1_size_of_chicken=array[2], 

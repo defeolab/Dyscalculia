@@ -47,7 +47,6 @@ class DummyClientHandler():
         #       "area_2_size_of_chicken", 
         #       "area_2_average_space_between", 
         #       "area_2_number_of_chickens", 
-        #       "ratio", 
         #       "correct"]
         # print (trials_table) 
         # return (trials_table)
@@ -67,7 +66,7 @@ class DummyClientHandler():
                 d.append(np.log10(results[5]/results[1])) #size_of_chicken
             else:
                 d.append(np.log10(results[6]/results[2])) #average_space_between
-            c.append(results[9])
+            c.append(results[8])
         
         # This was just to verify that I could obtain x^4
         print("LUNGHEZZA VETTORE A")
