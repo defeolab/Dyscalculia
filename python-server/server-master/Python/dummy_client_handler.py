@@ -6,8 +6,10 @@ Created on Fri Jul 30 21:25:36 2021
 """
 import numpy as np
 import matplotlib.pyplot as plt
+# import scipy.stats as stats
+from color_toss import ColorToss
 
-            
+     
 class DummyClientHandler():
     
     def __init__ (self, connection, db, player_id, trials_matrix):
@@ -30,7 +32,7 @@ class DummyClientHandler():
     def Correct(self, trials_matrix):
         for i in range (0, len(self.trials_matrix)):
             return (np.random.randint(2))
-    
+        
         
     def GenerateDataframe(self, response_vector):
         for i in range(0, len(self.trials_matrix)):
@@ -47,41 +49,46 @@ class DummyClientHandler():
         #       "area_2_size_of_chicken", 
         #       "area_2_average_space_between", 
         #       "area_2_number_of_chickens", 
-        #       "correct"]
-        # print (trials_table) 
-        # return (trials_table)
+        #       "correct"]        
     
     def Analysis (self, trials_matrix, indicator):
-        a = []
-        d = []
+        nv = []  # a --> NUMERICAL VARIABLE
+        nnv = []  # d --> NON-NUMERICAL VARIABLE
         c = []
+        col_res = '';
         
-        my_colors = {0:'red',1:'green'}
+        my_colors = {0:'green', 1:'red'}
         
         for results in trials_matrix:
-            a.append(np.log10(results[7]/results[3])) #number_of_chickens
+            nv.append(np.log10(results[7]/results[3])) #number_of_chickens
             if indicator == 1:
-                d.append(np.log10(results[4]/results[0])) #circle_radius
+                nnv.append(np.log10(results[4]/results[0])) #circle_radius
             elif indicator == 2:
-                d.append(np.log10(results[5]/results[1])) #size_of_chicken
+                nnv.append(np.log10(results[5]/results[1])) #size_of_chicken
             else:
-                d.append(np.log10(results[6]/results[2])) #average_space_between
+                nnv.append(np.log10(results[6]/results[2])) #average_space_between
             c.append(results[8])
         
         # This was just to verify that I could obtain x^4
         print("LUNGHEZZA VETTORE A")
-        print(len(a))
+        print(len(nv))
         print("LUNGHEZZA VETTORE D")
-        print(len(d))
+        print(len(nnv))
             
-        # Plot various projections of the samples.
-
-        for i in range (len(a)):
-            plt.scatter(a[i], d[i], color = my_colors.get(c[i]))   
-
+        for i in range (len(nv)):
+            # ColorToss takes the probability value
+            col_res = ColorToss(0.9)
+            
+            # -1 probab = 0.1, a 0 varrà 0.5, mai 1
+            # asse y metà pallini rossi metà verdi,
+            # ai lati dovrebbero essere tutti verdi
+            
+            # per passargli una probabilità gaussiana, avevo pensato di 
+            # passare a ColorToss i valori di mu e sigma e di calcolare
+            # la prob gaussiana direttamente in quella funzione
+            
+            plt.scatter(nv[i], nnv[i], color = my_colors.get(col_res))
                   
-        # plt.ylabel('log(d2/d1)')
-        # plt.xlabel('log(n2/n1)')
         plt.xlim([-1, 1])
         plt.ylim([-1, 1])
         plt.grid(True)
@@ -91,5 +98,4 @@ class DummyClientHandler():
         ax.spines['right'].set_color('none')
         ax.spines['bottom'].set_position('zero')
         ax.spines['top'].set_color('none')
-               
-        plt.show()  
+    

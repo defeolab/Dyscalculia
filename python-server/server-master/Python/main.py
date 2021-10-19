@@ -15,11 +15,11 @@ port = 65432
 ThreadCount = 0
 
 # 1 means REAL, 0 means DUMMY
-flag = 0 
+flag = 0
 
 # 1 means matrix_circle_radius(), 2 means matrix_size_chickens(), 
 # 3 means matrix_space_between()
-indicator = 3
+indicator = 1
 
 if flag == 1:
     

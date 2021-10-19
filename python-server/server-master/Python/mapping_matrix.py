@@ -17,8 +17,6 @@ dummy_trials_matrix = [
     7 --> "area_2_number_of_chickens"
     ]
 '''
-
-#import random
 n = 5
 
 def matrix_circle_radius():
