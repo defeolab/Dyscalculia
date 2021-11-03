@@ -2,7 +2,6 @@ import socket
 from client_handler import ClientHandler
 from dummy_client_handler import DummyClientHandler
  
-
 class Client_Choice():
     def __init__ (self, trials_matrix):
         self.trials_matrix = trials_matrix

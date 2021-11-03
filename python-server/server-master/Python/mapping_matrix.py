@@ -1,10 +1,3 @@
-"""
-Created on Tue Aug 17 10:41:50 2021
-
-@author: oyekp
-"""
-
-
 '''
 dummy_trials_matrix = [
     0 --> "area_1_circle_radius", 

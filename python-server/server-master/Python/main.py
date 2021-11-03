@@ -17,16 +17,24 @@ ThreadCount = 0
 # 1 means REAL, 0 means DUMMY
 flag = 0
 
-# 1 means matrix_circle_radius(), 2 means matrix_size_chickens(), 
+# 1 means matrix_circle_radius()
+# 2 means matrix_size_chickens()
 # 3 means matrix_space_between()
+
 indicator = 1
 
 if flag == 1:
     
-# area_1_circle_radius=array[0], area_2_circle_radius=array[1], area_1_size_of_chicken=array[2], 
-# area_2_size_of_chicken=array[3], area_1_average_space_between=array[4], 
-# area_2_average_space_between=array[5], area_1_number_of_chickens=array[6], 
-# area_2_number_of_chickens=array[7], chicken_show_time=array[8], max_trial_time=array[9]
+        # area_1_circle_radius=array[0] 
+        # area_2_circle_radius=array[1] 
+        # area_1_size_of_chicken=array[2]
+        # area_2_size_of_chicken=array[3]
+        # area_1_average_space_between=array[4]
+        # area_2_average_space_between=array[5]
+        # area_1_number_of_chickens=array[6]
+        # area_2_number_of_chickens=array[7]
+        # chicken_show_time=array[8]
+        # max_trial_time=array[9]
     
     trials_matrix = [[1.4, 1.7, 1.6, 1.8, 1.4, 1.4, 3, 4, 4, 10],
                      [1.4, 1.2, 1.6, 1.3, 1.4, 1.4, 5, 2, 2, 10]]
