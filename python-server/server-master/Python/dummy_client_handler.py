@@ -26,6 +26,30 @@ class DummyClientHandler():
         # self.SharpeningAnalysis(self.trials_matrix, indicator)
         self.FilteringAnalysis(self.trials_matrix, indicator)
         
+        # s deve essere applic solo sui sample corretti
+        
+        # 1. s dopo filtering solo sui corretti, plot solo alla fine
+        # ELIMINARE TRIALS SULL'ASSE Y
+        
+        # 1b. grafici cambiando alpha e sigma
+        # s basso --> sigma basso, f basso --> alpha piccolo ( o nullo )
+        # LIVELLI: nullo, piccolo, medio, alto (combinati)
+        
+        # 2. trasf tutto in modo più realistico
+        # SIMULAZIONE GIOCO VERO: scrivere una funzione
+        # che simuli il gioco vero.
+        # --> NO CICLO FOR. Dare in modo casuale un pallino 
+        # e tirar fuori il colore. I pallini vengono aggiunti
+        # uno x volta, perchè ogni pallino è un trial
+        # GENERATORE DI TRIALS casuale che decide di mettere il 
+        # pallino da qualche parte, e poi colorato seguendo F. E S.
+        
+        # 3. Unire le tre 'situazioni' di nnd in uno
+        # Come? Due modi:
+            # definire una unica variabile NND che ha un'influenza su
+            # ciascuna delle altre tre
+            # OPPURE fare uno spazio 4-dim
+        
         return response_vector
  
     def Correct(self, trials_matrix):
@@ -121,14 +145,14 @@ class DummyClientHandler():
         c = []
         
         fig = plt.figure()
-        alpha = 30              # alpha is the angle in degrees
+        alpha = 45              # alpha is the angle in degrees
         alpha = alpha + 90
         rad_alpha = np.deg2rad(alpha)   # converted in radiants
         coeff = math.tan(rad_alpha) 
         ax = fig.add_subplot(1, 1, 1)
         x = np.linspace(-5,5,100)
         
-        my_colors = {0:'green', 1:'red', 2: 'green'}
+        my_colors = {0: 'green', 1: 'red', 2: 'blue'}
         
         for results in trials_matrix:
             nv.append(np.log10(results[7]/results[3])) #number_of_chickens
