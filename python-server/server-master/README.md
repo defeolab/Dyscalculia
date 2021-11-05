@@ -1,8 +1,8 @@
 # CE601 Dsycalculia Project
 
-In this project I have created a small mini game that could be used inside of the bigger game that will be created to help diagnose and train children with dyscalculia.
+In this project, we have created a small mini game that could be used inside of the bigger game that will be created to help diagnose and train children with Dyscalculia.
 
-## Technology used
+## Technologies used
 
 Python version 3.6 
 
@@ -89,7 +89,7 @@ All imports used are from within Python 3.6 so no third party packages are curre
 
 ## Communication Protocol
 
-### Cleint To Server
+### Client To Server
 
 > #### Requesting one Trial 
 >
