@@ -21,7 +21,7 @@ public class ClientToServer : MonoBehaviour
         writer.AutoFlush = true;
     }
 
-    public TrialData GetTrial()
+   /* public TrialData GetTrial()
     {
         // Sending command
         writer.WriteLine("TRIAL");
@@ -29,7 +29,7 @@ public class ClientToServer : MonoBehaviour
         string line = reader.ReadLine();
         TrialData trial = JsonUtility.FromJson<TrialData>(line);
         return trial;
-    }
+    }*/
 
     public Stack<TrialData> GetTrials()
     {
@@ -37,7 +37,7 @@ public class ClientToServer : MonoBehaviour
         writer.WriteLine("TRIALS:5");
 
         string line = reader.ReadLine();
-        Debug.Log(line);
+        Debug.Log("GET TRIALS: " + line);
 
         try
         {

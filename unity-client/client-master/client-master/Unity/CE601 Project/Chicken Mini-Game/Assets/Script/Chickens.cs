@@ -55,9 +55,9 @@ public class Chickens : MonoBehaviour
         public void SetChicken(GameObject area, int number, AreaTrialData areaData)
     {
         transform.localScale = new Vector3(
-                10f - (10f * areaData.getSizeOfChicken()),
-                10f - (10f * areaData.getSizeOfChicken()),
-                10f - (10f * areaData.getSizeOfChicken()));
+                areaData.getSizeOfChicken(),
+                areaData.getSizeOfChicken(),
+                areaData.getSizeOfChicken());
         this.area = area;
         this.areaData = areaData;
         this.number = number;        
