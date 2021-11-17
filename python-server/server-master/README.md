@@ -89,7 +89,7 @@ All imports used are from within Python 3.6 so no third party packages are curre
 
 ## Communication Protocol
 
-### Cleint To Server
+### Client To Server
 
 > #### Requesting one Trial 
 >
