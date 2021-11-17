@@ -1,0 +1,74 @@
+﻿using System;
+using System.IO;
+using System.Net.Sockets;
+using UnityEngine;
+using System.Collections.Generic;
+
+public class ClientToServer : MonoBehaviour
+{
+    const int port = 65432;
+
+    private readonly StreamReader reader;
+    private readonly StreamWriter writer;
+
+    public ClientToServer()
+    {
+        // Connecting to the server and creating objects for communications
+        TcpClient tcpClient = new TcpClient("localhost", port);
+        NetworkStream stream = tcpClient.GetStream();
+        reader = new StreamReader(stream);
+        writer = new StreamWriter(stream);
+        writer.AutoFlush = true;
+    }
+
+    public TrialData GetTrial()
+    {
+        // Sending command
+        writer.WriteLine("TRIAL");
+
+        string line = reader.ReadLine();
+        TrialData trial = JsonUtility.FromJson<TrialData>(line);
+        return trial;
+    }
+
+    public Stack<TrialData> GetTrials()
+    {
+        // Sending command
+        writer.WriteLine("TRIALS:5");
+
+        string line = reader.ReadLine();
+        Debug.Log(line);
+
+        try
+        {
+            TrialData[] trials = JsonUtility.FromJson<TrialsArray>("{\"trials\":" + line + "}").trials;
+            return new Stack<TrialData>(trials);
+        }
+        catch (Exception e)
+        {
+            Debug.Log(e);
+        }
+        return new Stack<TrialData>();
+    }
+
+    public void CompleteTrials()
+    {
+        TrialsResults results = new TrialsResults(TrialsManager.instance.completedTrialResults);
+        String resultsJson = JsonUtility.ToJson(results);
+        writer.WriteLine("COMPLETE:" + resultsJson);
+
+        string line = reader.ReadLine();
+        TrialsManager.instance.ClearResults();
+        if (line != "SUCCESS")
+        {
+            Debug.Log("Unable to complete trials on server");
+        }
+    }
+
+    public void Dispose()
+    {
+        reader.Close();
+        writer.Close();
+    }
+    
+}

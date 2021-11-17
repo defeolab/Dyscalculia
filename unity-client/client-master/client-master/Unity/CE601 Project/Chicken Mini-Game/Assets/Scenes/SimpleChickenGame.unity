@@ -6877,6 +6877,7 @@ MonoBehaviour:
   incorrectCount: 0
   numberOfTrialsToGenerate: 1
   chickenShowTime: 0
+  maxTrialTime: 0
 --- !u!4 &1448186063
 Transform:
   m_ObjectHideFlags: 0
