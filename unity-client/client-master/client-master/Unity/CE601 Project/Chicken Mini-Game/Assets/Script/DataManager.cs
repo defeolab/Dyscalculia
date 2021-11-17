@@ -17,9 +17,11 @@ public class DataManager : MonoBehaviour
     public GameObject chicken;
 
     public List<GameObject> activeChickens;
-    private List<Vector3> createdPositions1;
-    private List<Vector3> createdPositions2;
-    private List<Vector3> createdPositions;
+   // private List<Vector3> createdPositions1;
+  //  private List<Vector3> createdPositions2;
+    private List<Vector3> createdPositionsArea1;
+    private List<Vector3> createdPositionsArea2;
+    private List<Vector3> allFinalPositions;
 
     private AreaTrialData area1Data;
     private AreaTrialData area2Data;
@@ -30,7 +32,7 @@ public class DataManager : MonoBehaviour
     private float minScale = 0.8f;
     private float maxScale = 1.2f;
     private float totArea;
-    private float AllChickenArrived = 0f;
+    private float allChickenArrived = 0f;
 
     private Animator animFence1;
     private Animator animFence2;
@@ -40,9 +42,11 @@ public class DataManager : MonoBehaviour
         animFence1 = fence1.GetComponent<Animator>();
         animFence2 = fence2.GetComponent<Animator>();
         activeChickens = new List<GameObject>();
-        createdPositions1 = new List<Vector3>();
-        createdPositions = new List<Vector3>();
-        createdPositions2 = new List<Vector3>();
+       // createdPositions1 = new List<Vector3>();
+       // createdPositions2 = new List<Vector3>();
+        createdPositionsArea1 = new List<Vector3>();
+        createdPositionsArea2 = new List<Vector3>();
+        allFinalPositions = new List<Vector3>();
     }
     public void SetNewTrialData(TrialData trialData)
     {
@@ -76,12 +80,13 @@ public class DataManager : MonoBehaviour
 
         }
 
-        this.CreateGrid();
+        //Find Point Inside Areas
+        this.CreateGrid(area1,area1Data);
+        this.CreateGrid(area2,area2Data);
 
         this.OpenFence(true);
 
         //Initialize Chickens
-
         for (int i = 0; i < area1Data.getNumberOfChickens(); i++)
         {
             GameObject newChicken = Instantiate(chicken);
@@ -95,8 +100,6 @@ public class DataManager : MonoBehaviour
             newChicken.GetComponent<Chickens>().SetChicken(area2, i + 1, area2Data);
             activeChickens.Add(newChicken);
         }
-
-        
 
         TrialsManager.instance.area1Value = area1Data.getNumberOfChickens();
         TrialsManager.instance.area2Value = area2Data.getNumberOfChickens();
@@ -128,7 +131,28 @@ public class DataManager : MonoBehaviour
             }
         }
 
-        if (createdPositions1.Count + createdPositions2.Count == activeChickens.Count)
+        Debug.Log(allFinalPositions.Count + " " + activeChickens.Count);
+
+        if (allFinalPositions.Count == activeChickens.Count)
+        {
+            allChickenArrived = 0;
+
+            foreach (GameObject c in activeChickens)
+            {
+                if (c.GetComponent<Chickens>().arrived)
+                {
+                    allChickenArrived++;
+                }
+            }
+        }
+
+        if (allChickenArrived == activeChickens.Count)
+        {
+            this.OpenFence(false);
+            TrialsManager.instance.chickensReady = true;
+        }
+
+        /*if (createdPositions1.Count + createdPositions2.Count == activeChickens.Count)
         {
             AllChickenArrived = 0;
 
@@ -145,12 +169,12 @@ public class DataManager : MonoBehaviour
         {
             this.OpenFence(false);
             TrialsManager.instance.chickensReady = true;
-        }
+        }*/
     }
 
 
    private void FindFinalPosition(GameObject chicken)
-    {
+    {/*
         Chickens c = chicken.GetComponent<Chickens>();
         Vector3 centre = c.area.transform.position;
         float radius = c.area.transform.lossyScale.x * 1.7f;
@@ -199,13 +223,43 @@ public class DataManager : MonoBehaviour
 
             if (c.area == area1) createdPositions1.Add(position);
             else createdPositions2.Add(position);
+        }*/
+
+        List<Vector3> createdPos = new List<Vector3>();
+        Chickens c = chicken.GetComponent<Chickens>();
+
+        if (c.area == area1) createdPos = createdPositionsArea1;
+        else createdPos = createdPositionsArea2;
+
+        int pos = Random.Range(0, createdPos.Count);
+        Debug.Log(pos);
+
+        /*if (allFinalPositions.Count == 0)
+        {
+            allFinalPositions.Add(createdPos[pos]);
         }
+        else
+        {
+            if (!(allFinalPositions.Contains(createdPos[pos]))){
+                allFinalPositions.Add(createdPos[pos]);
+                c.positionFinal = createdPos[pos];
+                c.findFinalPos = true;
+            }
+        }*/
+        if (!(allFinalPositions.Contains(createdPos[pos])))
+        {
+            allFinalPositions.Add(createdPos[pos]);
+            c.positionFinal = createdPos[pos];
+            c.findFinalPos = true;
+        }
+
+
     }
 
-    private float RoundFloat(float number)
+    /*private float RoundFloat(float number)
     {
         return (float)Math.Round(number, 2);
-    }
+    }*/
 
     IEnumerator WaitStartWalk(Chickens chickens)
     {
@@ -236,18 +290,20 @@ public class DataManager : MonoBehaviour
 
 
         activeChickens.Clear();
-        createdPositions1.Clear();
-        createdPositions2.Clear();
-        AllChickenArrived = 0f;
+        //createdPositions1.Clear();
+       // createdPositions2.Clear();
+        allChickenArrived = 0f;
+        createdPositionsArea1.Clear();
+        createdPositionsArea2.Clear();
+        allFinalPositions.Clear();
     }
 
-    private void CreateGrid()
+    private void CreateGrid(GameObject area, AreaTrialData areaData)
     {
-        float radius = area1.transform.lossyScale.x * 1.7f;
-        Vector3 centre = area1.transform.position;
-        float k = (2 * radius) / area1Data.getAverageSpaceBetween();
+        float radius = area.transform.lossyScale.x * 1.7f;
+        Vector3 centre = area.transform.position;
+        int k = (int)((2 * radius) / areaData.getAverageSpaceBetween());
         List<Vector3> vectors = new List<Vector3>();
-
 
         Debug.Log("CREATE GRID: RADIUS-CENTER-K: " + radius + centre + k);
 
@@ -256,60 +312,47 @@ public class DataManager : MonoBehaviour
             vectors.Add(new Vector3((centre.x - radius), (centre.y + radius), 0));
         }
 
-        Debug.Log("CREATE GRID: " + vectors.Count + vectors[0].ToString());
 
-        //chicken.transform.position = vectors[0];
-
-
-        /*for (int j = 0; j < k; j++)
-        {
-            Vector3 v_j = new Vector3((vectors[vectors.Count - 1].x + area1Data.getAverageSpaceBetween()), vectors[vectors.Count - 1].y, 0);
-
-            Debug.Log(j+ ": "+v_j);
-
-            vectors.Add(v_j);
-        }*/
-
-
-        for (int i = 0; i < k; i++)
+        for (int i = 1; i <= (k+1); i++){
+            
+            for (int j = 0; j < k; j++)
             {
-                int b = (int)(i * k);
+                Vector3 v_j = new Vector3((vectors[vectors.Count-1].x + areaData.getAverageSpaceBetween()), vectors[vectors.Count - 1].y, 0);
+                vectors.Add(v_j);
+            }
 
-                for (int j = 0; j < k; j++)
-                {
-                    Vector3 v_j = new Vector3((vectors[vectors.Count-1].x + area1Data.getAverageSpaceBetween()), vectors[vectors.Count - 1].y, 0);
-
-                    //Debug.Log(j+ ": "+vj);
-
-                    vectors.Add(v_j);
-                }
-
-                Vector3 v_i = new Vector3((vectors[b].x), (vectors[b].y + area1Data.getAverageSpaceBetween()), 0);
-
-               // Debug.Log(i+": " + vi);
+            if (i <= k)
+            {
+                Vector3 v_i = new Vector3(vectors[0].x, vectors[0].y - (i * areaData.getAverageSpaceBetween()), 0);
                 vectors.Add(v_i);
             }
-
-         Debug.Log("CREATE GRID: " + vectors.Count);
-
+        }
+      
+        Debug.Log("CREATE GRID: " + vectors.Count);
+        int h = 0;
          foreach (Vector3 v in vectors)
          {
-             Debug.Log("CREATE GRID: POSITION GRID: " + v.ToString());
+             Debug.Log("CREATE GRID: POSITION GRID: " +(h++)+ v.ToString());
          }
 
+        if (area == area1) createdPositionsArea1 = vectors;
+        else createdPositionsArea2 = vectors;
+
+        //chicken.transform.position = vectors[30];
 
 
-            /*foreach (Vector3 v in vectors)
+
+        /*foreach (Vector3 v in vectors)
+        {
+            float d_x = Math.Abs(v.x - centre.x);
+            float d_y = Math.Abs(v.y - centre.y);
+
+            if (d_x + d_y <= radius)
             {
-                float d_x = Math.Abs(v.x - centre.x);
-                float d_y = Math.Abs(v.y - centre.y);
-
-                if (d_x + d_y <= radius)
-                {
-                    createdPositions.Add(v);
-                }
+                createdPositions.Add(v);
             }
+        }
 
-            Debug.Log("CREATE GRID: POSITION GRID PITAGORAS: " + createdPositions.ToString());*/
+        Debug.Log("CREATE GRID: POSITION GRID PITAGORAS: " + createdPositions.ToString());*/
     }
 }
