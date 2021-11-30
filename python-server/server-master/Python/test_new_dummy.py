@@ -1,18 +1,11 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Nov  8 16:42:47 2021
-
-@author: Client
-"""
-
-# Prova dummy client con i cambi logici miei
+# Prova dummy client con i cambi miei
 
 import numpy as np
 import matplotlib.pyplot as plt
 from color_toss import ColorToss, UniformOutput
 import math
      
-class DummyClientHandlerNew():
+class DummyClientHandlerNew:
     
     # MODIFICHE FATTE QUA RISPETTO A PRIMA
     
@@ -24,14 +17,19 @@ class DummyClientHandlerNew():
     # non genera più alcun dataframe, ma semplicemente faceva l'append del response vector
     # alla trials matrix, cosa che si puà agilmente fare nella funzione Run direttamente.
     
-    def __init__ (self, connection, db, player_id, trials_matrix):
+    # 3. Si potrebbero, eventualmente, togliere i metodi FilteringAnalysis e 
+    # SharpeningAnalysis, in quanto il metodo Analysis è una generalizzazione
+    # di essi (mettendo alpha = 0 si ottiene SharpeningAnalysis, mettendo sigma = 0
+    # si ottiene FilteringAnalysis)
+    
+    def __init__ (self, trials_matrix):
         self.trials_matrix = trials_matrix
     
     def Run(self, trials_matrix, indicator):
         response_vector = []
         
-        # Valori scelti per SIGMA: 0, 0.1, 0.2, 0.3
-        # Valori scelti per ALPHA: 15, 30, 45
+        # Chosen values for SIGMA: 0, 0.1, 0.2, 0.3
+        # Chosen values for ALPHA: 15, 30, 45
         
         # response_vector = self.SharpeningAnalysis(self.trials_matrix, indicator, 
         # mu = 0, sigma = 0.4)
@@ -51,13 +49,13 @@ class DummyClientHandlerNew():
         my_colors = {0:'green', 1:'red'}
         
         for results in trials_matrix:
-            nv.append(np.log10(results[7]/results[3])) #number_of_chickens
+            nv.append(np.log10(results[7]/results[6])) #number_of_chickens
             if indicator == 1:
-                nnv.append(np.log10(results[4]/results[0])) #circle_radius
+                nnv.append(np.log10(results[1]/results[0])) #circle_radius
             elif indicator == 2:
-                nnv.append(np.log10(results[5]/results[1])) #size_of_chicken
+                nnv.append(np.log10(results[3]/results[2])) #size_of_chicken
             else:
-                nnv.append(np.log10(results[6]/results[2])) #average_space_between
+                nnv.append(np.log10(results[5]/results[4])) #average_space_between
             # c.append(results[8])
             
         for i in range (len(nv)):
@@ -115,13 +113,13 @@ class DummyClientHandlerNew():
         my_colors = {0: 'green', 1: 'red', 2: 'blue'}
         
         for results in trials_matrix:
-            nv.append(np.log10(results[7]/results[3])) #number_of_chickens
+            nv.append(np.log10(results[7]/results[6])) #number_of_chickens
             if indicator == 1:
-                nnv.append(np.log10(results[4]/results[0])) #circle_radius
+                nnv.append(np.log10(results[1]/results[0])) #circle_radius
             elif indicator == 2:
-                nnv.append(np.log10(results[5]/results[1])) #size_of_chicken
+                nnv.append(np.log10(results[3]/results[2])) #size_of_chicken
             else:
-                nnv.append(np.log10(results[6]/results[2])) #average_space_between
+                nnv.append(np.log10(results[5]/results[4])) #average_space_between
             # c.append(results[8])
             
         for i in range (len(nv)):
@@ -176,13 +174,13 @@ class DummyClientHandlerNew():
         my_colors = {0: 'green', 1: 'red', 2: 'blue'}
         
         for results in trials_matrix:
-            nv.append(np.log10(results[7]/results[3])) #number_of_chickens
+            nv.append(np.log10(results[7]/results[6])) #number_of_chickens
             if indicator == 1:
-                nnv.append(np.log10(results[4]/results[0])) #circle_radius
+                nnv.append(np.log10(results[1]/results[0])) #circle_radius
             elif indicator == 2:
-                nnv.append(np.log10(results[5]/results[1])) #size_of_chicken
+                nnv.append(np.log10(results[3]/results[2])) #size_of_chicken
             else:
-                nnv.append(np.log10(results[6]/results[2])) #average_space_between
+                nnv.append(np.log10(results[5]/results[4])) #average_space_between
             
         for i in range (len(nv)):
             if (alpha != 0 and sigma != 0):
@@ -202,7 +200,7 @@ class DummyClientHandlerNew():
                     # Sharpening effect here
                     uniform_output = UniformOutput()
                     gaussian_threshold = ColorToss(mu, sigma, nv[i])
-                    # gaussian_threshold va da 0 e 0.5
+                    # gaussian_threshold is between 0 and 0.5
                     
                     # -1 probab = 0.1, a 0 varrà 0.5, mai 1
                     # asse y metà pallini rossi metà verdi,
@@ -276,6 +274,6 @@ class DummyClientHandlerNew():
         plt.title("Filtering + Sharpening Effect")
         
         plt.show()
-        print("C: \n")
-        print(c)
+        # print("C: \n")
+        # print(c)
         return c

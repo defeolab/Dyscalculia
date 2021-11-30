@@ -1,34 +1,60 @@
 import socket
 from client_handler import ClientHandler
-from dummy_client_handler import DummyClientHandler
+# from dummy_client_handler import DummyClientHandler
 from test_new_dummy import DummyClientHandlerNew
  
-class Client_Choice():
+class Create_Game:
+    # COMMENTARE --> FATTO
+    # capire i casi flag = 0 e flag = 1 (cambiare il nome di 'flag' e 'indicator')
+    # CAPIRE COME è POSSIBILE CHE SI PRENDA LA TRIALS MATRIX DA main.py
+    # --> è possibile grazie al metodo __init__. Praticamente quello che succede
+    # è: nel main, viene istanziato un oggetto di classe Create_Game(). Quando
+    # creo l'oggetto, il metodo __init__ va a inizializzare il parametro che gli 
+    # passo quando creo l'oggetto di classe Create_Game
+    
     def __init__ (self, trials_matrix):
         self.trials_matrix = trials_matrix
            
-    def run(self, flag, indicator, ServerSocket, host, port, DB, ThreadCount):
-        if flag == 1:
+    def run(self, simulation_on, nnd_selector, ServerSocket, host, port, DB, ThreadCount):
+        
+        # REAL GAME
+        if simulation_on == 0:
             try:
+                # bind() method assigns an IP address and a port number 
+                # to a socket instance. So, in a way, it binds the port number
+                # with the IP address
                 ServerSocket.bind((host, port))
             except socket.error as e:
                 print(str(e))
             
             print('Waiting for a Connection..')
+            # In order to accept a connection, the server must stay in a 
+            # 'listening' position
             ServerSocket.listen(5)
             
             while True:
+                # When the client wants to establish the connection, the server 
+                # must accept it --> method .accept(), which returns:
+                    # Client: is a new socket object usable to send and receive 
+                    # data on the connection 
+                    # Address: is the address bound to the socket on the other 
+                    # end of the connection.
                 Client, address = ServerSocket.accept()
                 print('Connected to: ' + address[0] + ':' + str(address[1]))
                 player_id = DB.get_player(address[0])
                 if player_id == - 1:
                     player_id = DB.add_player(address[0])
-                thread = ClientHandler(Client, DB, player_id, self.trials_matrix)
-                response_vector = thread.start()
+                # gameThread becomes an Object of class ClientHandler, which
+                # is a thread, so to make it actually running, we must call the
+                # start() method on it, which calls automatically the run() method
+                gameThread = ClientHandler(Client, DB, player_id, self.trials_matrix)
+                response_vector = gameThread.start()
                 ThreadCount += 1
                 print('Thread Number: ' + str(ThreadCount))
+            # Once all is done, close the DB instance and the Socket one
             DB.close()
             ServerSocket.close()
+        # SIMULATED GAME
         else:
             Client = ''
             player_id = 1
@@ -37,7 +63,16 @@ class Client_Choice():
             print()
             
             if player_id == 1:
-                # thread = DummyClientHandler(Client, DB, player_id, self.trials_matrix)
-                thread = DummyClientHandlerNew(Client, DB, player_id, self.trials_matrix)
-                response_vector = thread.Run(self.trials_matrix, indicator)
+                # Instantiate an Object of class DummyClientHandler, whose method
+                # init requires the trials_matrix only to be initialized, so
+                # this is why we only pass the trials_matrix and nothing else.
+                
+                # game = DummyClientHandler(Client, DB, player_id, self.trials_matrix)
+                # cambiare thread in game --> FATTO
+                
+                game = DummyClientHandlerNew(self.trials_matrix)
+                # Calling the Run() method, we actually run the simulated game,
+                # performing the Analysis and obtain back a response_vector, it is
+                # simulated version
+                response_vector = game.Run(self.trials_matrix, nnd_selector)
         return response_vector
