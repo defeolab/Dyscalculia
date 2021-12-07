@@ -1,17 +1,18 @@
 '''
 dummy_trials_matrix = [
-    area_1_circle_radius=array[0] 
-    area_2_circle_radius=array[1] 
-    area_1_size_of_chicken=array[2]
-    area_2_size_of_chicken=array[3]
-    area_1_average_space_between=array[4]
-    area_2_average_space_between=array[5]
-    area_1_number_of_chickens=array[6]
-    area_2_number_of_chickens=array[7]
-    chicken_show_time=array[8]
-    max_trial_time=array[9]
+    area_1_circle_radius = array[0] 
+    area_2_circle_radius = array[1] 
+    area_1_size_of_chicken = array[2]
+    area_2_size_of_chicken = array[3]
+    area_1_average_space_between = array[4]
+    area_2_average_space_between = array[5]
+    area_1_number_of_chickens = array[6]
+    area_2_number_of_chickens = array[7]
+    chicken_show_time = array[8]
+    max_trial_time = array[9]
     ]
 '''
+
 # INITIALIZATION of an empty trial_matrix and the nnd_number (can be changed)
 nnd_number = 5
 trials_matrix = []

@@ -10,9 +10,7 @@ def UniformOutput():
     # return flip to be added to numpy array
     return uniform_output
 
-def ColorToss(mu, sigma, nv):
-    # Funzione threshold (da cominciare con la retta, poi 
-    # poi sostituire con la gaussiana)
+def GaussianThreshold(mu, sigma, nv):
     # perform the Gaussian distribution
     res = 0.25 * stats.norm(mu, sigma).pdf(nv)
     

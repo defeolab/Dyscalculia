@@ -2,6 +2,7 @@ import socket
 from db.db_connector import DBConnector
 from server import Create_Game
 from mapping_matrix import dummy_matrix_generator
+from plot_trials import PlotTrials
 
 ServerSocket = socket.socket()
 DB = DBConnector()
@@ -10,11 +11,12 @@ port = 65432
 ThreadCount = 0
 
 # 1 means SIMULATED, 0 means REAL
-# simulation_on (da modificare con flag) --> FATTO
+# simulation_on
 simulation_on = 1
 
 # Non-Numerical variable selection (at the moment, we select just one of them)
-nnd_selector = 3
+nnd_selector = 1
+alpha = 30
 
 # REAL GAME
 if simulation_on == 0:
@@ -55,7 +57,9 @@ else:
     trials_matrix = dummy_matrix_generator(nnd_selector)
 
 game = Create_Game(trials_matrix)
-response_vector = game.run(simulation_on, nnd_selector, ServerSocket, host, port, DB, ThreadCount)
+response_vector = game.run(simulation_on, nnd_selector, alpha, ServerSocket, host, port, DB, ThreadCount)
 
 print('MAIN Response Vector: ' + str(response_vector))
 print(len(response_vector))
+
+PlotTrials(response_vector, trials_matrix, alpha, nnd_selector)

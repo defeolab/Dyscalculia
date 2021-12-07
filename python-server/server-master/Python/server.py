@@ -1,6 +1,5 @@
 import socket
 from client_handler import ClientHandler
-# from dummy_client_handler_old import DummyClientHandlerOld
 from dummy_client_handler import DummyClientHandler
  
 class Create_Game:
@@ -8,7 +7,7 @@ class Create_Game:
     def __init__ (self, trials_matrix):
         self.trials_matrix = trials_matrix
            
-    def run(self, simulation_on, nnd_selector, ServerSocket, host, port, DB, ThreadCount):
+    def run(self, simulation_on, nnd_selector, alpha, ServerSocket, host, port, DB, ThreadCount):
         
         # REAL GAME
         if simulation_on == 0:
@@ -59,12 +58,11 @@ class Create_Game:
                 # Instantiate an Object of class DummyClientHandler, whose method
                 # init requires the trials_matrix only to be initialized, so
                 # this is why we only pass the trials_matrix and nothing else.
-                
-                # game = DummyClientHandlerOld(Client, DB, player_id, self.trials_matrix)
-                
+               
                 game = DummyClientHandler(self.trials_matrix)
+                
                 # Calling the Run() method, we actually run the simulated game,
                 # performing the Analysis and obtain back a response_vector, it is
                 # simulated version
-                response_vector = game.Run(self.trials_matrix, nnd_selector)
+                response_vector = game.Run(self.trials_matrix, nnd_selector, alpha)
         return response_vector
