@@ -22,22 +22,28 @@ public class Chickens : MonoBehaviour
 
     void Update()
     {
-        if (startWalk && !arrived)
+        if (!arrived)
         {
-            animator.SetBool("walk", true);
-            this.transform.position = Vector2.MoveTowards(this.transform.position, this.positionFinal, 5f * Time.deltaTime);
-        }
+            if (startWalk)
+            {
+                animator.SetBool("walk", true);
+                this.transform.position = Vector2.MoveTowards(this.transform.position, this.positionFinal, 5f * Time.deltaTime); //move chicken to Final Position
+            }
 
-        if ((Vector3.Distance(this.transform.position, this.positionFinal) < 0.001f)&&!arrived)
-        {
-            startWalk = false;
-            arrived = true;
-            transform.Rotate(Random.Range(0,360), 180, 0, Space.World);
-            animator.SetBool("eat", true);
-        }
+            if (Vector3.Distance(this.transform.position, this.positionFinal) < 0.001f)
+            {
+                arrived = true;
+
+                //Set Random Rotation
+                GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
+                GetComponent<Rigidbody>().rotation = Quaternion.Euler(new Vector3(Random.Range(0f, 360f), 270f, 90f) * 1);
+                
+                animator.SetBool("eat", true);
+            }
+        }  
     }
 
-        public void SetChicken(GameObject area, int number, AreaTrialData areaData)
+    public void SetChicken(GameObject area, int number, AreaTrialData areaData)
     {
         transform.localScale = new Vector3(areaData.getSizeOfChicken(), areaData.getSizeOfChicken(), areaData.getSizeOfChicken());
         this.area = area;

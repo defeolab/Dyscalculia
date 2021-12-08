@@ -23,7 +23,6 @@ public class TrialsManager : MonoBehaviour
 
     public int correctCount = 0;
     public int incorrectCount = 0;
-    public int outTimeCount = 0;
 
     public void Start()
     {
@@ -31,7 +30,7 @@ public class TrialsManager : MonoBehaviour
         {
             instance = this;
             ConnectToClient();
-            this.upcomingTrials = client.GetTrials();
+            this.upcomingTrials = client.GetTrials(); //change when server and client will talk
             this.completedTrials = new List<TrialData>();
             this.completedTrialResults = new List<TrialResult>();
             DontDestroyOnLoad(this);
@@ -42,15 +41,12 @@ public class TrialsManager : MonoBehaviour
         }
     }
 
-
     public void Reset()
     {
         trialStarted = false;
         chickensReady = false;
         area1Value = 0;
         area2Value = 0;
-        gameObject.GetComponent<DataManager>().Reset();
-        gameObject.GetComponent<ButtonsManager>().Reset();
     }
 
     private void ConnectToClient()
@@ -77,7 +73,7 @@ public class TrialsManager : MonoBehaviour
         }
         else
         {
-            Debug.Log("Finito");
+            Debug.Log("Finish Trial"); //it's used for not block the gameplay
         }
 
         if (nextTrial != null)
@@ -93,18 +89,13 @@ public class TrialsManager : MonoBehaviour
         this.completedTrialResults.Add(new TrialResult(decisionTime, correct, this.completedTrials[this.completedTrials.Count - 1]));
     }
 
-    public Stack<TrialData> GetUpcomingTrials()
-    {
-        return upcomingTrials;
-    }
-
-    public void SetUpcomingTrials(Stack<TrialData> trials)
-    {
-        upcomingTrials = trials;
-    }
-
     public void ClearResults()
     {
         this.completedTrialResults.Clear();
     }
+
+    //it's not use -> idk if I'll use them
+    public Stack<TrialData> GetUpcomingTrials() { return upcomingTrials; }
+    public void SetUpcomingTrials(Stack<TrialData> trials) { upcomingTrials = trials; }
+
 }

@@ -21,16 +21,6 @@ public class ClientToServer : MonoBehaviour
         writer.AutoFlush = true;
     }
 
-   /* public TrialData GetTrial()
-    {
-        // Sending command
-        writer.WriteLine("TRIAL");
-
-        string line = reader.ReadLine();
-        TrialData trial = JsonUtility.FromJson<TrialData>(line);
-        return trial;
-    }*/
-
     public Stack<TrialData> GetTrials()
     {
         // Sending command
@@ -65,10 +55,10 @@ public class ClientToServer : MonoBehaviour
         }
     }
 
+    //Close Connection
     public void Dispose()
     {
         reader.Close();
         writer.Close();
-    }
-    
+    }  
 }
