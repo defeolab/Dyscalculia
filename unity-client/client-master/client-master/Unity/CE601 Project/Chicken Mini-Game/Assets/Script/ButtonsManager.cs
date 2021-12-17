@@ -22,7 +22,7 @@ public class ButtonsManager : MonoBehaviour
     public Text gameText;
     public GameObject[] UIImage; 
     
-    public GameObject pauseMenu;
+    public GameObject menu;
 
     private bool buttonsEnabled;
     private bool elapsedChickenShowTime;
@@ -42,7 +42,7 @@ public class ButtonsManager : MonoBehaviour
         firstTrial = false;
         elapsedChickenShowTime = false;
         foreach (GameObject i in UIImage) i.SetActive(false);
-        pauseMenu.SetActive(false);
+        menu.SetActive(false);
         gameText.text = "";
 
         timer.gameObject.transform.Find("Fill Area").Find("Fill").GetComponent<Image>().color = Color.green;
@@ -72,6 +72,7 @@ public class ButtonsManager : MonoBehaviour
                 timer.gameObject.GetComponent<AudioSource>().Play();
 
                 gameText.text = "Click on the fence that contains more chickens";
+                gameText.GetComponent<AudioSource>().Play();
             }
 
             //Decrement timer
@@ -130,7 +131,8 @@ public class ButtonsManager : MonoBehaviour
         double elapsedTime = stopwatch.Elapsed.TotalMilliseconds;
         TrialsManager.instance.AddTrialResult(elapsedTime, correct);
         gameText.text = "";
-        
+        gameText.GetComponent<AudioSource>().Stop();
+
         if (correct)
         {
             HandleWin();
@@ -154,19 +156,21 @@ public class ButtonsManager : MonoBehaviour
     private void HandleWin()
     {
         UIImage[0].SetActive(true);
+        UIImage[0].GetComponent<AudioSource>().Play();
         TrialsManager.instance.correctCount += 1;
     }
 
     private void HandleLoss()
     {
         UIImage[1].SetActive(true);
+        UIImage[1].GetComponent<AudioSource>().Play();
         TrialsManager.instance.incorrectCount += 1;
     }
 
     IEnumerator NewTrial() 
     {
         Debug.Log("NEW TRIAL");
-        yield return new WaitForSeconds(3);
+        yield return new WaitForSeconds(4);
 
         //Reset all the Managers
         TrialsManager.instance.Reset();
@@ -190,13 +194,15 @@ public class ButtonsManager : MonoBehaviour
         Debug.Log("PAUSE TRIAL");
         TrialsManager.instance.trialStarted = false;
         trialData = istance_DataManager.data;
-        pauseMenu.SetActive(true);
+        menu.SetActive(true);
+        menu.GetComponent<Menu>().SetActiveSettingsMenu(false); //active only Pause Menu
+        timer.gameObject.GetComponent<AudioSource>().Stop();
     }
 
     public void RestartTrial()
     {
         Debug.Log("RESTART TRIAL");
-        pauseMenu.SetActive(false);
+        menu.SetActive(false);
         
         //Reset all the values
         this.Reset();
@@ -218,6 +224,6 @@ public class ButtonsManager : MonoBehaviour
         timer.gameObject.transform.Find("Fill Area").Find("Fill").GetComponent<Image>().color = Color.green;
         elapsedChickenShowTime = false;
         foreach (GameObject i in UIImage) i.SetActive(false);
-        pauseMenu.SetActive(false);
+        menu.SetActive(false);
     }
 }
