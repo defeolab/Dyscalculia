@@ -1,0 +1,63 @@
+import math 
+
+trials_matrix_transformed = []
+
+# This function accepts as a paramater the trials matrix, passed from the main,
+# and applies some transformations in order to obtain a matrix that is compatible 
+# with the game, meaning that the matrix must include circle_radius, size_of_chicken
+# and average_space_between parameters
+
+
+# The trials_matrix_transformed will be made of the following fields:
+    
+        # --> First and second columns are called area_1_circle_radius and
+        # area_2_circle_radius and those define the circle radius of both areas
+        
+        # --> Third and fourth columns are called area_1_size_of_chicken and
+        # area_2_size_of_chicken, so define how big the chicken must be in that area
+        
+        # --> Fifth and sixth columns are called area_1_average_space_between and
+        # area_2_average_space_between, define the space that separes one chicken 
+        # by another one, on average, in each area
+        
+        # --> Seventh and eighth colums are called area_1_number_of_chickens and
+        # area_2_number_of_chickens, which tells us how many chickens must be showed
+        # in each area
+        
+        # --> Nineth column is called chicken_show_time, indicates how long the 
+        # chickens are shown on the screen
+        
+        # --> Tenth column is called max_trial_time and defines the total duration 
+        # of the game / trial
+
+def TransformMatrix(trials_matrix):
+    
+    for row in trials_matrix:
+        area_1_circle_radius = math.sqrt((row[2])/3)/math.pi;
+        area_2_circle_radius = math.sqrt((row[3])/3)/math.pi;math.sqrt((row[2])/3)/math.pi;
+        
+        area_1_size_of_chicken = row[4];
+        area_2_size_of_chicken = row[5];
+        
+        area_1_average_space_between = row[2]/row[0];
+        area_2_average_space_between = row[3]/row[1];
+        
+        area_1_number_of_chickens = row[0];
+        area_2_number_of_chickens = row[1];
+        
+        trials_row = []
+        
+        trials_row.append(area_1_circle_radius)
+        trials_row.append(area_2_circle_radius)
+        trials_row.append(area_1_size_of_chicken)
+        trials_row.append(area_2_size_of_chicken)
+        trials_row.append(area_1_average_space_between)
+        trials_row.append(area_2_average_space_between)
+        trials_row.append(area_1_number_of_chickens)
+        trials_row.append(area_2_number_of_chickens)
+        trials_row.append(row[6])
+        trials_row.append(row[7])
+        
+        trials_matrix_transformed.append(trials_row)
+    
+    return trials_matrix_transformed;    
