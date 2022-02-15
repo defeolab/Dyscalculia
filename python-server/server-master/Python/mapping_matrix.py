@@ -1,15 +1,13 @@
 '''
 dummy_trials_matrix = [
-    area_1_circle_radius = array[0] 
-    area_2_circle_radius = array[1] 
-    area_1_size_of_chicken = array[2]
-    area_2_size_of_chicken = array[3]
-    area_1_average_space_between = array[4]
-    area_2_average_space_between = array[5]
-    area_1_number_of_chickens = array[6]
-    area_2_number_of_chickens = array[7]
-    chicken_show_time = array[8]
-    max_trial_time = array[9]
+    area_1_number_of_chickens = array[0] 
+    area_2_number_of_chickens = array[1] 
+    area_1_field_area = array[2]
+    area_2_field_area = array[3]
+    area_1_item_surface_area = array[4]
+    area_2_item_surface_area = array[5]
+    chicken_show_time = array[6]
+    max_trial_time = array[7]
     ]
 '''
 
@@ -52,10 +50,10 @@ def partial_matrix_generator(nnd1_start, nnd1_step, nnd2_start, nnd2_step, nnd_n
                             
                         trials_row = []
                         
-                        trials_row.append(nnd1)
-                        trials_row.append(nnd2)
                         trials_row.append(nv1)
                         trials_row.append(nv2)
+                        trials_row.append(nnd1)
+                        trials_row.append(nnd2)
                         
                         temp_matrix.append(trials_row)
                         
@@ -71,11 +69,10 @@ def partial_matrix_generator(nnd1_start, nnd1_step, nnd2_start, nnd2_step, nnd_n
 # nnd_selector given as parameter.
 def dummy_matrix_generator(nnd_selector):
     if nnd_selector == 1:
-        # nnd_selector = 1 means we want to vary the value of circle_radius as 
-        # nnd, alongside the numerical value, number_of_chickens. The others,
-        # average_space_between and size_of_chicken, are fixed
-        average_space_between = 1.5 
-        size_of_chicken = 5 
+        # nnd_selector = 1 means we want to vary the value of field_area as 
+        # nnd, alongside the numerical value, number_of_chickens. The other,
+        # item_surface_area, is fixed
+        item_surface_area = 10
         temp_matrix = partial_matrix_generator(0.2, 0.3, 0.2, 0.3, nnd_number
                                       , 1, 2, 1, 2)
         
@@ -85,21 +82,18 @@ def dummy_matrix_generator(nnd_selector):
             trials_list = []
             trials_list.append(row[0])
             trials_list.append(row[1])
-            trials_list.append(size_of_chicken)
-            trials_list.append(size_of_chicken)
-            trials_list.append(average_space_between)
-            trials_list.append(average_space_between)
             trials_list.append(row[2])
             trials_list.append(row[3])
+            trials_list.append(item_surface_area)
+            trials_list.append(item_surface_area)
             
             trials_matrix.append(trials_list)
         
     elif nnd_selector == 2:
-        # nnd_selector = 2 means we want to vary the value of size_of_chicken as 
-        # nnd, alongside the numerical value, number_of_chickens. The others,
-        # circle_radius and average_space_between, are fixed
-        circle_radius = 0.1
-        average_space_between = 1.5 
+        # nnd_selector = 1 means we want to vary the value of item_surface_area 
+        # as nnd, alongside the numerical value, number_of_chickens. The other,
+        # field_area, is fixed
+        field_area = 300
         temp_matrix = partial_matrix_generator(0.1, 0.1, 0.1, 0.1, nnd_number
                                       , 1, 1, 1, 1)
         
@@ -107,36 +101,10 @@ def dummy_matrix_generator(nnd_selector):
         # various fields in the right position in the matrix
         for row in temp_matrix:
             trials_list = []
-            trials_list.append(circle_radius)
-            trials_list.append(circle_radius)
             trials_list.append(row[0])
-            trials_list.append(row[1])
-            trials_list.append(average_space_between)
-            trials_list.append(average_space_between)
-            trials_list.append(row[2])
-            trials_list.append(row[3])
-            
-            trials_matrix.append(trials_list)
-        
-    elif nnd_selector == 3: 
-        # nnd_selector = 3 means we want to vary the value of average_space_between  
-        # as nnd, alongside the numerical value, number_of_chickens. The others,
-        # circle_radius and size_of_chicken, are fixed
-        circle_radius = 0.1
-        size_of_chicken = 5
-        temp_matrix = partial_matrix_generator(0.2, 0.5, 0.2, 0.5, nnd_number
-                                      , 2, 3, 2, 3)
-        
-        # We scan the obtained partial matrix, and for each row, we append the
-        # various fields in the right position in the matrix
-        for row in temp_matrix:
-            trials_list = []
-            trials_list.append(circle_radius)
-            trials_list.append(circle_radius)
-            trials_list.append(size_of_chicken)
-            trials_list.append(size_of_chicken)
-            trials_list.append(row[0])
-            trials_list.append(row[1])
+            trials_list.append(row[1])            
+            trials_list.append(field_area)
+            trials_list.append(field_area)
             trials_list.append(row[2])
             trials_list.append(row[3])
             

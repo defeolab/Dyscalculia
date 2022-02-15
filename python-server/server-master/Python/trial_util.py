@@ -31,6 +31,7 @@ def convert_matrix_to_trials(matrix):
     return trials
 
 def create_trial_from_array(array):
+    # da modificare
     
     return Trial(area_1_circle_radius=array[0], area_2_circle_radius=array[1]
                  , area_1_size_of_chicken=array[2], area_2_size_of_chicken=array[3]
@@ -41,7 +42,7 @@ def create_trial_from_array(array):
 
 # create the random matrix for the real game (NOT USED)
 def generate_random_trial_matrix():
-    n = round(random.uniform(1, 10)) #gives a random length for the rows of the matrix
+    n = round(random.uniform(1, 10)) # gives a random length for the rows of the matrix
     trials_matrix = []
     for i in range (n):
         ratio = round (random.uniform(0,2), 1)
@@ -67,7 +68,7 @@ def generate_random_trial_matrix():
 
 # create the matrix for the dummy game (NOT USED)
 def generate_dummy_random_trial_matrix():
-    n = round(random.uniform(1, 20)) #gives a random length for the rows of the matrix
+    n = round(random.uniform(1, 20)) # gives a random length for the rows of the matrix
     trials_matrix = []
     for i in range (n):
         ratio = round (random.uniform(1.1,2), 1)

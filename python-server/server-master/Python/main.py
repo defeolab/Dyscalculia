@@ -14,10 +14,17 @@ ThreadCount = 0
 # simulation_on is a flag that indicated if the game is a simulated one or not
 # 1 means SIMULATED, 0 means REAL
 simulation_on = 1
+
 # Non-Numerical variable selection (at the moment, we select just one of them)
+# Can be Either Field Area (nnd_selector = 1) or Item Surface Area (nnd_selector = 2)
 nnd_selector = 1
+
 # Alpha is the angle used for the Filtering analysis, calculated from the positive y-axis
 alpha = 30
+
+# Sigma is the parameter that specifies how big the Gaussian bell must be. It is
+# used when computing the Sharpening effect
+sigma = 0.3
 
 # nnd_general is a flag: if it setted, then all the NND variables are
 # automatically generated
@@ -59,7 +66,7 @@ if simulation_on == 0:
     
     trials_matrix = [[1.0,0.5, 10.0,3.0, 0.7,1.0, 10,10, 2,4]]
     
-    # To transform our parameters into the ones accepted by the game, it is
+    # To transform our parameters into the ones accepted by the real game, it is
     # mandatory to call the TransformMatrix function to obtain the right matrix
     trials_matrix_transformed = TransformMatrix(trials_matrix)
 
@@ -68,7 +75,7 @@ else:
     trials_matrix = dummy_matrix_generator(nnd_selector)
 
 game = Create_Game(trials_matrix)
-response_vector = game.run(simulation_on, nnd_selector, alpha, ServerSocket, host, port, DB, ThreadCount)
+response_vector = game.run(simulation_on, nnd_selector, alpha, sigma, ServerSocket, host, port, DB, ThreadCount)
 
 print('MAIN Response Vector: ' + str(response_vector))
 print(len(response_vector))

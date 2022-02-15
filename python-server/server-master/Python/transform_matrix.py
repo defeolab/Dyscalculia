@@ -5,8 +5,7 @@ trials_matrix_transformed = []
 # This function accepts as a paramater the trials matrix, passed from the main,
 # and applies some transformations in order to obtain a matrix that is compatible 
 # with the game, meaning that the matrix must include circle_radius, size_of_chicken
-# and average_space_between parameters
-
+# and average_space_between parameters, and not field_area and item_surface_area
 
 # The trials_matrix_transformed will be made of the following fields:
     
@@ -33,17 +32,17 @@ trials_matrix_transformed = []
 def TransformMatrix(trials_matrix):
     
     for row in trials_matrix:
-        area_1_circle_radius = math.sqrt((row[2])/3)/math.pi;
-        area_2_circle_radius = math.sqrt((row[3])/3)/math.pi;math.sqrt((row[2])/3)/math.pi;
+        area_1_circle_radius = ((6*10^(-3)) * math.sqrt(row[2]))
+        area_2_circle_radius = ((6*10^(-3)) * math.sqrt(row[3]))
         
-        area_1_size_of_chicken = row[4];
-        area_2_size_of_chicken = row[5];
+        area_1_size_of_chicken = 0.57 * math.sqrt(row[4])
+        area_2_size_of_chicken = 0.57 * math.sqrt(row[5])
         
-        area_1_average_space_between = row[2]/row[0];
-        area_2_average_space_between = row[3]/row[1];
+        area_1_average_space_between = (0.167 * area_1_size_of_chicken) + 0.183
+        area_2_average_space_between = (0.167 * area_2_size_of_chicken) + 0.183
         
-        area_1_number_of_chickens = row[0];
-        area_2_number_of_chickens = row[1];
+        area_1_number_of_chickens = row[0]
+        area_2_number_of_chickens = row[1]
         
         trials_row = []
         

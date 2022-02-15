@@ -7,15 +7,11 @@ class DummyClientHandler:
     def __init__ (self, trials_matrix):
         self.trials_matrix = trials_matrix
     
-    def Run(self, trials_matrix, nnd_selector, alpha):
+    def Run(self, trials_matrix, nnd_selector, alpha, sigma):
         response_vector = []
         
-        # Chosen values for SIGMA: 0, 0.1, 0.2, 0.3
-        # Chosen values for ALPHA: 15, 30, 45
-        # response_vector = self.Analysis(self.trials_matrix, nnd_selector, alpha = 30
-        #                                 , mu = 0, sigma = 0.3)
         response_vector = self.ChildSimulator(self.trials_matrix, nnd_selector
-                                              , alpha, mu = 0, sigma = 0.3)
+                                              , alpha, sigma, mu = 0) 
         
         for i in range(len(trials_matrix)):
             trials_matrix[i].append(response_vector[i])
@@ -26,23 +22,21 @@ class DummyClientHandler:
 # Sharpening effect or both, depending on the values of alpha and sigma passed as 
 # parameter, and RETURNS a vector that contains, for each trial, if that trial is
 # correct or incorrect
-    def ChildSimulator(self, trials_matrix, nnd_selector, alpha, mu, sigma):        
+    def ChildSimulator(self, trials_matrix, nnd_selector, alpha, sigma, mu):        
         nv = []  # nv --> NUMERICAL VARIABLE
         nnv = []  # nnv --> NON-NUMERICAL VARIABLE
-        correct_vector = []
+        correct_vector = [] # records if the specific trial has been correct or not
         
         added_alpha = alpha + 90
         rad_alpha = np.deg2rad(added_alpha)   # converted in radiants
         coeff = math.tan(rad_alpha) 
         
         for results in trials_matrix:
-            nv.append(np.log10(results[7]/results[6])) #number_of_chickens
+            nv.append(np.log10(results[1]/results[0])) # number_of_chickens
             if nnd_selector == 1:
-                nnv.append(np.log10(results[1]/results[0])) #circle_radius
+                nnv.append(np.log10(results[3]/results[2])) # field_area
             elif nnd_selector == 2:
-                nnv.append(np.log10(results[3]/results[2])) #size_of_chicken
-            else:
-                nnv.append(np.log10(results[5]/results[4])) #average_space_between
+                nnv.append(np.log10(results[5]/results[4])) # item_surface_area
                 
         for i in range (len(nv)):
             if (alpha != 0 and sigma != 0):

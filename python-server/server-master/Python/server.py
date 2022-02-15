@@ -7,7 +7,7 @@ class Create_Game:
     def __init__ (self, trials_matrix):
         self.trials_matrix = trials_matrix
            
-    def run(self, simulation_on, nnd_selector, alpha, ServerSocket, host, port, DB, ThreadCount):
+    def run(self, simulation_on, nnd_selector, alpha, sigma, ServerSocket, host, port, DB, ThreadCount):
         
         # REAL GAME
         if simulation_on == 0:
@@ -46,6 +46,7 @@ class Create_Game:
             # Once all is done, close the DB instance and the Socket one
             DB.close()
             ServerSocket.close()
+            
         # SIMULATED GAME
         else:
             Client = ''
@@ -62,7 +63,7 @@ class Create_Game:
                 game = DummyClientHandler(self.trials_matrix)
                 
                 # Calling the Run() method, we actually run the simulated game,
-                # performing the Analysis and obtain back a response_vector, it is
-                # simulated version
-                response_vector = game.Run(self.trials_matrix, nnd_selector, alpha)
+                # performing the ChildSimulator method, which represents the simulation of a child
+                # playing our game, and obtain back a response_vector, in its simulated version
+                response_vector = game.Run(self.trials_matrix, nnd_selector, alpha, sigma)
         return response_vector
