@@ -148,7 +148,7 @@ public class ButtonManager : MonoBehaviour
 
     IEnumerator handleReload()
     {
-        yield return new WaitForSeconds(3);
+        yield return new WaitForSeconds(2);
         SceneManager.LoadScene("SimpleChickenGame");
         GameManager.instance.Reset();
     }

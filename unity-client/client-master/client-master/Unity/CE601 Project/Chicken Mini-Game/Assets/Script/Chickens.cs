@@ -1,6 +1,12 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Diagnostics;
+using Debug = UnityEngine.Debug;
+using Random = UnityEngine.Random;
+using System.Collections;
+using UnityEngine.UI;
+
 
 public class Chickens : MonoBehaviour
 {
@@ -30,17 +36,20 @@ public class Chickens : MonoBehaviour
                 this.transform.position = Vector2.MoveTowards(this.transform.position, this.positionFinal, 5f * Time.deltaTime); //move chicken to Final Position
             }
 
-            if (Vector3.Distance(this.transform.position, this.positionFinal) < 0.001f)
+
+            this.NoCollisionInsideCircle();
+
+            if (Vector3.Distance(this.transform.position, this.positionFinal) < 0.01f)
             {
                 arrived = true;
 
                 //Set Random Rotation
-                GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
                 GetComponent<Rigidbody>().rotation = Quaternion.Euler(new Vector3(Random.Range(0f, 360f), 270f, 90f) * 1);
-                
+                GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
+
                 animator.SetBool("eat", true);
             }
-        }  
+        }
     }
 
     public void SetChicken(GameObject area, int number, AreaTrialData areaData)
@@ -48,6 +57,17 @@ public class Chickens : MonoBehaviour
         transform.localScale = new Vector3(areaData.getSizeOfChicken(), areaData.getSizeOfChicken(), areaData.getSizeOfChicken());
         this.area = area;
         this.areaData = areaData;
-        this.number = number;        
+        this.number = number;
+    }
+
+    private void NoCollisionInsideCircle()
+    {
+        float d_x = (this.transform.position.x - area.transform.position.x) * (this.transform.position.x - area.transform.position.x);
+        float d_y = (this.transform.position.y - area.transform.position.y) * (this.transform.position.y - area.transform.position.y);
+
+        if (Math.Sqrt(d_x + d_y) <= areaData.getCircleRadius() * 3f)
+        {
+            GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
+        }
     }
 }

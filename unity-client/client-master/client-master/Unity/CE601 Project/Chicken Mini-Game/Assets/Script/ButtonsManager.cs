@@ -27,6 +27,7 @@ public class ButtonsManager : MonoBehaviour
     private bool buttonsEnabled;
     private bool elapsedChickenShowTime;
     private bool firstTrial;
+    private bool isCoroutine;
 
     private TrialData trialData;
     private DataManager istance_DataManager;
@@ -44,6 +45,7 @@ public class ButtonsManager : MonoBehaviour
         foreach (GameObject i in UIImage) i.SetActive(false);
         menu.SetActive(false);
         gameText.text = "";
+        isCoroutine = false;
 
         timer.gameObject.transform.Find("Fill Area").Find("Fill").GetComponent<Image>().color = Color.green;
     }
@@ -56,6 +58,7 @@ public class ButtonsManager : MonoBehaviour
             {
                 firstTrial = true;
                 StartCoroutine(NewTrial());
+                isCoroutine = true;
             }
         }
         else if (TrialsManager.instance.chickensReady)
@@ -106,6 +109,7 @@ public class ButtonsManager : MonoBehaviour
                 this.Buttons(false);
                 
                 StartCoroutine(NewTrial());
+                isCoroutine = true;
             }
         }  
     }
@@ -145,6 +149,8 @@ public class ButtonsManager : MonoBehaviour
         this.Buttons(false);
         
         StartCoroutine(NewTrial());
+        isCoroutine = true;
+
     }
 
     private void Buttons(bool flag)
@@ -186,17 +192,25 @@ public class ButtonsManager : MonoBehaviour
         else
         {
             Debug.Log("Finished"); //it's used for not block the gameplay
-        } 
+        }
+        isCoroutine = false;
     }
 
     public void PauseTrial()
     {
-        Debug.Log("PAUSE TRIAL");
-        TrialsManager.instance.trialStarted = false;
-        trialData = istance_DataManager.data;
-        menu.SetActive(true);
-        menu.GetComponent<Menu>().SetActiveSettingsMenu(false); //active only Pause Menu
-        timer.gameObject.GetComponent<AudioSource>().Stop();
+        Debug.Log(isCoroutine);
+        if (!isCoroutine)
+        {
+            Debug.Log("PAUSE TRIAL");
+            TrialsManager.instance.trialStarted = false;
+            trialData = istance_DataManager.data;
+            menu.SetActive(true);
+            menu.GetComponent<Menu>().SetActiveSettingsMenu(false); //active only Pause Menu
+            timer.gameObject.GetComponent<AudioSource>().Stop();
+            gameText.GetComponent<AudioSource>().Stop();
+            foreach (GameObject i in UIImage) i.GetComponent<AudioSource>().Stop();
+        }
+
     }
 
     public void RestartTrial()

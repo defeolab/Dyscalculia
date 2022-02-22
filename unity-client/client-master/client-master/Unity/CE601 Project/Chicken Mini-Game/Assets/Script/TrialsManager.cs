@@ -9,7 +9,7 @@ public class TrialsManager : MonoBehaviour
     private static ClientToServer client;
 
     private Stack<TrialData> upcomingTrials;
-    private List<TrialData> completedTrials;
+    public List<TrialData> completedTrials;
     public List<TrialResult> completedTrialResults { get; set; }
 
     public bool chickensReady;
@@ -73,7 +73,8 @@ public class TrialsManager : MonoBehaviour
         }
         else
         {
-            Debug.Log("Finish Trial"); //it's used for not block the gameplay
+            Debug.Log("Finish Trials"); //it's used for not block the gameplay
+            client.CompleteTrials();
         }
 
         if (nextTrial != null)
