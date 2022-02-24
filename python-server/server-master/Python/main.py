@@ -13,7 +13,7 @@ ThreadCount = 0
 
 # simulation_on is a flag that indicated if the game is a simulated one or not
 # 1 means SIMULATED, 0 means REAL
-simulation_on = 1
+simulation_on = 0
 
 # Non-Numerical variable selection (at the moment, we select just one of them)
 # Can be Either Field Area (nnd_selector = 1) or Item Surface Area (nnd_selector = 2)
@@ -64,11 +64,13 @@ if simulation_on == 0:
             # 2. scegliere NND e cambiando quella cambieranno tutte le variabili
     
     
-    trials_matrix = [[1.0,0.5, 10.0,3.0, 0.7,1.0, 10,10, 2,4]]
+    trials_matrix_original = [[5, 6, 27777.78, 37777.78, 273.13, 173.13, 4, 8],
+                              [5, 6, 27777.78, 27777.78, 173.13, 173.13, 4, 8],
+                              [5, 6, 27777.78, 27777.78, 173.13, 173.13, 4, 8]]
     
     # To transform our parameters into the ones accepted by the real game, it is
     # mandatory to call the TransformMatrix function to obtain the right matrix
-    trials_matrix_transformed = TransformMatrix(trials_matrix)
+    trials_matrix = TransformMatrix(trials_matrix_original)
 
 # SIMULATED GAME 
 else:

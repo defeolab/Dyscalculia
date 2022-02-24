@@ -1,6 +1,6 @@
 import math 
 
-trials_matrix_transformed = []
+trials_matrix = []
 
 # This function accepts as a paramater the trials matrix, passed from the main,
 # and applies some transformations in order to obtain a matrix that is compatible 
@@ -29,9 +29,9 @@ trials_matrix_transformed = []
         # --> Tenth column is called max_trial_time and defines the total duration 
         # of the game / trial
 
-def TransformMatrix(trials_matrix):
+def TransformMatrix(trials_matrix_original):
     
-    for row in trials_matrix:
+    for row in trials_matrix_original:
         area_1_circle_radius = ((6*10^(-3)) * math.sqrt(row[2]))
         area_2_circle_radius = ((6*10^(-3)) * math.sqrt(row[3]))
         
@@ -57,6 +57,6 @@ def TransformMatrix(trials_matrix):
         trials_row.append(row[6])
         trials_row.append(row[7])
         
-        trials_matrix_transformed.append(trials_row)
+        trials_matrix.append(trials_row)
     
-    return trials_matrix_transformed;    
+    return trials_matrix;  
