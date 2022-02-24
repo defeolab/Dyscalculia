@@ -32,8 +32,8 @@ trials_matrix = []
 def TransformMatrix(trials_matrix_original):
     
     for row in trials_matrix_original:
-        area_1_circle_radius = ((6*10^(-3)) * math.sqrt(row[2]))
-        area_2_circle_radius = ((6*10^(-3)) * math.sqrt(row[3]))
+        area_1_circle_radius = ((0.006) * math.sqrt(row[2]))
+        area_2_circle_radius = ((0.006) * math.sqrt(row[3]))
         
         area_1_size_of_chicken = 0.57 * math.sqrt(row[4])
         area_2_size_of_chicken = 0.57 * math.sqrt(row[5])
