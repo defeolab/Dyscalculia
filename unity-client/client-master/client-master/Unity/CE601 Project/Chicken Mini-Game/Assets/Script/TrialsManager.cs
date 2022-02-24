@@ -26,19 +26,19 @@ public class TrialsManager : MonoBehaviour
 
     public void Start()
     {
-        if (instance == null)
-        {
+        //if (instance == null)
+        //{
             instance = this;
             ConnectToClient();
             this.upcomingTrials = client.GetTrials(); //change when server and client will talk
             this.completedTrials = new List<TrialData>();
             this.completedTrialResults = new List<TrialResult>();
-            DontDestroyOnLoad(this);
-        }
+           // DontDestroyOnLoad(this);
+       /* }
         else if (instance != this)
         {
             Destroy(gameObject);
-        }
+        }*/
     }
 
     public void Reset()
