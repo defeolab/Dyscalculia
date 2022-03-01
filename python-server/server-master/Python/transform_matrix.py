@@ -2,12 +2,12 @@ import math
 
 trials_matrix = []
 
-# This function accepts as a paramater the trials matrix, passed from the main,
+# This function accepts as a paramater the original trials matrix, passed from the main,
 # and applies some transformations in order to obtain a matrix that is compatible 
 # with the game, meaning that the matrix must include circle_radius, size_of_chicken
 # and average_space_between parameters, and not field_area and item_surface_area
 
-# The trials_matrix_transformed will be made of the following fields:
+# The trials_matrix will be made of the following fields:
     
         # --> First and second columns are called area_1_circle_radius and
         # area_2_circle_radius and those define the circle radius of both areas
@@ -41,9 +41,6 @@ def TransformMatrix(trials_matrix_original):
         area_1_average_space_between = (0.167 * area_1_size_of_chicken) + 0.183
         area_2_average_space_between = (0.167 * area_2_size_of_chicken) + 0.183
         
-        area_1_number_of_chickens = row[0]
-        area_2_number_of_chickens = row[1]
-        
         trials_row = []
         
         trials_row.append(area_1_circle_radius)
@@ -52,11 +49,34 @@ def TransformMatrix(trials_matrix_original):
         trials_row.append(area_2_size_of_chicken)
         trials_row.append(area_1_average_space_between)
         trials_row.append(area_2_average_space_between)
-        trials_row.append(area_1_number_of_chickens)
-        trials_row.append(area_2_number_of_chickens)
+        trials_row.append(row[0])   # Number of Chicken 1
+        trials_row.append(row[1])   # Number of Chicken 2
         trials_row.append(row[6])
         trials_row.append(row[7])
         
         trials_matrix.append(trials_row)
     
-    return trials_matrix;  
+    return trials_matrix
+
+def ReverseTrial(trial_to_transform):
+    new_trial = []
+    
+    area_1_number_of_chickens = trial_to_transform[5]
+    area_2_number_of_chickens = trial_to_transform[6]
+    
+    area_1_field_area = pow(trial_to_transform[0], 2) / 0.000036
+    area_2_field_area = pow(trial_to_transform[1], 2) / 0.000036
+    
+    area_1_item_surface_area = pow(trial_to_transform[2], 2) / 0.3249
+    area_2_item_surface_area = pow(trial_to_transform[3], 2) / 0.3249
+    
+    new_trial.append(area_1_number_of_chickens)
+    new_trial.append(area_2_number_of_chickens)
+    new_trial.append(area_1_field_area)
+    new_trial.append(area_2_field_area)
+    new_trial.append(area_1_item_surface_area)
+    new_trial.append(area_2_item_surface_area)
+    new_trial.append(trial_to_transform[6])
+    new_trial.append(trial_to_transform[7])
+    
+    return new_trial

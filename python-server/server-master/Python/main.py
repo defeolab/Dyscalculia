@@ -71,6 +71,8 @@ if simulation_on == 0:
     # To transform our parameters into the ones accepted by the real game, it is
     # mandatory to call the TransformMatrix function to obtain the right matrix
     trials_matrix = TransformMatrix(trials_matrix_original)
+    
+    # trials_matrix = [[1.2, 0.8, 4.0, 5.0, 0.8, 0.9, 5, 6, 4, 8]]
 
 # SIMULATED GAME 
 else:

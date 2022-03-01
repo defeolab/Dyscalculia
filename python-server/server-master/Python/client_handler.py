@@ -60,7 +60,7 @@ class ClientHandler(Thread):
     def run(self):
         print("1 RUN FUNCTION")
         while True:
-            data = self.connection.recv(2048) # breakpoint da inserire
+            data = self.connection.recv(2048) 
             reply = self.get_reply(data.decode('utf-8'))
             if not data:
                 break
