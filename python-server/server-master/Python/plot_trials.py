@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 
+# This function is called to plot the trials in their space, to show how they vary
 def PlotTrials(response_vector, trials_matrix, alpha, nnd_selector):
     nv = []  # nv --> NUMERICAL VARIABLE
     nnv = []  # nnv --> NON-NUMERICAL VARIABLE

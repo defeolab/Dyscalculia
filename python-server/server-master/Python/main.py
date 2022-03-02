@@ -13,11 +13,15 @@ ThreadCount = 0
 
 # simulation_on is a flag that indicated if the game is a simulated one or not
 # 1 means SIMULATED, 0 means REAL
-simulation_on = 0
+simulation_on = 1
 
 # Non-Numerical variable selection (at the moment, we select just one of them)
 # Can be Either Field Area (nnd_selector = 1) or Item Surface Area (nnd_selector = 2)
 nnd_selector = 1
+
+# It controls the number of trials that will be computed by the Dummy, which will
+# be equal to the nnd_number elevated to 4.
+nnd_number = 5
 
 # Alpha is the angle used for the Filtering analysis, calculated from the positive y-axis
 alpha = 30
@@ -71,12 +75,10 @@ if simulation_on == 0:
     # To transform our parameters into the ones accepted by the real game, it is
     # mandatory to call the TransformMatrix function to obtain the right matrix
     trials_matrix = TransformMatrix(trials_matrix_original)
-    
-    # trials_matrix = [[1.2, 0.8, 4.0, 5.0, 0.8, 0.9, 5, 6, 4, 8]]
 
 # SIMULATED GAME 
 else:
-    trials_matrix = dummy_matrix_generator(nnd_selector)
+    trials_matrix = dummy_matrix_generator(nnd_selector, nnd_number)
 
 game = Create_Game(trials_matrix)
 response_vector = game.run(simulation_on, nnd_selector, alpha, sigma, ServerSocket, host, port, DB, ThreadCount)

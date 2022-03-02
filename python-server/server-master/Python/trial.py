@@ -1,12 +1,11 @@
 # 'TRIAL' class
 # It must take as argument every parameter needed to create a trial
-# aggiungere commmento che specifica che QUESTO è SOLO PER CONFORMITà A UNITY
+# The Trial must be created in a way that is Unity-compatible, meaning that the
+# passed parameter are the ones that are useful for the Unity client (circle radius, 
+# size of chickens and average space between, alongside the number of course)
 
 import json
-# import numpy as np 
 from area_data import AreaData
-
-trial_to_transform = []
 
 class Trial:
     def __init__(self, area_1_data = None, area_2_data = None, 
@@ -28,9 +27,3 @@ class Trial:
                 
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__)
-    
-    # def to_array(self):
-    #     ratioArea = self.area1Data.circleRadius / self.area2Data.circleRadius()
-    #     active_data = self.area1Data if ratioArea == 1 else self.area2Data
-    #     return np.array([self.ratio, active_data.averageSpaceBetween, active_data.sizeOfChicken, 
-    #           active_data.circleRadius, self.chickenShowTime, self.maxTrialTime, self.ratioArea])
