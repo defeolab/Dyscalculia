@@ -77,7 +77,7 @@ class ClientHandler(Thread):
             trial = self.generate_random_trial()
             return json.dumps(trial.__dict__) + '\n'
         elif "TRIALS:" in data:
-            return self.handle_trials_message(data.split(":"))
+            return self.handle_trials_message(data.split(":")) # when we receive smth from client
         elif "COMPLETE:" in data:
             print("Those are the complete trials received by the client")
             print(data)
