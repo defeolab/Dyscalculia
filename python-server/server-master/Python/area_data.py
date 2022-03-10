@@ -1,6 +1,7 @@
-# This class defines the parameters needed for each area (the leaft one or the right one).
-# So, basically, for each area, we define the Number of Chickens, the Field Area and the
-# Item Surface Area parameters.
+# This class defines the parameters needed for each area (the left one or the right one).
+# As the Trial class, this class is Unity-compatible: this is why the paraeters
+# that compose the Area are the ones of the Unity client, and not the Item Surface
+# Area, Field Area and Number.
 
 class AreaData:
     

@@ -12,8 +12,6 @@ dummy_trials_matrix = [
 '''
 
 # INITIALIZATION of an empty trial_matrix and the nnd_number (can be changed)
-# spostare nnd_number nel main.py
-nnd_number = 5
 trials_matrix = []
 
 # This function has the purpose of taking the initial value of the first and 
@@ -59,15 +57,19 @@ def partial_matrix_generator(nnd1_start, nnd1_step, nnd2_start, nnd2_step, nnd_n
                         
     return temp_matrix
 
-# dummy_matrix_generator function takes as parameter the nnd_selector. Depending 
-# on the selector passed, the function computes a trials matrix, by exploiting 
-# another function, called partial_matrix_generator, thanks to which the matrix 
-# is computed by maintaining some parameters fixed and some other instead vary, 
-# and the variation is computed thanks to partial_matrix_generator.
+# dummy_matrix_generator function takes as parameter the nnd_selector and the 
+# nnd_number. Depending on the selector passed, the function computes a trials 
+# matrix, by exploiting another function, called partial_matrix_generator, 
+# thanks to which the matrix is computed by maintaining some parameters fixed 
+# and some other instead vary, and the variation is computed thanks to 
+# partial_matrix_generator function, called inside.
 # The parameters that remain fixed and the one that vary (which is always a 
 # non-numerical value, alongside the numerical one) are decided by the 
-# nnd_selector given as parameter.
-def dummy_matrix_generator(nnd_selector):
+# nnd_selector given as parameter: if nnd_selector is equal to 1, then field_area
+# value varies; if it is equal to 2, it is the viceversa.
+# nnd_number parameter controls the number of trials to compute which will be
+# equal to the nnd_number elevated to 4.
+def dummy_matrix_generator(nnd_selector, nnd_number):
     if nnd_selector == 1:
         # nnd_selector = 1 means we want to vary the value of field_area as 
         # nnd, alongside the numerical value, number_of_chickens. The other,

@@ -1,15 +1,10 @@
-# Uploading data from excel file
-
 import pandas as pd
 import random
-
-# data = pd.read_excel (r'C:\Users\Ron\Desktop\Product List.xlsx') 
-# df = pd.DataFrame(data, columns= ['Product','Price'])
-# print (df)
 
 numpy_array = []
 
 def UploadDataFromExcelDataset():
+    # Uploading data from excel file
     data = pd.read_excel("./dataset/dataset_for_server.xlsx", dtype = {'NumChickens': int, 'FieldArea': float, 'ItemSurfaceArea': float})
     df = pd.DataFrame(data, columns = ['NumChickens','FieldArea', 'ItemSurfaceArea'])
     
@@ -64,7 +59,7 @@ def FindMinAndMaxValuesFromDataset():
     return return_array      
 
 
-# Generate Randomically 3 numbers: 
+# Generate Randomically 3 numbers, taken in the interval between the max and the min: 
     # The first one will be the number of chickens
     # The second one will be the field area
     # the third one will be the item surface area    
@@ -88,8 +83,64 @@ def FunzioneTemp():
     
     return matrice_temp
 
+# Control function, to check whether the point (represented by the three 
+# coordinates, Number-Fa-ISA) is a valid point, i.e. it is below the curve,
+# or not. Returns 1 for a valid point, 0 otherwise
+def ValidTrial(number, fa, isa):
+    
+    dataset = UploadDataFromExcelDataset()
+    isValid = 0
+    
+    for i in range(len(dataset)):
+        if(number < dataset[i][0]):
+            # Number ok. Check for FA validity
+            print("Number ok")
+            if(fa < dataset[i][1]):
+                # FA ok. Check for ISA validity
+                print("FA ok")
+                if(isa < dataset[i][2]):
+                    # ISA ok. The point is valid, break the loop
+                    print("ISA ok --> Point valid")
+                    print(dataset[i][0])
+                    print(dataset[i][1])
+                    print(dataset[i][2])
+                    isValid = 1
+                    break
+                else:
+                    # if ISA is not valid, continue to the next iteration
+                    print("ISA not ok")
+                    continue
+            else:
+                # if FA is not valid, continue to the next iteration
+                print("FA not ok")
+                continue
+        else:
+            # if number is not valid, continue to the next iteration
+            print("number not ok")
+            continue
+        
+    # Reaching the end of the loop means that no match is found, so isValid is 0,
+    # as it was set at the beginning
+    return isValid
+    
+validity = ValidTrial(10, 5000, 307.79)
+print(validity)
 
 def GenerateNewTrial():
+    # Funzione di controllo NOME: ValidTrial(Number, FA, ISA)
+    # INPUT: number, FA, ISA
+    # OUTPUT: boolean --> 0 non ammissibile, 1 ammissibile
+    
+    # Quando la funzione funziona, si fa un altro progettino
+    # Calcolo punto medio (val medio di N (32), val medio di FA (una cosa a metà)
+    # e val medio di ISA (una cosa a metà) --> a penna)
+    # Definire incremento minimo di N, FA e ISA.
+    # Alla funzione do il punto medio e mi deve dare true.
+    # Parto dal punto medio, e x ogni dim creo un numero random (-1, 0, +1)
+    # Se 0, il nuovo punto NON HA VARIAZIONE, se +1, il nuovo punto sarà punto medio + inc minimo
+    # Se -1 il nuovo punto sarà punto medio - inc minimo.
+    # Questo punto che trovo lo do alla funzione: se la funzione dice ok, allora quello
+    # sarà il nostro punto, altrimenti si genera un nuovo punto con tre nuovi valori random.
     numpy_array = UploadDataFromExcelDataset()
     # random_array = GenerateRandomNumberFAandISA()
     matrice_temp = FunzioneTemp()
@@ -119,6 +170,3 @@ def GenerateNewTrial():
         
             
     return numpy_array     
-
-
-numpy_array = GenerateNewTrial()
