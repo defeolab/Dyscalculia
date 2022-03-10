@@ -5,9 +5,8 @@ using UnityEngine;
 public class TrialsManager : MonoBehaviour
 {
     public static TrialsManager instance = null;
-
     private static ClientToServer client;
-
+    public GameObject errorImage;
     private Stack<TrialData> upcomingTrials;
     public List<TrialData> completedTrials;
     public List<TrialResult> completedTrialResults { get; set; }
@@ -15,6 +14,7 @@ public class TrialsManager : MonoBehaviour
     public bool chickensReady;
     public bool trialStarted;
     public bool gameStarted;
+    public bool connectionStarted=false;
 
     public float maxTrialTime;
     public float chickenShowTime;
@@ -26,19 +26,12 @@ public class TrialsManager : MonoBehaviour
 
     public void Start()
     {
-        //if (instance == null)
-        //{
-            instance = this;
-            ConnectToClient();
-            this.upcomingTrials = client.GetTrials(); //change when server and client will talk
-            this.completedTrials = new List<TrialData>();
-            this.completedTrialResults = new List<TrialResult>();
-           // DontDestroyOnLoad(this);
-       /* }
-        else if (instance != this)
-        {
-            Destroy(gameObject);
-        }*/
+        errorImage.SetActive(false);
+        instance = this;
+        ConnectToClient();
+        this.completedTrials = new List<TrialData>();
+        this.completedTrialResults = new List<TrialResult>();
+            
     }
 
     public void Reset()
@@ -49,16 +42,23 @@ public class TrialsManager : MonoBehaviour
         area2Value = 0;
     }
 
-    private void ConnectToClient()
+    public void ConnectToClient()
     {
         try
         {
             client = new ClientToServer();
             Debug.Log("Logged in successfully.");
+            connectionStarted = true;
+            errorImage.SetActive(false);
+            this.upcomingTrials = client.GetTrials();
+
         }
         catch (Exception e)
         {
             Debug.Log(e.Message);
+            errorImage.SetActive(true);
+            connectionStarted = false;
+
         }
     }
 
@@ -95,8 +95,13 @@ public class TrialsManager : MonoBehaviour
         this.completedTrialResults.Clear();
     }
 
-    //it's not use -> idk if I'll use them
+    //it's not use for now
     public Stack<TrialData> GetUpcomingTrials() { return upcomingTrials; }
     public void SetUpcomingTrials(Stack<TrialData> trials) { upcomingTrials = trials; }
+
+    public void stamp()
+    {
+        Debug.Log("button press");
+    }
 
 }

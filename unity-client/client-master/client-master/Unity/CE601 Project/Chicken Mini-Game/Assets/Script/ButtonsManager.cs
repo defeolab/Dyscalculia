@@ -52,66 +52,70 @@ public class ButtonsManager : MonoBehaviour
 
     void Update()
     {
-        if(!TrialsManager.instance.trialStarted)
+        if (TrialsManager.instance.connectionStarted)
         {
-            if (!firstTrial)
+            if (!TrialsManager.instance.trialStarted)
             {
-                firstTrial = true;
-                StartCoroutine(NewTrial());
-                isCoroutine = true;
+                if (!firstTrial)
+                {
+                    firstTrial = true;
+                    this.FirstTrial();
+                }
+            }
+            else if (TrialsManager.instance.chickensReady)
+            {
+                if (!buttonsEnabled)
+                {
+                    this.Buttons(true);
+                    buttonsEnabled = true;
+
+                    //Start timer
+                    timer.maxValue = TrialsManager.instance.chickenShowTime * 1000;
+                    timer.value = TrialsManager.instance.chickenShowTime * 1000;
+                    stopwatch.Start();
+                    timer.gameObject.GetComponent<AudioSource>().Play();
+                    timer.gameObject.GetComponent<AudioSource>().pitch = 1f;
+
+                    gameText.text = "Click on the fence that contains more chickens";
+                    gameText.GetComponent<AudioSource>().Play();
+                }
+
+                //Decrement timer
+                timer.value = timer.maxValue - stopwatch.ElapsedMilliseconds;
+
+                //Controll if time is > of ChickenShowTime
+                if (stopwatch.IsRunning && stopwatch.ElapsedMilliseconds > (TrialsManager.instance.chickenShowTime * 1000) && !elapsedChickenShowTime)
+                {
+                    foreach (GameObject c in istance_DataManager.activeChickens)
+                    {
+                        c.SetActive(false);
+                    }
+
+                    //set value and color of slider
+                    clockImage.sprite = clockSprite[0];
+                    timer.maxValue = TrialsManager.instance.maxTrialTime * 1000;
+                    timer.value = TrialsManager.instance.maxTrialTime * 1000;
+                    timer.gameObject.transform.Find("Fill Area").Find("Fill").GetComponent<Image>().color = Color.yellow;
+                    timer.gameObject.GetComponent<AudioSource>().pitch = 1.2f;
+                    elapsedChickenShowTime = true;
+                }
+
+                //Controll if time is > of maxTrialTime --> incorrect answer for trail
+                else if (stopwatch.IsRunning && stopwatch.ElapsedMilliseconds >= (TrialsManager.instance.maxTrialTime * 1000))
+                {
+                    stopwatch.Stop();
+                    timer.gameObject.GetComponent<AudioSource>().Stop();
+                    double elapsedTime = stopwatch.Elapsed.TotalMilliseconds;
+                    TrialsManager.instance.AddTrialResult(elapsedTime, false);
+                    gameText.text = "";
+                    this.HandleLoss();
+                    this.Buttons(false);
+
+                    StartCoroutine(NewTrial());
+                    isCoroutine = true;
+                }
             }
         }
-        else if (TrialsManager.instance.chickensReady)
-        {
-            if (!buttonsEnabled)
-            {
-                this.Buttons(true);
-                buttonsEnabled = true;
-
-                //Start timer
-                timer.maxValue = TrialsManager.instance.chickenShowTime * 1000;
-                timer.value = TrialsManager.instance.chickenShowTime * 1000;
-                stopwatch.Start();
-                timer.gameObject.GetComponent<AudioSource>().Play();
-
-                gameText.text = "Click on the fence that contains more chickens";
-                gameText.GetComponent<AudioSource>().Play();
-            }
-
-            //Decrement timer
-            timer.value = timer.maxValue - stopwatch.ElapsedMilliseconds;
-
-            //Controll if time is > of ChickenShowTime
-            if (stopwatch.IsRunning && stopwatch.ElapsedMilliseconds > (TrialsManager.instance.chickenShowTime * 1000) && !elapsedChickenShowTime)
-            {
-                foreach(GameObject c in istance_DataManager.activeChickens)
-                {
-                    c.SetActive(false);
-                }
-                
-                //set value and color of slider
-                clockImage.sprite = clockSprite[0];
-                timer.maxValue = TrialsManager.instance.maxTrialTime * 1000;
-                timer.value = TrialsManager.instance.maxTrialTime * 1000;
-                timer.gameObject.transform.Find("Fill Area").Find("Fill").GetComponent<Image>().color = Color.yellow;
-                elapsedChickenShowTime = true;
-            }
-
-            //Controll if time is > of maxTrialTime --> incorrect answer for trail
-            else if (stopwatch.IsRunning && stopwatch.ElapsedMilliseconds >= (TrialsManager.instance.maxTrialTime * 1000))
-            {
-                stopwatch.Stop();
-                timer.gameObject.GetComponent<AudioSource>().Stop();
-                double elapsedTime = stopwatch.Elapsed.TotalMilliseconds;
-                TrialsManager.instance.AddTrialResult(elapsedTime, false);
-                gameText.text = "";
-                this.HandleLoss();
-                this.Buttons(false);
-                
-                StartCoroutine(NewTrial());
-                isCoroutine = true;
-            }
-        }  
     }
 
     public void Area1Selected()
@@ -194,6 +198,19 @@ public class ButtonsManager : MonoBehaviour
             Debug.Log("Finished"); //it's used for not block the gameplay
         }
         isCoroutine = false;
+    }
+
+    public void FirstTrial()
+    {
+        Debug.Log("FIRST TRIAL");
+
+        //Reset all the Managers
+        TrialsManager.instance.Reset();
+        istance_DataManager.Reset();
+        this.Reset();
+
+        TrialData nextTrial = TrialsManager.instance.GetNextTrial();
+        istance_DataManager.SetNewTrialData(nextTrial);
     }
 
     public void PauseTrial()
