@@ -9,17 +9,18 @@ using UnityEngine.UI;
 
 public class DataManager : MonoBehaviour
 {
-    public GameObject[] areas;
-    public GameObject[] fences;
-    public GameObject[] chickens_generators;
+    public GameObject[] areas; //list of the areas inside the level 
+    public GameObject[] fences; //list of the fences' models inside the level 
+    public GameObject[] chickens_generators; //list of the generators of chickens
 
-    public List<GameObject> activeChickens;
+    public List<GameObject> activeChickens; //list of all the chickens generated in the trial
     private List<Vector3> createdPositionsArea1; //list of all the possible positions inside Area1
     private List<Vector3> createdPositionsArea2; //list of all the possible positions inside Area2
     private List<Vector3> allFinalPositions; //list of all the real positions of chicken
 
-    private AreaTrialData[] areasData;
-    public TrialData data;
+    //data used in the specific trial
+    private AreaTrialData[] areasData; 
+    public TrialData data; 
     
     private float allChickenArrived;
     private bool fences_open;
@@ -41,10 +42,10 @@ public class DataManager : MonoBehaviour
         chickens_generators[1].transform.position = new Vector3(4, 7, 0);
 
         data = trialData;
-
         areasData[0] = trialData.area1Data;
         areasData[1] = trialData.area2Data;
         
+        //set right radius in areas
         areas[0].transform.localScale = new Vector3(areasData[0].getCircleRadius(), areasData[0].getCircleRadius(), areasData[0].getCircleRadius());
         areas[1].transform.localScale = new Vector3(areasData[1].getCircleRadius(), areasData[1].getCircleRadius(), areasData[1].getCircleRadius());
 
@@ -90,6 +91,7 @@ public class DataManager : MonoBehaviour
                     if (!c.GetComponent<Chickens>().startWalk)
                     {
                         StartCoroutine(WaitOpenFence());
+
                         if (fences_open)
                         {
                             StartCoroutine(WaitStartWalk(c.GetComponent<Chickens>()));
@@ -126,23 +128,21 @@ public class DataManager : MonoBehaviour
             {
                 c.positionFinal = firstpos;
                 c.findFinalPos = true;
-                if (c.area == areas[0]) allFinalPositions.Add(firstpos);
-                else allFinalPositions.Add(firstpos);
+                allFinalPositions.Add(firstpos);
             }
 
             // Find other position random
             int d_p = Random.Range(0, determinatedPos.Count);
-
             if (!allFinalPositions.Contains(determinatedPos[d_p]) && !c.findFinalPos)
             {
                 c.positionFinal = determinatedPos[d_p];
                 c.findFinalPos = true;
-
-                if (c.area == areas[0]) allFinalPositions.Add(determinatedPos[d_p]);
-                else allFinalPositions.Add(determinatedPos[d_p]);
+                allFinalPositions.Add(determinatedPos[d_p]);
             }
         }
-        catch (Exception e)  { /*Exception*/ }  
+        catch (Exception e)  {
+            Debug.Log(e);
+        }  
     }
 
     IEnumerator WaitOpenFence()
@@ -249,10 +249,10 @@ public class DataManager : MonoBehaviour
             vectors.Add(new Vector3(centre_area.x, centre_area.y, 0));
         }
 
-        //Calculate all the point usable in the grid
+        //calculation all the point usable in the grid
         for (int i = 0; i < div+1; i++)
         {
-            //calculate the horrizontal points
+            //calculation of points around the center
             for (int j = 1; j <= div; j++)
             {
                 float x_plus = vectors[0].x + (j * areaData.getAverageSpaceBetween());

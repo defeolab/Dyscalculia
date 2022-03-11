@@ -36,7 +36,6 @@ public class Chickens : MonoBehaviour
                 this.transform.position = Vector2.MoveTowards(this.transform.position, this.positionFinal, 5f * Time.deltaTime); //move chicken to Final Position
             }
 
-
             this.NoCollisionInsideCircle();
 
             if (Vector3.Distance(this.transform.position, this.positionFinal) < 0.01f)
@@ -45,7 +44,6 @@ public class Chickens : MonoBehaviour
 
                 //Set Random Rotation
                 GetComponent<Rigidbody>().rotation = Quaternion.Euler(new Vector3(Random.Range(0f, 360f), 270f, 90f) * 1);
-                GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
 
                 animator.SetBool("eat", true);
             }

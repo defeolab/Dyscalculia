@@ -7,6 +7,7 @@ public class TrialsManager : MonoBehaviour
     public static TrialsManager instance = null;
     private static ClientToServer client;
     public GameObject errorImage;
+    public GameObject finishImage;
     private Stack<TrialData> upcomingTrials;
     public List<TrialData> completedTrials;
     public List<TrialResult> completedTrialResults { get; set; }
@@ -28,7 +29,7 @@ public class TrialsManager : MonoBehaviour
     {
         errorImage.SetActive(false);
         instance = this;
-        ConnectToClient();
+        ConnectWithClient();
         this.completedTrials = new List<TrialData>();
         this.completedTrialResults = new List<TrialResult>();
             
@@ -42,7 +43,7 @@ public class TrialsManager : MonoBehaviour
         area2Value = 0;
     }
 
-    public void ConnectToClient()
+    public void ConnectWithClient()
     {
         try
         {
@@ -73,8 +74,9 @@ public class TrialsManager : MonoBehaviour
         }
         else
         {
-            Debug.Log("Finish Trials"); //it's used for not block the gameplay
             client.CompleteTrials();
+            Debug.Log("Finish Trials For Now");
+            finishImage.SetActive(true);
         }
 
         if (nextTrial != null)
@@ -98,10 +100,4 @@ public class TrialsManager : MonoBehaviour
     //it's not use for now
     public Stack<TrialData> GetUpcomingTrials() { return upcomingTrials; }
     public void SetUpcomingTrials(Stack<TrialData> trials) { upcomingTrials = trials; }
-
-    public void stamp()
-    {
-        Debug.Log("button press");
-    }
-
 }
