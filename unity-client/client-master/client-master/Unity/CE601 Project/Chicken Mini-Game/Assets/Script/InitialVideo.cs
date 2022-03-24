@@ -29,6 +29,14 @@ public class InitialVideo : MonoBehaviour
         }
 
         this.SetLevelAudio();
+
+        if (Input.GetKeyDown(KeyCode.A))
+        {
+            isplaying = false;
+            this.gameObject.SetActive(false);
+            loadScene.SetActive(true);
+            loadScene.GetComponent<LoadLevelChickens>().enabled = true;
+        }
     }
 
     void EndReached(UnityEngine.Video.VideoPlayer vp)

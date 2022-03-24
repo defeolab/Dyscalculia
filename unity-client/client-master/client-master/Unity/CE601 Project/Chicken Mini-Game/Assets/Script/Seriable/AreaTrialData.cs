@@ -35,4 +35,9 @@ public class AreaTrialData
     {
         return numberOfChickens;
     }
+
+    public void setAverageSpaceBetween(float asb)
+    {
+        this.averageSpaceBetween = asb;
+    }
 }

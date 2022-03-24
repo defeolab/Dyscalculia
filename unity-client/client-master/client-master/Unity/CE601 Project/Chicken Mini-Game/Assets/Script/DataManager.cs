@@ -37,14 +37,20 @@ public class DataManager : MonoBehaviour
     public void SetNewTrialData(TrialData trialData)
     {
         Random.InitState((int)System.DateTime.Now.Ticks);
-        
+       
         chickens_generators[0].transform.position = new Vector3(-4, 7, 0);
         chickens_generators[1].transform.position = new Vector3(4, 7, 0);
 
         data = trialData;
         areasData[0] = trialData.area1Data;
         areasData[1] = trialData.area2Data;
-        
+
+        //calculation of new value of average_space_between
+        for (int i = 0; i < areas.Length; i++)
+        {
+            this.CalculationAverageSpaceBetween(areas[i], areasData[i]);
+        }
+
         //set right radius in areas
         areas[0].transform.localScale = new Vector3(areasData[0].getCircleRadius(), areasData[0].getCircleRadius(), areasData[0].getCircleRadius());
         areas[1].transform.localScale = new Vector3(areasData[1].getCircleRadius(), areasData[1].getCircleRadius(), areasData[1].getCircleRadius());
@@ -239,6 +245,7 @@ public class DataManager : MonoBehaviour
 
     private void CreateGrid(GameObject area, AreaTrialData areaData)
     {
+        //Debug.Log(areaData.getAverageSpaceBetween());
         float radius_area = areaData.getCircleRadius() * 3f; //3f because the radius of area usable is (you can see it also in unity) 0.5*6=3
         int div = (int)(radius_area / areaData.getAverageSpaceBetween()); //how much you can divide the radius in same space with same distance between (=getAverageSpaceBetween)
         Vector3 centre_area = area.transform.position;
@@ -294,6 +301,82 @@ public class DataManager : MonoBehaviour
                 }
             }
         }
+    }
+
+    private void CalculationAverageSpaceBetween(GameObject area, AreaTrialData areaData)
+    {
+        float newASB = areaData.getAverageSpaceBetween();
+        float num = 1f;
+
+        for (int a = 1; a < 6; a++)
+        {
+            float radius_area = areaData.getCircleRadius() * 3f;
+            int div = (int)(radius_area / newASB);
+            Vector3 centre_area = area.transform.position;
+            List<Vector3> vectors = new List<Vector3>();
+            List<Vector3> vectors_final = new List<Vector3>();
+
+            if (vectors.Count == 0) vectors.Add(new Vector3(centre_area.x, centre_area.y, 0));
+            for (int i = 0; i < div + 1; i++)
+            {
+                for (int j = 1; j <= div; j++)
+                {
+                    float x_plus = vectors[0].x + (j * newASB);
+                    float x_minus = vectors[0].x - (j * newASB);
+                    float y_plus = vectors[0].y + (i * newASB);
+                    float y_minus = vectors[0].y - (i * newASB);
+
+                    vectors.Add(new Vector3(x_plus, y_plus, 0));
+                    vectors.Add(new Vector3(x_minus, y_plus, 0));
+                    vectors.Add(new Vector3(x_plus, y_minus, 0));
+                    vectors.Add(new Vector3(x_minus, y_minus, 0));
+                }
+
+                if (i != 0)
+                {
+                    Vector3 v_i_plus = new Vector3(vectors[0].x, vectors[0].y + (i * newASB), 0);
+                    vectors.Add(v_i_plus);
+
+                    Vector3 v_i_minus = new Vector3(vectors[0].x, vectors[0].y - (i * newASB), 0);
+                    vectors.Add(v_i_minus);
+                }
+            }
+
+            foreach (Vector3 v in vectors)
+            {
+                float d_x = (v.x - centre_area.x) * (v.x - centre_area.x);
+                float d_y = (v.y - centre_area.y) * (v.y - centre_area.y);
+
+                if ((Math.Sqrt(d_x + d_y) <= radius_area))
+                {
+                    if (!vectors_final.Contains(v)) vectors_final.Add(v);
+                }
+            }
+
+            num *= 0.5f;
+
+            if (a != 5)
+            {
+                if (vectors_final.Count >= areaData.numberOfChickens)
+                {
+                    newASB += num * areaData.getAverageSpaceBetween();
+                }
+                else if (vectors_final.Count < areaData.numberOfChickens)
+                {
+                    newASB -= (num/0.5f) * areaData.getAverageSpaceBetween();
+                }
+            }
+            else if (vectors_final.Count < areaData.numberOfChickens)
+            {
+                newASB -= (num / 0.5f) * areaData.getAverageSpaceBetween();
+            }
+
+            vectors_final.Clear();
+            vectors.Clear();
+        }
+
+        areaData.setAverageSpaceBetween(newASB);
+
     }
 
     public string StampForControllData()
