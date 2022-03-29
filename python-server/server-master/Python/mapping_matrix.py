@@ -69,6 +69,7 @@ def partial_matrix_generator(nnd1_start, nnd1_step, nnd2_start, nnd2_step, nnd_n
 # value varies; if it is equal to 2, it is the viceversa.
 # nnd_number parameter controls the number of trials to compute which will be
 # equal to the nnd_number elevated to 4.
+
 def dummy_matrix_generator(nnd_selector, nnd_number):
     if nnd_selector == 1:
         # nnd_selector = 1 means we want to vary the value of field_area as 
@@ -92,9 +93,9 @@ def dummy_matrix_generator(nnd_selector, nnd_number):
             trials_matrix.append(trials_list)
         
     elif nnd_selector == 2:
-        # nnd_selector = 1 means we want to vary the value of item_surface_area 
-        # as nnd, alongside the numerical value, number_of_chickens. The other,
-        # field_area, is fixed
+        # nnd_selector = 1 means we want to vary the value of 
+        # item_surface_area as nnd, alongside the numerical value, 
+        # number_of_chickens. The other, field_area, is fixed.
         field_area = 300
         temp_matrix = partial_matrix_generator(0.1, 0.1, 0.1, 0.1, nnd_number
                                       , 1, 1, 1, 1)

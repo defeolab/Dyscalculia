@@ -2,8 +2,52 @@
 
 import pandas as pd
 import random
+from matplotlib import pyplot as plt
+
+import numpy as np
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import animation
 
 numpy_array = []
+
+fa_array = []
+isa_array = []
+num_array = []
+
+dataSet = []
+
+# Time Array
+t = np.linspace(0, 20, 100)
+
+fig = plt.figure()
+ax = plt.axes(projection='3d')
+ax.set_xlabel('Field Area')
+ax.set_ylabel('Item Surface Area')
+ax.set_zlabel('Number of Chickens')
+
+ax.view_init(20, 20)
+
+def animate_func(num):
+    ax.clear()  # Clears the figure to update the line, point,   
+                # title, and axes
+    # Updating Trajectory Line (num+1 due to Python indexing)
+    ax.plot3D(dataSet[0, :num+1], dataSet[1, :num+1], 
+              dataSet[2, :num+1], c='blue')
+    # Updating Point Location 
+    ax.scatter(dataSet[0, num], dataSet[1, num], dataSet[2, num], 
+               c='blue', marker='o')
+    # Adding Constant Origin
+    ax.plot3D(dataSet[0, 0], dataSet[1, 0], dataSet[2, 0],     
+               c='black', marker='o')
+
+    # Adding Figure Labels
+    ax.set_title('Trajectory \nTime = ' + str(np.round(t[num],    
+                 decimals=2)) + ' sec')
+
+    ax.set_xlabel('Field Area')
+    ax.set_ylabel('Item Surface Area')
+    ax.set_zlabel('Number of Chickens')
+    
 
 def UploadDataFromExcelDataset():
     # Uploading data from excel file
@@ -53,58 +97,92 @@ def ValidTrial(number, fa, isa):
     # Reaching the end of the loop means that no match is found, so isValid is 0,
     # as it was set at the beginning
     return isValid
-    
 
-# Quando la funzione funziona, si fa un altro progettino
-# Calcolo punto medio (val medio di N (32), val medio di FA (una cosa a metà)
-# e val medio di ISA (una cosa a metà) --> a penna)
-# Definire incremento minimo di N, FA e ISA.
-# Alla funzione do il punto medio e mi deve dare true.
-# Parto dal punto medio, e x ogni dim creo un numero random (-1, 0, +1)
-# Se 0, il nuovo punto NON HA VARIAZIONE, se +1, il nuovo punto sarà punto medio + inc minimo
-# Se -1 il nuovo punto sarà punto medio - inc minimo.
-# Questo punto che trovo lo do alla funzione: se la funzione dice ok, allora quello
-# sarà il nostro punto, altrimenti si genera un nuovo punto con tre nuovi valori random.
-
-# The following function should calculate the medium point between a max and a min
-def MediumPoint(min_value, max_value):
-    return (min_value + max_value) / 2
-
-# Starting values: giving them some constant values (guardare lo spazio a occhio)
+# Starting values: giving them some constant values (they're assigned by looking
+# at the space of possible combinations)
 # representing the space to plot the point --> trajectory
-medium_num = MediumPoint(1, 112)
-medium_fa = MediumPoint(5625, 40000)
-medium_isa = MediumPoint(19.24, 307.79)
+medium_num = 20
+medium_fa = 28889
+medium_isa = 149.28
 
-
+# Minimum increment for FA and ISA is defined as Max + Min divided by 100
 def MinimumIncrement(min_value, max_value):
     return (min_value + max_value) / 100
 
-def GenerateNewTrial(num, min_inc_num, fa, min_inc_fa, isa, min_inc_isa):
-    random_dim_1 = random.randint(0, 2) - 1 # for number
-    random_dim_2 = random.randint(0, 2) - 1 # for FA
-    random_dim_3 = random.randint(0, 2) - 1 # for ISA
+min_inc_num = 1
+min_inc_fa = MinimumIncrement(5625, 40000)
+min_inc_isa = MinimumIncrement(19.24, 307.79)
+
+# This function represents the generation of a new trial, checking its validity.
+# Taking the starting values (medium points of NUmber, FA and ISA), and the
+# minimum increments, there's a RANDOM GENERATION of a number, which can assume
+# values -1, 0, 1, one for each dimension:
+    # if -1, then we take the dimension and subtract the minimum increment of that dimension
+    # if 0, nothing happens, i.e. the dimension remains as it is
+    # if 1, then we take the dimension and sum the minimum increment of that dimension
+# Check if the new generated point is valid or not. If so, then the point will
+# be used as new point, otherwise we recurse this function to find a new point,
+# with three new randomic numbers
+def GenerateNewTrial(i, num, min_inc_num, fa, min_inc_fa, isa, min_inc_isa):
     
-    if (random_dim_1 == -1):
-        num = num - min_inc_num
-    elif (random_dim_1 == 1):
-        num = num + min_inc_num
+    while (i < 257):        
+        i = i + 1
         
-    if (random_dim_2 == -1):
-        fa = fa - min_inc_fa
-    elif (random_dim_2 == 1):
-        fa = fa + min_inc_fa
+        new_num = num
+        new_fa = fa
+        new_isa = isa
         
-    if (random_dim_3 == -1):
-        isa = isa - min_inc_isa
-    elif (random_dim_3 == 1):
-        isa = isa + min_inc_isa
+        random_dim_1 = random.randint(0, 2) - 1 # for number
+        random_dim_2 = random.randint(0, 2) - 1 # for FA
+        random_dim_3 = random.randint(0, 2) - 1 # for ISA
         
-    pointIsValid = ValidTrial(num, fa, isa)
-    if(pointIsValid == 0):
-        print("The point is invalid. Run again this function")
-    else:
-        print("point is valid")
+        # Tener traccia delle coordinate di prima
+        if (random_dim_1 == -1):
+            new_num = num - min_inc_num
+        elif (random_dim_1 == 1):
+            new_num = num + min_inc_num
+            
+        if (random_dim_2 == -1):
+            new_fa = fa - min_inc_fa
+        elif (random_dim_2 == 1):
+            new_fa = fa + min_inc_fa
+            
+        if (random_dim_3 == -1):
+            new_isa = isa - min_inc_isa
+        elif (random_dim_3 == 1):
+            new_isa = isa + min_inc_isa
+            
+        pointIsValid = ValidTrial(num, fa, isa)
+        if(pointIsValid == 0 or num < 0):
+            fa_array.append(fa)
+            isa_array.append(isa)
+            num_array.append(num)
+            ax.scatter3D(fa, isa, num, marker='<', label="Invalid", c="red")
+            return GenerateNewTrial(i, num, min_inc_num, fa, min_inc_fa, isa, min_inc_isa)
+        else:
+            print(num)
+            print(fa)
+            print(isa)
+            print("point is valid")
+            fa_array.append(new_fa)
+            isa_array.append(new_isa)
+            num_array.append(new_num)
+            ax.scatter3D(new_fa, new_isa, new_num, marker='o', label="Valid", c="green")
+            return GenerateNewTrial(i, new_num, min_inc_num, new_fa, min_inc_fa, new_isa, min_inc_isa)
     
-validity = ValidTrial(21, medium_fa, medium_isa)
-print(validity)
+numDataPoints = len(t)
+    
+validity = ValidTrial(medium_num, medium_fa, medium_isa) # Medium point returns valid! YAY!
+
+GenerateNewTrial(0, medium_num, min_inc_num, medium_fa, min_inc_fa, medium_isa, min_inc_isa)
+
+line_ani = animation.FuncAnimation(fig, animate_func, interval=100, frames = numDataPoints)
+
+plt.show()
+
+dataSet = np.array([fa_array, isa_array, num_array])
+
+f = r"C://Users/Client/Desktop/animate_func.gif"
+
+writergif = animation.PillowWriter(fps = numDataPoints)
+line_ani.save(f, writer=writergif)
