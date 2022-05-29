@@ -24,7 +24,7 @@ nnd_selector = 1
 nnd_number = 5
 
 # Alpha is the angle used for the Filtering analysis, calculated from the positive y-axis
-alpha = 30
+alpha = 20
 
 # Sigma is the parameter that specifies how big the Gaussian bell must be. It is
 # used when computing the Sharpening effect
@@ -61,12 +61,6 @@ if simulation_on == 0:
         
         # --> Eighth column is called max_trial_time and defines the total duration 
         # of the game / trial
-
-        # COSE DA EVOLVERE:
-            # 1. anche l'ev del gioco reale deve essere automatica, questo è solo all'inizio
-            # in seguito la 'computazione' della matrice sarà tutta fatta dall'IA
-            # 2. scegliere NND e cambiando quella cambieranno tutte le variabili
-    
     
     trials_matrix_original = [[5, 6, 27777.78, 37777.78, 273.13, 173.13, 4, 8],
                               [7, 6, 27777.78, 27777.78, 173.13, 173.13, 4, 8],
