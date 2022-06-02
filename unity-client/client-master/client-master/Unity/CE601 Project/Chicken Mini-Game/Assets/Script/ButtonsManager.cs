@@ -14,9 +14,9 @@ public class ButtonsManager : MonoBehaviour
     public Button area2Button;
     public Button pauseButton;
 
-    public Slider timer;
-    public SpriteRenderer clockImage;
-    public Sprite[] clockSprite;
+    //public Slider timer;
+    //public SpriteRenderer clockImage;
+    //public Sprite[] clockSprite;
     private Stopwatch stopwatch;
 
     public Text gameText;
@@ -47,7 +47,7 @@ public class ButtonsManager : MonoBehaviour
         gameText.text = "";
         isCoroutine = false;
 
-        timer.gameObject.transform.Find("Fill Area").Find("Fill").GetComponent<Image>().color = Color.green;
+        //timer.gameObject.transform.Find("Fill Area").Find("Fill").GetComponent<Image>().color = Color.green;
     }
 
     void Update()
@@ -69,19 +69,19 @@ public class ButtonsManager : MonoBehaviour
                     this.Buttons(true);
                     buttonsEnabled = true;
 
-                    //Start timer
+                    /*//Start timer
                     timer.maxValue = TrialsManager.instance.chickenShowTime * 1000;
                     timer.value = TrialsManager.instance.chickenShowTime * 1000;
                     stopwatch.Start();
                     timer.gameObject.GetComponent<AudioSource>().Play();
-                    timer.gameObject.GetComponent<AudioSource>().pitch = 1f;
+                    timer.gameObject.GetComponent<AudioSource>().pitch = 1f;*/
 
                     gameText.text = "Click on the fence that contains more chickens";
                     gameText.GetComponent<AudioSource>().Play();
                 }
 
                 //Decrement timer
-                timer.value = timer.maxValue - stopwatch.ElapsedMilliseconds;
+                //timer.value = timer.maxValue - stopwatch.ElapsedMilliseconds;
 
                 //Controll if time is > of ChickenShowTime
                 if (stopwatch.IsRunning && stopwatch.ElapsedMilliseconds > (TrialsManager.instance.chickenShowTime * 1000) && !elapsedChickenShowTime)
@@ -91,12 +91,12 @@ public class ButtonsManager : MonoBehaviour
                         c.SetActive(false);
                     }
 
-                    //set value and color of slider
+                    /*//set value and color of slider
                     clockImage.sprite = clockSprite[0];
                     timer.maxValue = TrialsManager.instance.maxTrialTime * 1000;
                     timer.value = TrialsManager.instance.maxTrialTime * 1000;
                     timer.gameObject.transform.Find("Fill Area").Find("Fill").GetComponent<Image>().color = Color.yellow;
-                    timer.gameObject.GetComponent<AudioSource>().pitch = 1.2f;
+                    timer.gameObject.GetComponent<AudioSource>().pitch = 1.2f;*/
                     elapsedChickenShowTime = true;
                 }
 
@@ -104,7 +104,7 @@ public class ButtonsManager : MonoBehaviour
                 else if (stopwatch.IsRunning && stopwatch.ElapsedMilliseconds >= (TrialsManager.instance.maxTrialTime * 1000))
                 {
                     stopwatch.Stop();
-                    timer.gameObject.GetComponent<AudioSource>().Stop();
+                    //timer.gameObject.GetComponent<AudioSource>().Stop();
                     double elapsedTime = stopwatch.Elapsed.TotalMilliseconds;
                     TrialsManager.instance.AddTrialResult(elapsedTime, false);
                     gameText.text = "";
@@ -131,7 +131,7 @@ public class ButtonsManager : MonoBehaviour
     private void ButtonSelected(int selectedArea, int unselectedArea)
     {
         stopwatch.Stop();
-        timer.gameObject.GetComponent<AudioSource>().Stop();
+        //timer.gameObject.GetComponent<AudioSource>().Stop();
 
         Debug.Log("Area selected: "+ selectedArea + " Time elapsed: " + stopwatch.Elapsed);
 
@@ -223,7 +223,7 @@ public class ButtonsManager : MonoBehaviour
             trialData = istance_DataManager.data;
             menu.SetActive(true);
             menu.GetComponent<Menu>().SetActiveSettingsMenu(false); //active only Pause Menu
-            timer.gameObject.GetComponent<AudioSource>().Stop();
+            //timer.gameObject.GetComponent<AudioSource>().Stop();
             gameText.GetComponent<AudioSource>().Stop();
             foreach (GameObject i in UIImage) i.GetComponent<AudioSource>().Stop();
         }
@@ -248,13 +248,14 @@ public class ButtonsManager : MonoBehaviour
         stopwatch.Reset();
         this.Buttons(false);
         buttonsEnabled = false;
-        timer.maxValue = 1;
+        /*timer.maxValue = 1;
         timer.value = timer.maxValue;
         clockImage.sprite = clockSprite[1];
         gameText.text = "";
-        timer.gameObject.transform.Find("Fill Area").Find("Fill").GetComponent<Image>().color = Color.green;
+        timer.gameObject.transform.Find("Fill Area").Find("Fill").GetComponent<Image>().color = Color.green;*/
         elapsedChickenShowTime = false;
         foreach (GameObject i in UIImage) i.SetActive(false);
         menu.SetActive(false);
+
     }
 }

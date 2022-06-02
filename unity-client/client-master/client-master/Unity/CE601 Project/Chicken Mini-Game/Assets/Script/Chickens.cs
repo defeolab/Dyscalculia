@@ -6,11 +6,14 @@ using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 using System.Collections;
 using UnityEngine.UI;
-
+using System.Linq;
+using UnityEngine.SceneManagement;
 
 public class Chickens : MonoBehaviour
 {
     public GameObject area;
+    public GameObject chicken_model;
+    public Material[] newMaterialRef;
     public AreaTrialData areaData;
     public Animator animator;
     public Vector3 positionFinal;
@@ -22,8 +25,11 @@ public class Chickens : MonoBehaviour
     void Start()
     {
         animator = gameObject.GetComponent<Animator>();
+        newMaterialRef = new Material[4];
         startWalk = false;
         arrived = false;
+
+        newMaterialRef = Resources.LoadAll("Materials", typeof(Material)).Cast<Material>().ToArray();
     }
 
     void Update()
@@ -56,6 +62,13 @@ public class Chickens : MonoBehaviour
         this.area = area;
         this.areaData = areaData;
         this.number = number;
+
+        if (SceneManager.GetActiveScene().name == "ChickenGame_DifferentColors")
+        {
+            chicken_model.GetComponent<SkinnedMeshRenderer>().material = newMaterialRef[Random.Range(0, newMaterialRef.Length)];
+        }
+
+        
     }
 
     private void NoCollisionInsideCircle()

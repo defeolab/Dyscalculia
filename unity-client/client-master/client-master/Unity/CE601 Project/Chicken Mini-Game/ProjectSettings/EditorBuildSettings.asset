@@ -9,9 +9,12 @@ EditorBuildSettings:
     path: Assets/Scenes/Start.unity
     guid: 0f00cdaa9190af24db0a6094b3a56d78
   - enabled: 1
-    path: Assets/Scenes/Level.unity
+    path: Assets/Scenes/ChickenGame.unity
     guid: 372a6115b73f8534fb30e938908f0dde
-  - enabled: 0
-    path: Assets/Scenes/PROVA.unity
-    guid: 8b516a1a2b9935f4198da56359cd68d5
+  - enabled: 1
+    path: Assets/Scenes/ChickenGame_Flowers.unity
+    guid: 4d0b5d5f809cc8246bd7aca6f055eaed
+  - enabled: 1
+    path: Assets/Scenes/ChickenGame_DifferentColors.unity
+    guid: 9b57918315a17814f9572688f1be8110
   m_configObjects: {}

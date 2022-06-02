@@ -6,6 +6,7 @@ using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 using System.Collections;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class DataManager : MonoBehaviour
 {
@@ -20,8 +21,9 @@ public class DataManager : MonoBehaviour
 
     //data used in the specific trial
     private AreaTrialData[] areasData; 
-    public TrialData data; 
-    
+    public TrialData data;
+    public GeneratorFlowers flowers;
+
     private float allChickenArrived;
     private bool fences_open;
 
@@ -37,7 +39,12 @@ public class DataManager : MonoBehaviour
     public void SetNewTrialData(TrialData trialData)
     {
         Random.InitState((int)System.DateTime.Now.Ticks);
-       
+
+        if (SceneManager.GetActiveScene().name == "ChickenGame_Flowers")
+        {
+            flowers.DistractionGenerator();
+        }
+
         chickens_generators[0].transform.position = new Vector3(-4, 7, 0);
         chickens_generators[1].transform.position = new Vector3(4, 7, 0);
 
@@ -45,7 +52,7 @@ public class DataManager : MonoBehaviour
         areasData[0] = trialData.area1Data;
         areasData[1] = trialData.area2Data;
 
-        //calculation of new value of average_space_between
+         //calculation of new value of average_space_between
         for (int i = 0; i < areas.Length; i++)
         {
             this.CalculationAverageSpaceBetween(areas[i], areasData[i]);
@@ -60,6 +67,10 @@ public class DataManager : MonoBehaviour
          {
              this.CreateGrid(areas[i], areasData[i]);
          }
+
+        Debug.Log(createdPositionsArea1.Count);
+        Debug.Log(createdPositionsArea2.Count);
+        
 
         //Start Animation to open the fences
         this.OpenFence(true);
@@ -194,58 +205,11 @@ public class DataManager : MonoBehaviour
         foreach(GameObject a in areas) a.transform.localScale = new Vector3(1, 1, 1);
     }
 
-    private void CreateGrid_old(GameObject area, AreaTrialData areaData)
-    {
-        
-
-        float radius_area = areaData.getCircleRadius() * 3f; //3f because the radius of area usable is (you can see it also in unity) 0.5*6=3
-        int div = (int)((2 * radius_area) / areaData.getAverageSpaceBetween()); //how much you can divide the diametre in same space with same distance between (=getAverageSpaceBetween)
-        Vector3 centre_area = area.transform.position;
-        List<Vector3> vectors = new List<Vector3>();
-
-        if (vectors.Count == 0)
-        {
-            vectors.Add(new Vector3((centre_area.x - radius_area), (centre_area.y + radius_area), 0));
-        }
-
-        //Calculate all the point usable in the grid
-        for (int i = 1; i <= div; i++) 
-        {
-            //calculate the horrizontal points
-            for (int j = 1; j <= div; j++) 
-            {
-                Vector3 v_j = new Vector3((vectors[vectors.Count - 1].x + areaData.getAverageSpaceBetween()), vectors[vectors.Count - 1].y, 0);
-                vectors.Add(v_j);
-            }
-
-           /* //calculate the vertical points
-            if (i <= div-1) 
-            {
-                Vector3 v_i = new Vector3(vectors[0].x, vectors[0].y - (i * areaData.getAverageSpaceBetween()), 0);
-                vectors.Add(v_i);
-            }*/
-
-            Vector3 v_i = new Vector3(vectors[0].x, vectors[0].y - (i * areaData.getAverageSpaceBetween()), 0);
-            vectors.Add(v_i);
-        }
-
-        //Take only the points that are inside the circle
-        foreach (Vector3 v in vectors)
-        {
-            float d_x = (v.x - centre_area.x) * (v.x - centre_area.x);
-            float d_y = (v.y - centre_area.y) * (v.y - centre_area.y);
-
-            if ((Math.Sqrt(d_x + d_y) <= radius_area)/*||(vectors.Count<=4)*/)
-            {
-                if (area == areas[0]) createdPositionsArea1.Add(v);
-                else createdPositionsArea2.Add(v);
-            }
-        }
-    }
-
     private void CreateGrid(GameObject area, AreaTrialData areaData)
     {
-        //Debug.Log(areaData.getAverageSpaceBetween());
+        Debug.Log(areaData.getAverageSpaceBetween());
+
+        //float avg= 
         float radius_area = areaData.getCircleRadius() * 3f; //3f because the radius of area usable is (you can see it also in unity) 0.5*6=3
         int div = (int)(radius_area / areaData.getAverageSpaceBetween()); //how much you can divide the radius in same space with same distance between (=getAverageSpaceBetween)
         Vector3 centre_area = area.transform.position;
@@ -305,7 +269,7 @@ public class DataManager : MonoBehaviour
 
     private void CalculationAverageSpaceBetween(GameObject area, AreaTrialData areaData)
     {
-        float newASB = areaData.getAverageSpaceBetween();
+        float newASB = (float) Math.Round(areaData.getAverageSpaceBetween(), 2);
         float num = 1f;
 
         for (int a = 1; a < 6; a++)
