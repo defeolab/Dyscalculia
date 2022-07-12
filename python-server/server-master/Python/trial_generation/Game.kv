@@ -1,0 +1,50 @@
+#:kivy 1.0.9
+<Fence> :
+    canvas:
+        Ellipse:
+            pos: self.pos
+            size: self.size
+
+<TrialCanvas>:   
+    right_fence: right
+    left_fence: left
+    canvas:
+        Rectangle:
+            pos: self.center_x - 5, 0
+            size:10, self.height
+    
+    Fence:
+        id: left
+        pos: self.parent.width/4 - self.width/2, self.parent.height/2 - self.width/2
+        size: self.parent.width/2 - 20, self.parent.width/2 - 20
+
+    
+    Fence:
+        id: right
+        pos: self.parent.width * 0.75 - self.width/2, self.parent.height/2 - self.width/2
+        size: self.parent.width/2 - 20, self.parent.width/2 - 20
+    
+    Label:
+        font_size: 70
+        center_x: root.width / 4
+        top: root.top - 10
+        text: str(root.num_left)
+
+    Label:
+        font_size: 70
+        center_x: root.width * 3 / 4
+        top: root.top - 10
+        text: str(root.num_right)
+    
+    Label:
+        font_size: 70
+        center_x: root.width * 3 / 4
+        top: root.top - 500
+        text: "diff: " + str(root.dif)
+
+    Label:
+        font_size: 70
+        center_x: root.width / 4
+        top: root.top - 500
+        text: "c size: "+ str(root.chicken_size)
+    
