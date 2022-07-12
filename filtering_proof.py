@@ -1,6 +1,4 @@
 import math
-from cv2 import pointPolygonTest
-import numpy as np
 
 def diff_coef(x, y):
     if (x > 0 and y >= 0) or (x < 0 and y <= 0):
