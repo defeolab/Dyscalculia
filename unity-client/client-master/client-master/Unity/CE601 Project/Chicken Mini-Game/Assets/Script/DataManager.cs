@@ -13,17 +13,19 @@ public class DataManager : MonoBehaviour
     public GameObject[] areas; //list of the areas inside the level 
     public GameObject[] fences; //list of the fences' models inside the level 
     public GameObject[] chickens_generators; //list of the generators of chickens
+    public GameObject[] cows_generators; 
 
     public List<GameObject> activeChickens; //list of all the chickens generated in the trial
     private List<Vector3> createdPositionsArea1; //list of all the possible positions inside Area1
     private List<Vector3> createdPositionsArea2; //list of all the possible positions inside Area2
     private List<Vector3> allFinalPositions; //list of all the real positions of chicken
 
-    //data used in the specific trial
+    //data used in a specific trial
     private AreaTrialData[] areasData; 
     public TrialData data;
     public GeneratorFlowers flowers;
 
+    //control variables
     private float allChickenArrived;
     private bool fences_open;
 
@@ -40,6 +42,7 @@ public class DataManager : MonoBehaviour
     {
         Random.InitState((int)System.DateTime.Now.Ticks);
 
+        //Random prototype for scene on distraction with flowers
         if (SceneManager.GetActiveScene().name == "ChickenGame_Flowers")
         {
             flowers.DistractionGenerator();
@@ -52,7 +55,9 @@ public class DataManager : MonoBehaviour
         areasData[0] = trialData.area1Data;
         areasData[1] = trialData.area2Data;
 
-         //calculation of new value of average_space_between
+
+
+        //calculation of new value of average_space_between
         for (int i = 0; i < areas.Length; i++)
         {
             this.CalculationAverageSpaceBetween(areas[i], areasData[i]);
@@ -68,22 +73,32 @@ public class DataManager : MonoBehaviour
              this.CreateGrid(areas[i], areasData[i]);
          }
 
-        Debug.Log(createdPositionsArea1.Count);
-        Debug.Log(createdPositionsArea2.Count);
-        
-
         //Start Animation to open the fences
         this.OpenFence(true);
 
         //Initialize Chickens
         for (int i = 0; i < areasData.Length; i++)
         {
-            for (int j = 0; j < areasData[i].getNumberOfChickens(); j++)
+            if(areasData[i].sizeOfChicken > 7 && 
+                Mathf.Abs(areasData[0].sizeOfChicken- areasData[1].sizeOfChicken) > 1.5f)
             {
-                GameObject newChicken = Instantiate(chickens_generators[i]);
-                newChicken.GetComponent<Chickens>().SetChicken(areas[i], i + 1, areasData[i]);
-                activeChickens.Add(newChicken);
+                for (int j = 0; j < areasData[i].getNumberOfChickens(); j++)
+                {
+                    GameObject newChicken = Instantiate(cows_generators[i]);
+                    newChicken.GetComponent<Chickens>().SetChicken(areas[i], i + 1, areasData[i]);
+                    activeChickens.Add(newChicken);
+                }
             }
+            else
+            {
+                for (int j = 0; j < areasData[i].getNumberOfChickens(); j++)
+                {
+                    GameObject newChicken = Instantiate(chickens_generators[i]);
+                    newChicken.GetComponent<Chickens>().SetChicken(areas[i], i + 1, areasData[i]);
+                    activeChickens.Add(newChicken);
+                }
+            }
+            
         }
 
         TrialsManager.instance.area1Value = areasData[0].getNumberOfChickens();
@@ -148,7 +163,7 @@ public class DataManager : MonoBehaviour
                 allFinalPositions.Add(firstpos);
             }
 
-            // Find other position random
+            // Find another position random
             int d_p = Random.Range(0, determinatedPos.Count);
             if (!allFinalPositions.Contains(determinatedPos[d_p]) && !c.findFinalPos)
             {
@@ -157,9 +172,7 @@ public class DataManager : MonoBehaviour
                 allFinalPositions.Add(determinatedPos[d_p]);
             }
         }
-        catch (Exception e)  {
-            Debug.Log(e);
-        }  
+        catch (Exception e){Debug.Log(e);}  
     }
 
     IEnumerator WaitOpenFence()
@@ -180,7 +193,6 @@ public class DataManager : MonoBehaviour
     public void OpenFence(bool open)
     {
         foreach (GameObject f in fences) f.GetComponent<Animator>().SetBool("open", open);
-
     }
 
     public void Reset()
@@ -207,9 +219,6 @@ public class DataManager : MonoBehaviour
 
     private void CreateGrid(GameObject area, AreaTrialData areaData)
     {
-        Debug.Log(areaData.getAverageSpaceBetween());
-
-        //float avg= 
         float radius_area = areaData.getCircleRadius() * 3f; //3f because the radius of area usable is (you can see it also in unity) 0.5*6=3
         int div = (int)(radius_area / areaData.getAverageSpaceBetween()); //how much you can divide the radius in same space with same distance between (=getAverageSpaceBetween)
         Vector3 centre_area = area.transform.position;
@@ -223,7 +232,7 @@ public class DataManager : MonoBehaviour
         //calculation all the point usable in the grid
         for (int i = 0; i < div+1; i++)
         {
-            //calculation of points around the center
+            //calculation points around the center
             for (int j = 1; j <= div; j++)
             {
                 float x_plus = vectors[0].x + (j * areaData.getAverageSpaceBetween());

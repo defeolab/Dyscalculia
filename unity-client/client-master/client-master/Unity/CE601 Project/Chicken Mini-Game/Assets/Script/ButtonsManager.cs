@@ -14,14 +14,13 @@ public class ButtonsManager : MonoBehaviour
     public Button area2Button;
     public Button pauseButton;
 
-    //public Slider timer;
-    //public SpriteRenderer clockImage;
-    //public Sprite[] clockSprite;
-    private Stopwatch stopwatch;
+                //public Slider timer;
+                //public SpriteRenderer clockImage;
+                //public Sprite[] clockSprite;
 
+    private Stopwatch stopwatch;
     public Text gameText;
     public GameObject[] UIImage; 
-    
     public GameObject menu;
 
     private bool buttonsEnabled;
@@ -31,23 +30,24 @@ public class ButtonsManager : MonoBehaviour
 
     private TrialData trialData;
     private DataManager istance_DataManager;
+    private ErrorTrialManager istance_ErrorTrialManager;
 
     void Start()
     {
         istance_DataManager = gameObject.GetComponent<DataManager>();
-        
+        istance_ErrorTrialManager = gameObject.GetComponent<ErrorTrialManager>();
+
         stopwatch = new Stopwatch();
 
         this.Buttons(false);
+        menu.SetActive(false);
+        foreach (GameObject i in UIImage) i.SetActive(false);
+        
+        gameText.text = "";
+        isCoroutine = false;
         buttonsEnabled = false;
         firstTrial = false;
         elapsedChickenShowTime = false;
-        foreach (GameObject i in UIImage) i.SetActive(false);
-        menu.SetActive(false);
-        gameText.text = "";
-        isCoroutine = false;
-
-        //timer.gameObject.transform.Find("Fill Area").Find("Fill").GetComponent<Image>().color = Color.green;
     }
 
     void Update()
@@ -69,21 +69,13 @@ public class ButtonsManager : MonoBehaviour
                     this.Buttons(true);
                     buttonsEnabled = true;
 
-                    /*//Start timer
-                    timer.maxValue = TrialsManager.instance.chickenShowTime * 1000;
-                    timer.value = TrialsManager.instance.chickenShowTime * 1000;
                     stopwatch.Start();
-                    timer.gameObject.GetComponent<AudioSource>().Play();
-                    timer.gameObject.GetComponent<AudioSource>().pitch = 1f;*/
 
-                    gameText.text = "Click on the fence that contains more chickens";
+                    gameText.text = "Click on the fence where there are more animals";
                     gameText.GetComponent<AudioSource>().Play();
                 }
 
-                //Decrement timer
-                //timer.value = timer.maxValue - stopwatch.ElapsedMilliseconds;
-
-                //Controll if time is > of ChickenShowTime
+                //Check if the time is greater than ChickenShowTime
                 if (stopwatch.IsRunning && stopwatch.ElapsedMilliseconds > (TrialsManager.instance.chickenShowTime * 1000) && !elapsedChickenShowTime)
                 {
                     foreach (GameObject c in istance_DataManager.activeChickens)
@@ -91,28 +83,18 @@ public class ButtonsManager : MonoBehaviour
                         c.SetActive(false);
                     }
 
-                    /*//set value and color of slider
-                    clockImage.sprite = clockSprite[0];
-                    timer.maxValue = TrialsManager.instance.maxTrialTime * 1000;
-                    timer.value = TrialsManager.instance.maxTrialTime * 1000;
-                    timer.gameObject.transform.Find("Fill Area").Find("Fill").GetComponent<Image>().color = Color.yellow;
-                    timer.gameObject.GetComponent<AudioSource>().pitch = 1.2f;*/
                     elapsedChickenShowTime = true;
                 }
 
-                //Controll if time is > of maxTrialTime --> incorrect answer for trail
+                //Check if the time is greater than maxTrialTime -> incorrect answer for trial
                 else if (stopwatch.IsRunning && stopwatch.ElapsedMilliseconds >= (TrialsManager.instance.maxTrialTime * 1000))
                 {
                     stopwatch.Stop();
-                    //timer.gameObject.GetComponent<AudioSource>().Stop();
                     double elapsedTime = stopwatch.Elapsed.TotalMilliseconds;
                     TrialsManager.instance.AddTrialResult(elapsedTime, false);
                     gameText.text = "";
                     this.HandleLoss();
-                    this.Buttons(false);
-
-                    StartCoroutine(NewTrial());
-                    isCoroutine = true;
+                    this.Buttons(false);                   
                 }
             }
         }
@@ -131,13 +113,12 @@ public class ButtonsManager : MonoBehaviour
     private void ButtonSelected(int selectedArea, int unselectedArea)
     {
         stopwatch.Stop();
-        //timer.gameObject.GetComponent<AudioSource>().Stop();
-
         Debug.Log("Area selected: "+ selectedArea + " Time elapsed: " + stopwatch.Elapsed);
 
         bool correct = selectedArea > unselectedArea;
         double elapsedTime = stopwatch.Elapsed.TotalMilliseconds;
         TrialsManager.instance.AddTrialResult(elapsedTime, correct);
+        
         gameText.text = "";
         gameText.GetComponent<AudioSource>().Stop();
 
@@ -151,10 +132,6 @@ public class ButtonsManager : MonoBehaviour
         }
         
         this.Buttons(false);
-        
-        StartCoroutine(NewTrial());
-        isCoroutine = true;
-
     }
 
     private void Buttons(bool flag)
@@ -168,6 +145,9 @@ public class ButtonsManager : MonoBehaviour
         UIImage[0].SetActive(true);
         UIImage[0].GetComponent<AudioSource>().Play();
         TrialsManager.instance.correctCount += 1;
+        
+        StartCoroutine(NewTrial(UIImage[0].GetComponent<AudioSource>().clip.length));
+        isCoroutine = true;
     }
 
     private void HandleLoss()
@@ -175,13 +155,47 @@ public class ButtonsManager : MonoBehaviour
         UIImage[1].SetActive(true);
         UIImage[1].GetComponent<AudioSource>().Play();
         TrialsManager.instance.incorrectCount += 1;
+
+        StartCoroutine(startErrorTrial(UIImage[1].GetComponent<AudioSource>().clip.length));
+        isCoroutine = true;
     }
 
-    IEnumerator NewTrial() 
+    IEnumerator startErrorTrial(float timeAudio)
+    {
+        Debug.Log("ERROR TRIAL");
+        yield return new WaitForSeconds(timeAudio + 0.3f);
+
+        istance_ErrorTrialManager.CollectData(istance_DataManager.data, istance_DataManager.areas, istance_DataManager.activeChickens);
+        foreach (GameObject f in istance_DataManager.fences)
+        {
+            f.SetActive(false);
+        }
+
+        foreach (GameObject a in istance_DataManager.areas)
+        {
+            a.SetActive(false);
+        }
+
+        UIImage[1].SetActive(false);
+
+        istance_ErrorTrialManager.ActiveHays(1);
+        istance_ErrorTrialManager.ActiveHays(2);
+
+        isCoroutine = false;
+    }
+
+    public void endErrorTrial()
+    {
+        istance_ErrorTrialManager.Reset();
+        StartCoroutine(NewTrial(0.4f));
+        isCoroutine = true;
+    }
+
+    IEnumerator NewTrial(float timeAudio) 
     {
         Debug.Log("NEW TRIAL");
-        yield return new WaitForSeconds(4);
-
+        yield return new WaitForSeconds(timeAudio + 0.3f);
+        
         //Reset all the Managers
         TrialsManager.instance.Reset();
         istance_DataManager.Reset();
@@ -215,15 +229,13 @@ public class ButtonsManager : MonoBehaviour
 
     public void PauseTrial()
     {
-        Debug.Log(isCoroutine);
-        if (!isCoroutine)
+        if (!isCoroutine) //check that the coroutine for the new trial has not started
         {
             Debug.Log("PAUSE TRIAL");
             TrialsManager.instance.trialStarted = false;
             trialData = istance_DataManager.data;
             menu.SetActive(true);
             menu.GetComponent<Menu>().SetActiveSettingsMenu(false); //active only Pause Menu
-            //timer.gameObject.GetComponent<AudioSource>().Stop();
             gameText.GetComponent<AudioSource>().Stop();
             foreach (GameObject i in UIImage) i.GetComponent<AudioSource>().Stop();
         }
@@ -241,6 +253,7 @@ public class ButtonsManager : MonoBehaviour
         TrialsManager.instance.chickensReady = false;
 
         istance_DataManager.SetNewTrialData(trialData);
+
     }
 
     public void Reset()
@@ -248,14 +261,10 @@ public class ButtonsManager : MonoBehaviour
         stopwatch.Reset();
         this.Buttons(false);
         buttonsEnabled = false;
-        /*timer.maxValue = 1;
-        timer.value = timer.maxValue;
-        clockImage.sprite = clockSprite[1];
-        gameText.text = "";
-        timer.gameObject.transform.Find("Fill Area").Find("Fill").GetComponent<Image>().color = Color.green;*/
         elapsedChickenShowTime = false;
-        foreach (GameObject i in UIImage) i.SetActive(false);
         menu.SetActive(false);
-
+        foreach (GameObject f in istance_DataManager.fences) f.SetActive(true);
+        foreach (GameObject a in istance_DataManager.areas) a.SetActive(true);
+        foreach (GameObject i in UIImage) i.SetActive(false);
     }
 }

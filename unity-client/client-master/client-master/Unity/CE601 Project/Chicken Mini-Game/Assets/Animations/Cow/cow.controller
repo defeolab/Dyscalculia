@@ -36,7 +36,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: walk
-  m_Speed: 2
+  m_Speed: 4
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 4402802076408443035}
@@ -50,7 +50,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: -3419257869308726280, guid: e3da7551779673c4ca32503bde7763ea,
+  m_Motion: {fileID: -3419257869308726280, guid: 6781840783eb0e2479145296c417c7d9,
     type: 3}
   m_Tag: 
   m_SpeedParameter: 
@@ -63,7 +63,7 @@ AnimatorController:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: chicken
+  m_Name: cow
   serializedVersion: 5
   m_AnimatorParameters:
   - m_Name: walk
@@ -138,7 +138,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: -5252816984213320552, guid: e3da7551779673c4ca32503bde7763ea,
+  m_Motion: {fileID: -5252816984213320552, guid: 6781840783eb0e2479145296c417c7d9,
     type: 3}
   m_Tag: 
   m_SpeedParameter: 
@@ -241,7 +241,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: -3824078280368627652, guid: e3da7551779673c4ca32503bde7763ea,
+  m_Motion: {fileID: -3824078280368627652, guid: 6781840783eb0e2479145296c417c7d9,
     type: 3}
   m_Tag: 
   m_SpeedParameter: 

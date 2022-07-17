@@ -6,8 +6,7 @@ public class TrialsManager : MonoBehaviour
 {
     public static TrialsManager instance = null;
     private static ClientToServer client;
-    public GameObject errorImage;
-    public GameObject finishImage;
+    
     private Stack<TrialData> upcomingTrials;
     public List<TrialData> completedTrials;
     public List<TrialResult> completedTrialResults { get; set; }
@@ -25,14 +24,19 @@ public class TrialsManager : MonoBehaviour
     public int correctCount = 0;
     public int incorrectCount = 0;
 
+    //For now they're used to check if the connection's established and when the trials're finished
+    public GameObject errorImage;
+    public GameObject finishImage;
+
     public void Start()
     {
-        errorImage.SetActive(false);
-        instance = this;
-        ConnectWithClient();
         this.completedTrials = new List<TrialData>();
         this.completedTrialResults = new List<TrialResult>();
-            
+        
+        errorImage.SetActive(false);
+        
+        instance = this;
+        ConnectWithClient(); 
     }
 
     public void Reset()
@@ -48,9 +52,10 @@ public class TrialsManager : MonoBehaviour
         try
         {
             client = new ClientToServer();
-            Debug.Log("Logged in successfully.");
+            Debug.Log("Logged in successfully");
             connectionStarted = true;
             errorImage.SetActive(false);
+            errorImage.GetComponent<AudioSource>().Stop();
             this.upcomingTrials = client.GetTrials();
 
         }
@@ -58,6 +63,7 @@ public class TrialsManager : MonoBehaviour
         {
             Debug.Log(e.Message);
             errorImage.SetActive(true);
+            errorImage.GetComponent<AudioSource>().Play();
             connectionStarted = false;
 
         }
@@ -66,16 +72,22 @@ public class TrialsManager : MonoBehaviour
     public TrialData GetNextTrial()
     {
         TrialData nextTrial=null;
-        if (upcomingTrials.Count > 0)
+
+        if (upcomingTrials.Count > 1)
         {
             nextTrial = upcomingTrials.Pop();
             chickenShowTime = nextTrial.getChickenShowTime();
             maxTrialTime = nextTrial.getMaxTrialTime();
         }
+        else if(upcomingTrials.Count == 1)
+        {
+            nextTrial = upcomingTrials.Pop();
+            client.CompleteTrials();
+            this.upcomingTrials = client.GetTrials();
+        }
         else
         {
-            client.CompleteTrials();
-            Debug.Log("Finish Trials For Now");
+            Debug.Log("Trials finished for now");
             finishImage.SetActive(true);
         }
 
@@ -97,7 +109,7 @@ public class TrialsManager : MonoBehaviour
         this.completedTrialResults.Clear();
     }
 
-    //it's not use for now
+    //Not used for now
     public Stack<TrialData> GetUpcomingTrials() { return upcomingTrials; }
     public void SetUpcomingTrials(Stack<TrialData> trials) { upcomingTrials = trials; }
 }
