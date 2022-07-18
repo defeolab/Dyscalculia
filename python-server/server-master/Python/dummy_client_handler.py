@@ -45,8 +45,8 @@ class DummyClientHandler:
         for i in range (len(nv)):
             if (alpha != 0 and sigma != 0):
                 # Filtering effect first
-                # added_alpha = alpha + 90
-                # rad_alpha = np.deg2rad(added_alpha)   # converted in radiants
+                ## added_alpha = alpha + 90
+                ## rad_alpha = np.deg2rad(added_alpha)   # converted in radiants
                 coeff = self.diff_coef_filtering(nv[i], nnv[i])
                 if((nnv[i] - (coeff * nv[i])) == 0):
                     correct_vector.append(1)
