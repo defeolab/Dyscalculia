@@ -18,6 +18,14 @@ class DummyClientHandler:
         
         return response_vector
 
+    def diff_coef_filtering(x, y):
+        if (x > 0 and y >= 0) or (x < 0 and y <= 0):
+            k = math.degrees(math.atan(y/x))
+        elif (x < 0 and y > 0) or (x > 0 and y < 0):
+            k = math.pi - abs(math.atan(y/x))
+        a = math.degrees(abs((math.pi/4)-k))
+        return a
+
 # ChildSimulator evaluates each trial in the trials matrix, applies Filtering or
 # Sharpening effect or both, depending on the values of alpha and sigma passed as 
 # parameter, and RETURNS a vector that contains, for each trial, if that trial is
@@ -26,10 +34,6 @@ class DummyClientHandler:
         nv = []  # nv --> NUMERICAL VARIABLE
         nnv = []  # nnv --> NON-NUMERICAL VARIABLE
         correct_vector = [] # records if the specific trial has been correct or not
-        
-        added_alpha = alpha + 90
-        rad_alpha = np.deg2rad(added_alpha)   # converted in radiants
-        coeff = math.tan(rad_alpha) 
         
         for results in trials_matrix:
             nv.append(np.log10(results[1]/results[0])) # number_of_chickens
@@ -41,6 +45,9 @@ class DummyClientHandler:
         for i in range (len(nv)):
             if (alpha != 0 and sigma != 0):
                 # Filtering effect first
+                # added_alpha = alpha + 90
+                # rad_alpha = np.deg2rad(added_alpha)   # converted in radiants
+                coeff = self.diff_coef_filtering(nv[i], nnv[i])
                 if((nnv[i] - (coeff * nv[i])) == 0):
                     correct_vector.append(1)
                 elif( ((nnv[i] - (coeff * nv[i]) > 0) and (( (nnv[i] > 0) and (nv[i] < 0) ))) 
