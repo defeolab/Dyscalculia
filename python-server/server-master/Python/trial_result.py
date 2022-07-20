@@ -13,7 +13,7 @@ class TrialResult:
         self.decision_time = decision_time
         self.correct = correct
         if raw_trial_data != None:
-            print(raw_trial_data)
+            #print(raw_trial_data)
             raw_data = raw_trial_data["area1Data"]
             area_1_data = AreaData(raw_data["circleRadius"], raw_data["sizeOfChicken"], raw_data["averageSpaceBetween"], raw_data["numberOfChickens"])
             raw_data = raw_trial_data["area2Data"]

@@ -1,19 +1,19 @@
 import socket
 from db.db_connector import DBConnector
-from server import Create_Game
+from server import Create_Game, GameServer
 from mapping_matrix import dummy_matrix_generator
 from plot_trials import PlotTrials
 from transform_matrix import TransformMatrix
 
-ServerSocket = socket.socket()
-DB = DBConnector()
+server_socket = socket.socket()
+db = DBConnector()
 host = '127.0.0.1'
 port = 65432
 ThreadCount = 0
 
 # simulation_on is a flag that indicated if the game is a simulated one or not
 # 1 means SIMULATED, 0 means REAL
-simulation_on = 1
+simulation_on = 0
 
 # Non-Numerical variable selection (at the moment, we select just one of them)
 # Can be Either Field Area (nnd_selector = 1) or Item Surface Area (nnd_selector = 2)
@@ -74,10 +74,12 @@ if simulation_on == 0:
 else:
     trials_matrix = dummy_matrix_generator(nnd_selector, nnd_number)
 
-game = Create_Game(trials_matrix)
-response_vector = game.run(simulation_on, nnd_selector, alpha, sigma, ServerSocket, host, port, DB, ThreadCount)
+game = GameServer(server_socket, host, port, db)
+game.run()
+# game = Create_Game(trials_matrix)
+# response_vector = game.run(simulation_on, nnd_selector, alpha, sigma, ServerSocket, host, port, DB, ThreadCount)
 
-print('MAIN Response Vector: ' + str(response_vector))
-print(len(response_vector))
+# print('MAIN Response Vector: ' + str(response_vector))
+# print(len(response_vector))
 
-PlotTrials(response_vector, trials_matrix, alpha, nnd_selector)
+# PlotTrials(response_vector, trials_matrix, alpha, nnd_selector)

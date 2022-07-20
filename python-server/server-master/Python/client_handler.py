@@ -3,6 +3,7 @@ import random
 import math
 import settings_manager
 
+import time
 from sys import exit
 from json.decoder import JSONDecodeError
 from threading import Thread
@@ -10,7 +11,7 @@ from trial import Trial
 from trial_result import TrialResult
 from correlated_data_generator import generate_correlated_trials
 from trial_util import convert_trials_to_json, convert_matrix_to_trials
-
+from transform_matrix import TransformMatrix
 
 def calculate_next_correlation(average_decision_time, correct_answer_ratio):
     if correct_answer_ratio < 0.3:
@@ -45,7 +46,112 @@ def calculate_next_correlation(average_decision_time, correct_answer_ratio):
     else:
         return 0.00
 
+class PlayerHandler(Thread) :
+    def __init__(self, lookup_table, client, db, player_id):
+        super().__init__()
+        self.client = client 
+        self.db = db
+        self.player_id = player_id
+        self.running = True
+        self.lookup_table = lookup_table
+        self.running_results = {}
 
+    def run(self) :
+
+        # If there is data in the database about the player
+        # loadtrial information into the running results
+
+        # if first time player...
+        self.running_results["diff"] = 0.1
+        self.running_results["acc"] = -1
+
+        # else load according to database
+        # TODO 
+
+        print("Game " + str(self.player_id) + " is running") 
+        while self.running :
+            data = self.client.recv(2048)
+            reply = self.process_reply(data.decode("utf-8"))
+            self.client.send(str.encode(reply))
+        time.sleep(0.5)
+
+    def process_reply(self, data) :
+        if data.strip() == "TRIAL" :
+            pass
+        elif "TRIALS:" in data :
+            print("SENDING TRIALS TO GAME")
+
+            print("Diff: " + str(self.running_results["diff"]))
+            
+            # Need to use lookup table to get a proper matrix
+            # Generate trials, for now using fixed matrix
+            # trials_matrix_original = [[5, 6, 27777.78, 37777.78, 273.13, 173.13, 4, 8],
+            #                 [7, 6, 27777.78, 27777.78, 173.13, 173.13, 4, 8],
+            #                 [2, 7, 27777.78, 27777.78, 173.13, 173.13, 4, 8]]
+
+            trials_matrix = TransformMatrix(self.lookup_trials())
+            return convert_trials_to_json(convert_matrix_to_trials(trials_matrix))
+   
+
+        elif "COMPLETE:" in data:
+            # Process results json
+            print("PROCESSING TRIALS RESULTS")
+            # TODO: WHY DOES IT SEND THE ENTIRE THING IN TWO PACKAGES? WHY NOT A SINGLE ONE?
+            data = data[9:]
+            while data[-2:] != "]}" :
+                new_data = self.client.recv(2048).decode("utf-8").strip()
+                data += new_data
+
+            # Update database for the player and update running results
+            
+            print("ADDING RESULTS TO DATABASE")
+            try:
+                results = json.loads(data)
+            except JSONDecodeError:
+                return "Failed to decode\n"
+
+            results_to_add = []
+            correct = 0
+            for result in results["results"] :
+                results_to_add.append(TrialResult(decision_time=result["DecisionTime"], correct=result["Correct"], raw_trial_data=result["TrialData"]))
+                correct += int(result["Correct"])
+
+            self.running_results["acc"] = correct/len(results["results"])
+            self.db.add_results(self.player_id, results_to_add)
+
+            # update difficulty factor for SHARPENING ONLY
+            if self.running_results["acc"] >= 0.8 :
+                self.running_results["diff"] += 0.1
+
+            elif self.running_results["acc"] <= 0.5 :
+                self.running_results["diff"] -= 0.1
+
+            return "SUCCESS" + "\n"
+
+        elif "SETTINGS:" in data:
+            pass
+        
+        return "SERVER SAYS: " + data
+    
+    def lookup_trials(self) :
+        margin = 0.02
+        total_trials = 3
+
+        valid_trials = self.lookup_table[self.lookup_table["Difficulty Coefficient"] > (self.running_results["diff"] - margin)]
+        valid_trials = valid_trials[valid_trials["Difficulty Coefficient"] < (self.running_results["diff"] + margin)]
+        valid_trials = valid_trials[:total_trials]
+        valid_trials = valid_trials.reset_index()
+        
+        # generate trial matrices
+        matrix = []
+        for i, r in valid_trials.iterrows() :
+            
+            matrix.append([r["NumLeft"], r["NumRight"], r["FieldAreaLeft"], r["FieldAreaRight"], r["ItemSurfaceAreaLeft"], r["ItemSurfaceAreaRight"], 4, 8])
+        
+        print(matrix)
+        return matrix
+
+# Legacy
 class ClientHandler(Thread):
 
     def __init__(self, connection, db, player_id, trials_matrix):
