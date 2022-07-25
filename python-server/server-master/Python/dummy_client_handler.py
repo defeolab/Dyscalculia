@@ -35,8 +35,12 @@ class DummyClientHandler:
         nnv = []  # nnv --> NON-NUMERICAL VARIABLE
         correct_vector = [] # records if the specific trial has been correct or not
         
+        added_alpha = alpha + 90
+        rad_alpha = np.deg2rad(added_alpha)   # converted in radiants
+        coeff = math.tan(rad_alpha)
+        
         for results in trials_matrix:
-            nv.append(np.log10(results[1]/results[0])) # number_of_chickens
+            nv.append(np.log10(results[1]/results[0]))      # number_of_chickens
             if nnd_selector == 1:
                 nnv.append(np.log10(results[3]/results[2])) # field_area
             elif nnd_selector == 2:
@@ -45,9 +49,6 @@ class DummyClientHandler:
         for i in range (len(nv)):
             if (alpha != 0 and sigma != 0):
                 # Filtering effect first
-                ## added_alpha = alpha + 90
-                ## rad_alpha = np.deg2rad(added_alpha)   # converted in radiants
-                coeff = self.diff_coef_filtering(nv[i], nnv[i])
                 if((nnv[i] - (coeff * nv[i])) == 0):
                     correct_vector.append(1)
                 elif( ((nnv[i] - (coeff * nv[i]) > 0) and (( (nnv[i] > 0) and (nv[i] < 0) ))) 
