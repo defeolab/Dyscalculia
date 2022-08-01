@@ -64,3 +64,4 @@ trial_list["Y"] = y_list
 trial_list["Coeff_F"] = coeff_filtering
 
 trial_list =trial_list.drop(['Log - Norm', 'Coeff_S'], axis=1)
+trial_list.to_excel("python-server/server-master/Python/dataset/diff_coefficients_filtering_coeff.xlsx")
