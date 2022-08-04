@@ -15,7 +15,7 @@ public class ErrorTrialManager : MonoBehaviour
     public Slider sliderArea1, sliderArea2;
     private bool startError, isCoroutine;
     private int sliderMaxValue = 210, sliderMinValue = 0;
-    private float sliderStep = 0;
+    private float sliderStep = 0.00f;
     private int count = 0;
 
     // Start is called before the first frame update
@@ -70,7 +70,7 @@ public class ErrorTrialManager : MonoBehaviour
         if (startError)
         {
 
-            if (count > 5)
+            if (count > 5 && !isCoroutine)
             {
                 skipButton.SetActive(true);
             }
@@ -83,9 +83,9 @@ public class ErrorTrialManager : MonoBehaviour
 
             if (count == gameObject.GetComponent<DataManager>().activeAnimals.Count && !isCoroutine)
             {
-                Debug.Log("finito");
+                skipButton.SetActive(false);
                 StartCoroutine(WaitAndThenDo());
-                isCoroutine = true;
+                isCoroutine = true;                
             }
         }
     }
@@ -177,15 +177,17 @@ public class ErrorTrialManager : MonoBehaviour
 
         if(data.getArea1Data().getNumberOfAnimals() > data.getArea2Data().getNumberOfAnimals())
         {
-            sliderStep = sliderMaxValue / data.getArea1Data().getNumberOfAnimals();
+            sliderStep = (float) ((float)sliderMaxValue / (float)data.getArea1Data().getNumberOfAnimals());
         }
         else
         {
-            sliderStep = sliderMaxValue / data.getArea2Data().getNumberOfAnimals();
+            sliderStep = (float) ((float)sliderMaxValue / (float)data.getArea2Data().getNumberOfAnimals());
         }
 
         gameObject.GetComponent<DragManager>().active = true;
         startError = true;
+
+        Debug.Log(sliderStep);
     }
 
     public void Reset()
@@ -202,7 +204,7 @@ public class ErrorTrialManager : MonoBehaviour
         */
 
         count = 0;
-        sliderStep = 0;
+        sliderStep = 0.00f;
         fences.SetActive(false);
         startError = false;
         skipButton.SetActive(false);

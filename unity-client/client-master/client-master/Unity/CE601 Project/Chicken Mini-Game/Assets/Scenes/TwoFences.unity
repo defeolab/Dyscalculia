@@ -1543,7 +1543,6 @@ MonoBehaviour:
   completedTrials: []
   animalsReady: 0
   trialStarted: 0
-  gameStarted: 0
   connectionStarted: 0
   maxTrialTime: 0
   animalShowTime: 0
@@ -7289,7 +7288,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2086033685
 RectTransform:
   m_ObjectHideFlags: 0

@@ -53,7 +53,8 @@ public class DataManager : MonoBehaviour
         //calculation of new value of average_space_between
         for (int i = 0; i < areas.Length; i++)
         {
-            //this.CalculationAverageSpaceBetween(areas[i], areasData[i]);
+            float newASB = (float)Math.Round(areasData[i].getAverageSpaceBetween(), 2);
+            areasData[i].setAverageSpaceBetween(newASB);
         }
 
         //set right radius in areas
@@ -178,7 +179,7 @@ public class DataManager : MonoBehaviour
     {
         if (!animals.startWalk)
         {
-            yield return new WaitForSeconds(0.5f / animals.number);
+            yield return new WaitForSeconds(0.1f / animals.number);
             animals.startWalk = true;
         }
     }

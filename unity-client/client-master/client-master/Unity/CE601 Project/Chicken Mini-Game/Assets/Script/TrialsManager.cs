@@ -11,7 +11,7 @@ public class TrialsManager : MonoBehaviour
     public List<TrialData> completedTrials;
     public List<TrialResult> completedTrialResults { get; set; }
 
-    public bool animalsReady =false, trialStarted, gameStarted, connectionStarted=false;
+    public bool animalsReady =false, trialStarted, connectionStarted=false;
 
     public float maxTrialTime, animalShowTime;
     public int area1Value, area2Value;
