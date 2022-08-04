@@ -145,7 +145,7 @@ class PlayerHandler(Thread) :
         matrix = []
         for i, r in valid_trials.iterrows() :
             
-            matrix.append([r["NumLeft"], r["NumRight"], r["FieldAreaLeft"], r["FieldAreaRight"], r["ItemSurfaceAreaLeft"], r["ItemSurfaceAreaRight"], 4, 8])
+            matrix.append([float(r["NumLeft"]), float(r["NumRight"]), float(r["FieldAreaLeft"].replace(",", "")), float(r["FieldAreaRight"].replace(",", "")), float(r["ItemSurfaceAreaLeft"]), float(r["ItemSurfaceAreaRight"]), 4, 8])
         print(self.lookup_table.head())
         print(matrix)
         return matrix
