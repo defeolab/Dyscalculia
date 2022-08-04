@@ -34,45 +34,45 @@ sigma = 0.5
 # automatically generated
 nnd_general = 0
 
-# REAL GAME
-if simulation_on == 0:
+# # REAL GAME
+# if simulation_on == 0:
     
-    # The trials_matrix is composed by a number of rows, in which every row 
-    # represents a single trial. Each column of the matrix expresses a "double" 
-    # information, since, if a first column gives us that data for the left area, 
-    # the following column gives us the same data but for the right area,
-    # except for the last two columns, which are described down below.
-    # The single trial contains 10 fields:
+#     # The trials_matrix is composed by a number of rows, in which every row 
+#     # represents a single trial. Each column of the matrix expresses a "double" 
+#     # information, since, if a first column gives us that data for the left area, 
+#     # the following column gives us the same data but for the right area,
+#     # except for the last two columns, which are described down below.
+#     # The single trial contains 10 fields:
         
-        # --> First and second columns are called area_1_number_of_chickens and
-        # area_2_number_of_chickens, which tells us how many chickens must be showed
-        # in each area
+#         # --> First and second columns are called area_1_number_of_chickens and
+#         # area_2_number_of_chickens, which tells us how many chickens must be showed
+#         # in each area
         
-        # --> Third and fourth columns are called area_1_field_area and
-        # area_2_field_area: the field area, also known as FA, is defined as 
-        # the portion of the space where dots actually fall into
+#         # --> Third and fourth columns are called area_1_field_area and
+#         # area_2_field_area: the field area, also known as FA, is defined as 
+#         # the portion of the space where dots actually fall into
         
-        # --> Fifth and sixth columns are called area_1_item_surface_area and
-        # area_2_item_surface_area, defined as the area (in terms of number of 
-        # pixels) occupied by a single chicken
+#         # --> Fifth and sixth columns are called area_1_item_surface_area and
+#         # area_2_item_surface_area, defined as the area (in terms of number of 
+#         # pixels) occupied by a single chicken
         
-        # --> Seventh column is called chicken_show_time, indicates how long the 
-        # chickens are shown on the screen
+#         # --> Seventh column is called chicken_show_time, indicates how long the 
+#         # chickens are shown on the screen
         
-        # --> Eighth column is called max_trial_time and defines the total duration 
-        # of the game / trial
+#         # --> Eighth column is called max_trial_time and defines the total duration 
+#         # of the game / trial
     
-    trials_matrix_original = [[5, 6, 27777.78, 37777.78, 273.13, 173.13, 4, 8],
-                              [7, 6, 27777.78, 27777.78, 173.13, 173.13, 4, 8],
-                              [2, 7, 27777.78, 27777.78, 173.13, 173.13, 4, 8]]
+#     trials_matrix_original = [[5, 6, 27777.78, 37777.78, 273.13, 173.13, 4, 8],
+#                               [7, 6, 27777.78, 27777.78, 173.13, 173.13, 4, 8],
+#                               [2, 7, 27777.78, 27777.78, 173.13, 173.13, 4, 8]]
     
-    # To transform our parameters into the ones accepted by the real game, it is
-    # mandatory to call the TransformMatrix function to obtain the right matrix
-    trials_matrix = TransformMatrix(trials_matrix_original)
+#     # To transform our parameters into the ones accepted by the real game, it is
+#     # mandatory to call the TransformMatrix function to obtain the right matrix
+#     trials_matrix = TransformMatrix(trials_matrix_original)
 
-# SIMULATED GAME 
-else:
-    trials_matrix = dummy_matrix_generator(nnd_selector, nnd_number)
+# # SIMULATED GAME 
+# else:
+#     trials_matrix = dummy_matrix_generator(nnd_selector, nnd_number)
 
 game = GameServer(server_socket, host, port, db)
 game.run()
