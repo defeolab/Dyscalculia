@@ -9,10 +9,10 @@ using UnityEngine.UI;
 using System.Linq;
 using UnityEngine.SceneManagement;
 
-public class Chickens : MonoBehaviour
+public class Animals : MonoBehaviour
 {
     public GameObject area;
-    public GameObject chicken_model;
+    public GameObject animalModel;
     public Material[] newMaterialRef;
     public AreaTrialData areaData;
     public Animator animator;
@@ -40,7 +40,7 @@ public class Chickens : MonoBehaviour
             if (startWalk)
             {
                 animator.SetBool("walk", true);
-                this.transform.position = Vector2.MoveTowards(this.transform.position, this.positionFinal, 5f * Time.deltaTime); //move chicken to Final Position
+                this.transform.position = Vector2.MoveTowards(this.transform.position, this.positionFinal, 5f * Time.deltaTime); //move animal to Final Position
             }
 
             this.NoCollisionInsideCircle();
@@ -62,37 +62,37 @@ public class Chickens : MonoBehaviour
             {
                 var distanceBetween = Vector2.Distance(dragManager.worldPosition, this.transform.position);
 
-                if (distanceBetween < 1f)
+                if (distanceBetween < 0.2f)
                 {
                     dragManager.findDrag1 = true;
-                    dragManager.lastDragged_area1 = gameObject;
+                    dragManager.draggedArea1 = gameObject;
                 }
             }
             else if (errorStarted && area.name == "Area2")
             {
                 var distanceBetween = Vector2.Distance(dragManager.worldPosition, this.transform.position);
 
-                if (distanceBetween < 1f)
+                if (distanceBetween < 0.2f)
                 {
                     dragManager.findDrag2 = true;
-                    dragManager.lastDragged_area2 = gameObject;
+                    dragManager.draggedArea2 = gameObject;
                 }
             }
 
         }
     }
 
-    public void SetChicken(GameObject area, int number, AreaTrialData areaData)
+    public void SetAnimal(GameObject area, int number, AreaTrialData areaData)
     {
-        transform.localScale = new Vector3(areaData.getSizeOfChicken(), areaData.getSizeOfChicken(), areaData.getSizeOfChicken());
+        transform.localScale = new Vector3(areaData.getSizeOfAnimal(), areaData.getSizeOfAnimal(), areaData.getSizeOfAnimal());
         this.area = area;
         this.areaData = areaData;
         this.number = number;
 
         //Random prototype for scene on distraction with materials
-        if (SceneManager.GetActiveScene().name == "ChickenGame_DifferentColors")
+        if (SceneManager.GetActiveScene().name == "TwoFences_DifferentColors")
         {
-            chicken_model.GetComponent<SkinnedMeshRenderer>().material = newMaterialRef[Random.Range(0, newMaterialRef.Length)];
+            animalModel.GetComponent<SkinnedMeshRenderer>().material = newMaterialRef[Random.Range(0, newMaterialRef.Length)];
         }   
     }
 
@@ -107,7 +107,7 @@ public class Chickens : MonoBehaviour
         }
     }
 
-    public void setChickenError()
+    public void setAnimalError()
     {
         errorStarted = true;
         animator.SetBool("walk", false);

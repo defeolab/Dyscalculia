@@ -42,23 +42,23 @@ public class ChickenManager : MonoBehaviour
 
         activeChickens = new List<Chicken>();
 
-        Debug.Log(area1Data.getNumberOfChickens());
-        Debug.Log(area2Data.getNumberOfChickens());
+        Debug.Log(area1Data.getNumberOfAnimals());
+        Debug.Log(area2Data.getNumberOfAnimals());
         createdPositions = new List<Vector3>();
         initializeChicken(chicken, area1Data, 1, 1);
-        for (int i = 1; i < area1Data.getNumberOfChickens(); i++)
+        for (int i = 1; i < area1Data.getNumberOfAnimals(); i++)
         {
             Chicken newChicken = Instantiate(chicken);
             initializeChicken(newChicken, area1Data, 1, i+1);
         }
         createdPositions = new List<Vector3>();
-        for (int i = 0; i < area2Data.getNumberOfChickens(); i++)
+        for (int i = 0; i < area2Data.getNumberOfAnimals(); i++)
         {
             Chicken newChicken = Instantiate(chicken);
             initializeChicken(newChicken, area2Data, 2, i+1);
         }
-        GameManager.instance.area1Chickens = area1Data.getNumberOfChickens();
-        GameManager.instance.area2Chickens = area2Data.getNumberOfChickens();
+        GameManager.instance.area1Chickens = area1Data.getNumberOfAnimals();
+        GameManager.instance.area2Chickens = area2Data.getNumberOfAnimals();
         adjustChickenSizes();
     }
 
@@ -67,7 +67,7 @@ public class ChickenManager : MonoBehaviour
         foreach (Chicken activeChicken in activeChickens)
         {
             AreaTrialData areaData = activeChicken.getArea() == 1 ? area1Data : area2Data;
-            activeChicken.transform.localScale = new Vector3(areaData.getSizeOfChicken(), areaData.getSizeOfChicken());
+            activeChicken.transform.localScale = new Vector3(areaData.getSizeOfAnimal(), areaData.getSizeOfAnimal());
         }
     }
 

@@ -27,7 +27,7 @@ public class TrialData
         return area2Data;
     }
 
-    public float getChickenShowTime()
+    public float getAnimalShowTime()
     {
         return chickenShowTime;
     }

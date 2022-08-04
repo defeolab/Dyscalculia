@@ -35,7 +35,7 @@ public class InitialVideo : MonoBehaviour
             isplaying = false;
             this.gameObject.SetActive(false);
             loadScene.SetActive(true);
-            loadScene.GetComponent<LoadLevelChickens>().enabled = true;
+            loadScene.GetComponent<LoadLevelTwoFences>().enabled = true;
         }
     }
 
@@ -44,7 +44,7 @@ public class InitialVideo : MonoBehaviour
         isplaying = false;
         this.gameObject.SetActive(false);
         loadScene.SetActive(true);
-        loadScene.GetComponent<LoadLevelChickens>().enabled = true;
+        loadScene.GetComponent<LoadLevelTwoFences>().enabled = true;
     }
 
     public void SetLevelAudio()

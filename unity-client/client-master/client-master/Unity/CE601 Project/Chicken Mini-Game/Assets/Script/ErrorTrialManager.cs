@@ -3,20 +3,20 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ErrorTrialManager : MonoBehaviour
 {
-    private List<Vector3> positionsArea1;
-    private List<Vector3> positionsArea2;
-    private List<GameObject> pointsOfHays1;
-    private List<GameObject> pointsOfHays2;
-    public List<GameObject> activeHays;
-
+    private List<Vector3> positionsArea1, positionsArea2;
+    private List<GameObject> pointsOfHays1, pointsOfHays2, activeHays;
     public Vector3 hay_area1_pos, hay_area2_pos;
-    public GameObject fences;
-    public GameObject hay;
-
-    private bool startError;
+    
+    public GameObject fences, hay, skipButton, canvasSliders;
+    public Slider sliderArea1, sliderArea2;
+    private bool startError, isCoroutine;
+    private int sliderMaxValue = 210, sliderMinValue = 0;
+    private float sliderStep = 0;
+    private int count = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -28,16 +28,17 @@ public class ErrorTrialManager : MonoBehaviour
         activeHays = new List<GameObject>();
 
         fences.SetActive(false);
-
-
+        skipButton.SetActive(false);
+        isCoroutine = false;
+        canvasSliders.SetActive(false);
     }
 
     private void Update()
     {
-        if (startError)
+        /*if (startError)
         {
             int check = 0;
-            foreach (GameObject c in gameObject.GetComponent<DataManager>().activeChickens)
+            foreach (GameObject c in gameObject.GetComponent<DataManager>().activeAnimals)
             {
                 foreach(GameObject a in activeHays)
                 {
@@ -47,13 +48,89 @@ public class ErrorTrialManager : MonoBehaviour
                     }
                 }    
             }
-            
-            
-            if (check == gameObject.GetComponent<DataManager>().activeChickens.Count)
+
+            if(activeHays.Count > 5)
             {
-                gameObject.GetComponent<ButtonsManager>().endErrorTrial();
+                skipButton.SetActive(true);
+            }
+
+            if (Input.GetKeyDown("space"))
+            {
+                //this.SpeedUpErrorTrial(); 
+            }
+
+
+            if (check == gameObject.GetComponent<DataManager>().activeAnimals.Count && !isCoroutine)
+            {
+                StartCoroutine(WaitAndThenDo());
+                isCoroutine = true;
+            }
+        }*/
+
+        if (startError)
+        {
+
+            if (count > 5)
+            {
+                skipButton.SetActive(true);
+            }
+
+            if (Input.GetKeyDown("space"))
+            {
+                this.SpeedUpErrorTrial(); 
+            }
+
+
+            if (count == gameObject.GetComponent<DataManager>().activeAnimals.Count && !isCoroutine)
+            {
+                Debug.Log("finito");
+                StartCoroutine(WaitAndThenDo());
+                isCoroutine = true;
             }
         }
+    }
+
+    public void SpeedUpErrorTrial()
+    {
+        TrialData data = gameObject.GetComponent<DataManager>().data;
+        sliderArea1.value = sliderStep * data.getArea1Data().getNumberOfAnimals();
+        sliderArea2.value = sliderStep * data.getArea2Data().getNumberOfAnimals();
+        count = gameObject.GetComponent<DataManager>().activeAnimals.Count;
+
+        foreach (GameObject c in gameObject.GetComponent<DataManager>().activeAnimals) c.SetActive(false);
+    }
+
+    public void SpeedUpErrorTrialOld()
+    {
+        foreach (GameObject a in gameObject.GetComponent<DataManager>().activeAnimals)
+        {
+            if (a.GetComponent<Animals>().errorStarted)
+            {
+                if (a.GetComponent<Animals>().area.name == "Area1")
+                {
+                    a.transform.position = hay_area1_pos;
+                    a.GetComponent<Animator>().SetBool("eat", false);
+                    a.GetComponent<Rigidbody>().rotation = Quaternion.Euler(new Vector3(180f, 270f, 90f));
+                    a.GetComponent<Animals>().errorStarted = false;
+                    if (pointsOfHays1.Count != 0) this.ActiveHays(1);
+                }
+                else if (a.GetComponent<Animals>().area.name == "Area2")
+                {
+                    a.transform.position = hay_area2_pos;
+                    a.GetComponent<Animator>().SetBool("eat", false);
+                    a.GetComponent<Rigidbody>().rotation = Quaternion.Euler(new Vector3(0f, 270f, 90f));
+                    a.GetComponent<Animals>().errorStarted = false;
+                    if (pointsOfHays2.Count != 0) this.ActiveHays(2);
+                }
+            }
+            
+        }
+    }
+
+    IEnumerator WaitAndThenDo()
+    {
+        yield return new WaitForSeconds(5f);
+        gameObject.GetComponent<ButtonsManager>().EndErrorTrial();
     }
 
     public void ActiveHays(int area)
@@ -73,24 +150,38 @@ public class ErrorTrialManager : MonoBehaviour
             pointsOfHays2.Remove(pointsOfHays2[0]);
         }
     }
-    public void CollectData(TrialData data, GameObject[] areas, List<GameObject> activeChickens)
+
+    public void CollectData(TrialData data, List<GameObject> activeAnimals)
     {
         fences.SetActive(true);
+        sliderArea1.value = sliderMinValue;
+        sliderArea2.value = sliderMinValue;
 
-        this.SetPositionsHays(data);
+        canvasSliders.SetActive(true);
 
-        foreach (GameObject c in activeChickens)
+        //this.SetPositionsHays(data);
+        
+        foreach (GameObject c in activeAnimals)
         {
-            if (c.GetComponent<Chickens>().area.name == "Area1")
+            if (c.GetComponent<Animals>().area.name == "Area1")
             {
-                gameObject.GetComponent<DragManager>().draggableChickens1.Add(c);
-                c.GetComponent<Chickens>().setChickenError();
+                gameObject.GetComponent<DragManager>().draggableAnimals1.Add(c);
+                c.GetComponent<Animals>().setAnimalError();
             }
-            else if(c.GetComponent<Chickens>().area.name == "Area2")
+            else if(c.GetComponent<Animals>().area.name == "Area2")
             {
-                gameObject.GetComponent<DragManager>().draggableChickens2.Add(c);
-                c.GetComponent<Chickens>().setChickenError();
+                gameObject.GetComponent<DragManager>().draggableAnimals2.Add(c);
+                c.GetComponent<Animals>().setAnimalError();
             }
+        }
+
+        if(data.getArea1Data().getNumberOfAnimals() > data.getArea2Data().getNumberOfAnimals())
+        {
+            sliderStep = sliderMaxValue / data.getArea1Data().getNumberOfAnimals();
+        }
+        else
+        {
+            sliderStep = sliderMaxValue / data.getArea2Data().getNumberOfAnimals();
         }
 
         gameObject.GetComponent<DragManager>().active = true;
@@ -99,7 +190,7 @@ public class ErrorTrialManager : MonoBehaviour
 
     public void Reset()
     {
-        foreach (GameObject p1 in pointsOfHays1) Destroy(p1);
+        /*foreach (GameObject p1 in pointsOfHays1) Destroy(p1);
         foreach (GameObject p2 in pointsOfHays1) Destroy(p2);
         foreach (GameObject p in activeHays) Destroy(p);
 
@@ -108,8 +199,32 @@ public class ErrorTrialManager : MonoBehaviour
         pointsOfHays1.Clear();
         pointsOfHays2.Clear();
         activeHays.Clear();
+        */
+
+        count = 0;
+        sliderStep = 0;
         fences.SetActive(false);
         startError = false;
+        skipButton.SetActive(false);
+        isCoroutine = false;
+        canvasSliders.SetActive(false);
+    }
+
+    public void IncreaseSlider(Collider collider, int a)
+    {
+        float newSizeY = collider.GetComponent<BoxCollider>().size.y + sliderStep;
+        
+        if (a == 1)
+        {
+            sliderArea1.value += sliderStep;
+        }
+        else if (a == 2)
+        {
+            sliderArea2.value += sliderStep;
+        }
+
+        collider.GetComponent<BoxCollider>().size = new Vector3(collider.GetComponent<BoxCollider>().size.x, newSizeY, collider.GetComponent<BoxCollider>().size.z);
+        count++;
     }
 
     private void SetPositionsHays(TrialData data)
@@ -119,9 +234,9 @@ public class ErrorTrialManager : MonoBehaviour
         int div_y = 0;
         int div_x = 0;
 
-        float avg_1 = (data.area1Data.sizeOfChicken * 0.007f * 26f);
+        float avg_1 = (data.area1Data.getSizeOfAnimal() * 0.007f * 26f);
         int div_1 = (int)(d / avg_1);
-        float avg_2 = (data.area2Data.sizeOfChicken * 0.007f * 26f);
+        float avg_2 = (data.area2Data.getSizeOfAnimal() * 0.007f * 26f);
         int div_2 = (int)(d / avg_2);
 
         if (div_1 <= div_2)
@@ -135,17 +250,13 @@ public class ErrorTrialManager : MonoBehaviour
             div_y = div_2;
         }
 
-        Debug.Log(div_y);
-
-        float numberOfChichens1 = data.area1Data.numberOfChickens + 0.0f;
-        float numberOfChichens2 = data.area2Data.numberOfChickens + 0.0f;
-        float num_1 = (float)(numberOfChichens1 / (div_y+1)) + 0.45f;
-        float num_2 = (float)(numberOfChichens2 / (div_y+1)) + 0.45f;
+        float numberOfAnimals1 = data.area1Data.getNumberOfAnimals() + 0.0f;
+        float numberOfAnimals2 = data.area2Data.getNumberOfAnimals() + 0.0f;
+        float num_1 = (float)(numberOfAnimals1 / (div_y + 1)) + 0.45f;
+        float num_2 = (float)(numberOfAnimals2 / (div_y + 1)) + 0.45f;
 
         div_1 = Mathf.RoundToInt(num_1);
         div_2 = Mathf.RoundToInt(num_2);
-
-        Debug.Log(div_1 + "  " + div_2);
 
         if (div_1 >= div_2)
         {
@@ -187,12 +298,12 @@ public class ErrorTrialManager : MonoBehaviour
             }
         }
 
-        foreach(Vector3 v in positionsArea1.OrderBy(p => p.y).ThenByDescending(p => p.x))
+        foreach (Vector3 v in positionsArea1.OrderBy(p => p.y).ThenByDescending(p => p.x))
         {
-            if(pointsOfHays1.Count < numberOfChichens1)
+            if (pointsOfHays1.Count < numberOfAnimals1)
             {
                 GameObject newHay = Instantiate(hay);
-                newHay.transform.localScale = new Vector3(data.area1Data.sizeOfChicken * 0.007f, data.area1Data.sizeOfChicken * 0.007f, 0);
+                newHay.transform.localScale = new Vector3(data.area1Data.getSizeOfAnimal() * 0.007f, data.area1Data.getSizeOfAnimal() * 0.007f, 0);
                 newHay.transform.position = v;
                 newHay.SetActive(false);
                 pointsOfHays1.Add(newHay);
@@ -201,10 +312,10 @@ public class ErrorTrialManager : MonoBehaviour
 
         foreach (Vector3 v in positionsArea2.OrderBy(p => p.y).ThenBy(p => p.x))
         {
-            if (pointsOfHays2.Count < numberOfChichens2)
+            if (pointsOfHays2.Count < numberOfAnimals2)
             {
                 GameObject newHay = Instantiate(hay);
-                newHay.transform.localScale = new Vector3(data.area2Data.sizeOfChicken * 0.007f, data.area2Data.sizeOfChicken * 0.007f, 0);
+                newHay.transform.localScale = new Vector3(data.area2Data.getSizeOfAnimal() * 0.007f, data.area2Data.getSizeOfAnimal() * 0.007f, 0);
                 newHay.transform.position = v;
                 newHay.SetActive(false);
                 pointsOfHays2.Add(newHay);

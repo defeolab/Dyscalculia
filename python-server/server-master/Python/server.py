@@ -1,7 +1,49 @@
 import socket
-from client_handler import ClientHandler
+import pandas
+from client_handler import ClientHandler, PlayerHandler
 from dummy_client_handler import DummyClientHandler
  
+
+class GameServer:
+
+    def __init__(self, server_socket, host, port, db) -> None:
+        self.server_socket = server_socket
+        self.host = host 
+        self.port = port
+        self.db = db
+        self.players = []
+        self.running = True
+        
+        # lookup table is shared in the server to avoid multiple opens
+        self.lookup_table = pandas.read_csv("./dataset/trial_lookup.csv")
+
+    def run(self):
+
+        try :
+            self.server_socket.bind((self.host, self.port))
+        except socket.error as e :
+            print(str(e))
+        
+        print('Waiting for a Connection..')
+        self.server_socket.listen(5)
+        
+        while self.running :
+            # Accepting player connection
+            client, address = self.server_socket.accept()
+            player_id = self.db.get_player(address[0])
+            if player_id == - 1:
+                player_id = self.add_player(address[0])
+            print("Player " + str(player_id) + " has joined")
+
+            # Starting a thread to handle the player
+            player_thread = PlayerHandler(self.lookup_table, client, self.db, player_id)
+            player_thread.run()
+            self.players.append(player_thread)
+            print("Number of players: " + str(len(self.players)))
+
+
+
+# LEGACY
 class Create_Game:
     
     def __init__ (self, trials_matrix):
