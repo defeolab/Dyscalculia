@@ -1,6 +1,5 @@
 import socket
 import pandas
-from torch import addr
 from client_handler import ClientHandler, PlayerHandler
 from dummy_client_handler import DummyClientHandler
  
@@ -19,6 +18,7 @@ class GameServer:
         self.lookup_table = pandas.read_csv("./dataset/trial_lookup.csv")
 
     def run(self):
+
         try :
             self.server_socket.bind((self.host, self.port))
         except socket.error as e :

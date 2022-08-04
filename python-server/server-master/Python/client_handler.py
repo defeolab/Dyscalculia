@@ -71,6 +71,7 @@ class PlayerHandler(Thread) :
         print("Game " + str(self.player_id) + " is running") 
         while self.running :
             data = self.client.recv(2048)
+         
             reply = self.process_reply(data.decode("utf-8"))
             self.client.send(str.encode(reply))
         time.sleep(0.5)
@@ -83,12 +84,6 @@ class PlayerHandler(Thread) :
 
             print("Diff: " + str(self.running_results["diff"]))
             
-            # Need to use lookup table to get a proper matrix
-            # Generate trials, for now using fixed matrix
-            # trials_matrix_original = [[5, 6, 27777.78, 37777.78, 273.13, 173.13, 4, 8],
-            #                 [7, 6, 27777.78, 27777.78, 173.13, 173.13, 4, 8],
-            #                 [2, 7, 27777.78, 27777.78, 173.13, 173.13, 4, 8]]
-
             trials_matrix = TransformMatrix(self.lookup_trials())
             return convert_trials_to_json(convert_matrix_to_trials(trials_matrix))
    
@@ -96,11 +91,15 @@ class PlayerHandler(Thread) :
         elif "COMPLETE:" in data:
             # Process results json
             print("PROCESSING TRIALS RESULTS")
-            # TODO: WHY DOES IT SEND THE ENTIRE THING IN TWO PACKAGES? WHY NOT A SINGLE ONE?
+            # TODO WHY DOES IT SEND THE ENTIRE THING IN TWO PACKAGES? WHY NOT A SINGLE ONE?
             data = data[9:]
+            print(data)
+            print("###################################")
             while data[-2:] != "]}" :
                 new_data = self.client.recv(2048).decode("utf-8").strip()
                 data += new_data
+            
+            print(data)
 
             # Update database for the player and update running results
             
@@ -135,7 +134,7 @@ class PlayerHandler(Thread) :
     
     def lookup_trials(self) :
         margin = 0.02
-        total_trials = 3
+        total_trials = 4
 
         valid_trials = self.lookup_table[self.lookup_table["Difficulty Coefficient"] > (self.running_results["diff"] - margin)]
         valid_trials = valid_trials[valid_trials["Difficulty Coefficient"] < (self.running_results["diff"] + margin)]
@@ -147,7 +146,7 @@ class PlayerHandler(Thread) :
         for i, r in valid_trials.iterrows() :
             
             matrix.append([r["NumLeft"], r["NumRight"], r["FieldAreaLeft"], r["FieldAreaRight"], r["ItemSurfaceAreaLeft"], r["ItemSurfaceAreaRight"], 4, 8])
-        
+        print(self.lookup_table.head())
         print(matrix)
         return matrix
 
