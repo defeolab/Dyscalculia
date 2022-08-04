@@ -21,17 +21,16 @@ public class AreaTrialData
         return circleRadius;
     }
 
-    public float getSizeOfChicken()
+    public float getSizeOfAnimal()
     {
         return sizeOfChicken;
     }
-
     public float getAverageSpaceBetween()
     {
         return averageSpaceBetween;
     }
 
-    public int getNumberOfChickens()
+    public int getNumberOfAnimals()
     {
         return numberOfChickens;
     }

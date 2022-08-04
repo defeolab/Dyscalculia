@@ -24,7 +24,7 @@ public class ClientToServer : MonoBehaviour
     public Stack<TrialData> GetTrials()
     {
         // Sending command
-        writer.WriteLine("TRIALS:5");
+        writer.WriteLine("TRIALS:");
 
         string line = reader.ReadLine();
         Debug.Log("GET TRIALS: " + line);

@@ -11,22 +11,15 @@ public class TrialsManager : MonoBehaviour
     public List<TrialData> completedTrials;
     public List<TrialResult> completedTrialResults { get; set; }
 
-    public bool chickensReady;
-    public bool trialStarted;
-    public bool gameStarted;
-    public bool connectionStarted=false;
+    public bool animalsReady =false, trialStarted, gameStarted, connectionStarted=false;
 
-    public float maxTrialTime;
-    public float chickenShowTime;
-    public int area1Value;
-    public int area2Value;
+    public float maxTrialTime, animalShowTime;
+    public int area1Value, area2Value;
 
-    public int correctCount = 0;
-    public int incorrectCount = 0;
+    public int correctCount = 0, incorrectCount = 0;
 
     //For now they're used to check if the connection's established and when the trials're finished
-    public GameObject errorImage;
-    public GameObject finishImage;
+    public GameObject errorImage, finishImage;
 
     public void Start()
     {
@@ -42,7 +35,7 @@ public class TrialsManager : MonoBehaviour
     public void Reset()
     {
         trialStarted = false;
-        chickensReady = false;
+        animalsReady = false;
         area1Value = 0;
         area2Value = 0;
     }
@@ -57,7 +50,7 @@ public class TrialsManager : MonoBehaviour
             errorImage.SetActive(false);
             errorImage.GetComponent<AudioSource>().Stop();
             this.upcomingTrials = client.GetTrials();
-
+            //Debug.Log(upcomingTrials.ToString());
         }
         catch (Exception e)
         {
@@ -76,14 +69,16 @@ public class TrialsManager : MonoBehaviour
         if (upcomingTrials.Count > 1)
         {
             nextTrial = upcomingTrials.Pop();
-            chickenShowTime = nextTrial.getChickenShowTime();
+            animalShowTime = nextTrial.getAnimalShowTime();
             maxTrialTime = nextTrial.getMaxTrialTime();
         }
         else if(upcomingTrials.Count == 1)
         {
             nextTrial = upcomingTrials.Pop();
             client.CompleteTrials();
-            this.upcomingTrials = client.GetTrials();
+            
+            Debug.Log("FIND NEW TRIALS");
+            this.upcomingTrials = client.GetTrials(); ;
         }
         else
         {
@@ -107,6 +102,8 @@ public class TrialsManager : MonoBehaviour
     public void ClearResults()
     {
         this.completedTrialResults.Clear();
+        this.completedTrials.Clear();
+        this.upcomingTrials.Clear();
     }
 
     //Not used for now

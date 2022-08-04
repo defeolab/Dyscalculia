@@ -1,24 +1,22 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Diagnostics;
+using UnityEngine.SceneManagement;
 using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
-using System.Collections;
-using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 
 public class DataManager : MonoBehaviour
 {
     public GameObject[] areas; //list of the areas inside the level 
     public GameObject[] fences; //list of the fences' models inside the level 
     public GameObject[] chickens_generators; //list of the generators of chickens
-    public GameObject[] cows_generators; 
+    public GameObject[] cows_generators; //list of the generators of cows
 
-    public List<GameObject> activeChickens; //list of all the chickens generated in the trial
+    public List<GameObject> activeAnimals; //list of all the animals generated in the trial
     private List<Vector3> createdPositionsArea1; //list of all the possible positions inside Area1
     private List<Vector3> createdPositionsArea2; //list of all the possible positions inside Area2
-    private List<Vector3> allFinalPositions; //list of all the real positions of chicken
+    private List<Vector3> allFinalPositions; //list of all the real positions of animals
 
     //data used in a specific trial
     private AreaTrialData[] areasData; 
@@ -26,41 +24,36 @@ public class DataManager : MonoBehaviour
     public GeneratorFlowers flowers;
 
     //control variables
-    private float allChickenArrived;
+    private float allAnimalsArrived;
     private bool fences_open;
 
     void Start()
     {
-        activeChickens = new List<GameObject>();
+        activeAnimals = new List<GameObject>();
         allFinalPositions  = new List<Vector3>();
         createdPositionsArea1 = new List<Vector3>();
         createdPositionsArea2 = new List<Vector3>();
         areasData = new AreaTrialData[2];
-        allChickenArrived = 0f;
+        allAnimalsArrived = 0f;
     }
     public void SetNewTrialData(TrialData trialData)
     {
         Random.InitState((int)System.DateTime.Now.Ticks);
 
         //Random prototype for scene on distraction with flowers
-        if (SceneManager.GetActiveScene().name == "ChickenGame_Flowers")
+        if (SceneManager.GetActiveScene().name == "TwoFences_Flowers")
         {
             flowers.DistractionGenerator();
         }
-
-        chickens_generators[0].transform.position = new Vector3(-4, 7, 0);
-        chickens_generators[1].transform.position = new Vector3(4, 7, 0);
 
         data = trialData;
         areasData[0] = trialData.area1Data;
         areasData[1] = trialData.area2Data;
 
-
-
         //calculation of new value of average_space_between
         for (int i = 0; i < areas.Length; i++)
         {
-            this.CalculationAverageSpaceBetween(areas[i], areasData[i]);
+            //this.CalculationAverageSpaceBetween(areas[i], areasData[i]);
         }
 
         //set right radius in areas
@@ -76,99 +69,99 @@ public class DataManager : MonoBehaviour
         //Start Animation to open the fences
         this.OpenFence(true);
 
-        //Initialize Chickens
+        //Initialize Animals
         for (int i = 0; i < areasData.Length; i++)
         {
-            if(areasData[i].sizeOfChicken > 7 && 
-                Mathf.Abs(areasData[0].sizeOfChicken- areasData[1].sizeOfChicken) > 1.5f)
+            if(areasData[i].getSizeOfAnimal() > 7 && 
+                Mathf.Abs(areasData[0].getSizeOfAnimal() - areasData[1].getSizeOfAnimal()) > 1.5f)
             {
-                for (int j = 0; j < areasData[i].getNumberOfChickens(); j++)
+                for (int j = 0; j < areasData[i].getNumberOfAnimals(); j++)
                 {
-                    GameObject newChicken = Instantiate(cows_generators[i]);
-                    newChicken.GetComponent<Chickens>().SetChicken(areas[i], i + 1, areasData[i]);
-                    activeChickens.Add(newChicken);
+                    GameObject newAnimal = Instantiate(cows_generators[i]);
+                    newAnimal.GetComponent<Animals>().SetAnimal(areas[i], i + 1, areasData[i]);
+                    activeAnimals.Add(newAnimal);
                 }
             }
             else
             {
-                for (int j = 0; j < areasData[i].getNumberOfChickens(); j++)
+                for (int j = 0; j < areasData[i].getNumberOfAnimals(); j++)
                 {
-                    GameObject newChicken = Instantiate(chickens_generators[i]);
-                    newChicken.GetComponent<Chickens>().SetChicken(areas[i], i + 1, areasData[i]);
-                    activeChickens.Add(newChicken);
+                    GameObject newAnimal = Instantiate(chickens_generators[i]);
+                    newAnimal.GetComponent<Animals>().SetAnimal(areas[i], i + 1, areasData[i]);
+                    activeAnimals.Add(newAnimal);
                 }
             }
             
         }
 
-        TrialsManager.instance.area1Value = areasData[0].getNumberOfChickens();
-        TrialsManager.instance.area2Value = areasData[1].getNumberOfChickens();
+        TrialsManager.instance.area1Value = areasData[0].getNumberOfAnimals();
+        TrialsManager.instance.area2Value = areasData[1].getNumberOfAnimals();
         TrialsManager.instance.trialStarted = true; //Start Trial
     }
 
     void FixedUpdate()
     {
-        allChickenArrived = 0;
+        allAnimalsArrived = 0;
 
         if (TrialsManager.instance.trialStarted)
         {
-            foreach (GameObject c in activeChickens)
+            foreach (GameObject c in activeAnimals)
             {
-                if (!c.GetComponent<Chickens>().findFinalPos)
+                if (!c.GetComponent<Animals>().findFinalPos)
                 {
                     this.FindFinalPosition(c);
                 }
                 else
                 {
-                    if (!c.GetComponent<Chickens>().startWalk)
+                    if (!c.GetComponent<Animals>().startWalk)
                     {
                         StartCoroutine(WaitOpenFence());
 
                         if (fences_open)
                         {
-                            StartCoroutine(WaitStartWalk(c.GetComponent<Chickens>()));
+                            StartCoroutine(WaitStartWalk(c.GetComponent<Animals>()));
                         }
                     }
-                    else if (c.GetComponent<Chickens>().arrived)
+                    else if (c.GetComponent<Animals>().arrived)
                     {
-                        allChickenArrived++;
+                        allAnimalsArrived++;
                     }
                 }
             }
         }
 
-        if (allChickenArrived == activeChickens.Count)
+        if (allAnimalsArrived == activeAnimals.Count)
         {
             this.OpenFence(false); //start animation to close the fences
-            TrialsManager.instance.chickensReady = true; //start the timer and enable the buttons (see script ButtonsManager)
+            TrialsManager.instance.animalsReady = true; //start the timer and enable the buttons (see script ButtonsManager)
         }
     }
 
-    private void FindFinalPosition(GameObject chicken)
+    private void FindFinalPosition(GameObject animal)
     {
         try
         {
             List<Vector3> determinatedPos = new List<Vector3>();
-            Chickens c = chicken.GetComponent<Chickens>();
+            Animals an = animal.GetComponent<Animals>();
 
-            if (c.area == areas[0]) determinatedPos = createdPositionsArea1;
+            if (an.area == areas[0]) determinatedPos = createdPositionsArea1;
             else determinatedPos = createdPositionsArea2;
 
             // First position in center of each area
-            Vector3 firstpos = new Vector3(c.area.transform.position.x, c.area.transform.position.y, 0);
-            if (!allFinalPositions.Contains(firstpos) && !c.findFinalPos)
+            Vector3 firstpos = new Vector3(an.area.transform.position.x, an.area.transform.position.y, 0);
+            if (!allFinalPositions.Contains(firstpos) && !an.findFinalPos)
             {
-                c.positionFinal = firstpos;
-                c.findFinalPos = true;
+                an.positionFinal = firstpos;
+                an.findFinalPos = true;
                 allFinalPositions.Add(firstpos);
             }
 
             // Find another position random
             int d_p = Random.Range(0, determinatedPos.Count);
-            if (!allFinalPositions.Contains(determinatedPos[d_p]) && !c.findFinalPos)
+            if (!allFinalPositions.Contains(determinatedPos[d_p]) && !an.findFinalPos)
             {
-                c.positionFinal = determinatedPos[d_p];
-                c.findFinalPos = true;
+                an.positionFinal = determinatedPos[d_p];
+                an.findFinalPos = true;
                 allFinalPositions.Add(determinatedPos[d_p]);
             }
         }
@@ -181,12 +174,12 @@ public class DataManager : MonoBehaviour
         fences_open = true;
     }
 
-    IEnumerator WaitStartWalk(Chickens chickens)
+    IEnumerator WaitStartWalk(Animals animals)
     {
-        if (!chickens.startWalk)
+        if (!animals.startWalk)
         {
-            yield return new WaitForSeconds(0.5f / chickens.number);
-            chickens.startWalk = true;
+            yield return new WaitForSeconds(0.5f / animals.number);
+            animals.startWalk = true;
         }
     }
 
@@ -199,21 +192,17 @@ public class DataManager : MonoBehaviour
     {
         OpenFence(false);
 
-        foreach(GameObject c in activeChickens)
+        foreach(GameObject c in activeAnimals)
         {
             Destroy(c);
         }
 
-        activeChickens.Clear();
+        activeAnimals.Clear();
         allFinalPositions.Clear();
-        allChickenArrived = 0f;
+        allAnimalsArrived = 0f;
         createdPositionsArea1.Clear();
         createdPositionsArea2.Clear();
-        fences_open = false;
-
-        chickens_generators[0].transform.position = new Vector3(-4, 7, 0);
-        chickens_generators[1].transform.position = new Vector3(4, 7, 0);
-
+        fences_open = false; 
         foreach(GameObject a in areas) a.transform.localScale = new Vector3(1, 1, 1);
     }
 
@@ -330,16 +319,16 @@ public class DataManager : MonoBehaviour
 
             if (a != 5)
             {
-                if (vectors_final.Count >= areaData.numberOfChickens)
+                if (vectors_final.Count >= areaData.getNumberOfAnimals())
                 {
                     newASB += num * areaData.getAverageSpaceBetween();
                 }
-                else if (vectors_final.Count < areaData.numberOfChickens)
+                else if (vectors_final.Count < areaData.getNumberOfAnimals())
                 {
                     newASB -= (num/0.5f) * areaData.getAverageSpaceBetween();
                 }
             }
-            else if (vectors_final.Count < areaData.numberOfChickens)
+            else if (vectors_final.Count < areaData.getNumberOfAnimals())
             {
                 newASB -= (num / 0.5f) * areaData.getAverageSpaceBetween();
             }
@@ -354,7 +343,7 @@ public class DataManager : MonoBehaviour
 
     public string StampForControllData()
     {
-        return areas[0].name + ": " + areasData[0].getCircleRadius() + " " + areasData[0].getSizeOfChicken() + " " + +areasData[0].getAverageSpaceBetween() + " " + createdPositionsArea1.Count + " - " +
-               areas[1].name + ": " + areasData[1].getCircleRadius() + " " + areasData[1].getSizeOfChicken() + " " + +areasData[1].getAverageSpaceBetween() + " " + createdPositionsArea2.Count;
+        return areas[0].name + ": " + areasData[0].getCircleRadius() + " " + areasData[0].getSizeOfAnimal() + " " + +areasData[0].getAverageSpaceBetween() + " " + createdPositionsArea1.Count + " - " +
+               areas[1].name + ": " + areasData[1].getCircleRadius() + " " + areasData[1].getSizeOfAnimal() + " " + +areasData[1].getAverageSpaceBetween() + " " + createdPositionsArea2.Count;
     }
 }

@@ -17,9 +17,9 @@ TagManager:
   - UI
   - 
   - 
-  - Chicken
+  - Animal
   - Background
-  - 
+  - ErrorsLine
   - 
   - 
   - 
@@ -45,9 +45,15 @@ TagManager:
   - name: Background
     uniqueID: 1944200993
     locked: 0
+  - name: UI
+    uniqueID: 4162597777
+    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0
-  - name: UI
-    uniqueID: 4162597777
+  - name: Animal
+    uniqueID: 1246473743
+    locked: 0
+  - name: ErrorsLine
+    uniqueID: 3726724825
     locked: 0

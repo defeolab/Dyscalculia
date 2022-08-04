@@ -64,7 +64,7 @@ public class ControllData : MonoBehaviour
                 istance_DataManager.OpenFence(false);
             }
 
-            else if (TrialsManager.instance.chickensReady)
+            else if (TrialsManager.instance.animalsReady)
             {
                 if (!buttonsEnabled)
                 {
@@ -102,18 +102,18 @@ public class ControllData : MonoBehaviour
 
         float c_1 = 0;
         float c_2 = 0;
-        foreach(GameObject i in istance_DataManager.activeChickens)
+        foreach(GameObject i in istance_DataManager.activeAnimals)
         {
-            if (i.GetComponent<Chickens>().area.name == "Area1")
+            if (i.GetComponent<Animals>().area.name == "Area1")
             {
-                if (i.GetComponent<Chickens>().findFinalPos)
+                if (i.GetComponent<Animals>().findFinalPos)
                 {
                     c_1++;
                 }
             }
             else
             {
-                if (i.GetComponent<Chickens>().findFinalPos)
+                if (i.GetComponent<Animals>().findFinalPos)
                 {
                     c_2++;
                 }

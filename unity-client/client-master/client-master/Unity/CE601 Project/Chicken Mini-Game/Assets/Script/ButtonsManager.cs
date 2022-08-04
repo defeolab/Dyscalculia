@@ -10,27 +10,15 @@ using Debug = UnityEngine.Debug;
 
 public class ButtonsManager : MonoBehaviour
 {
-    public Button area1Button;
-    public Button area2Button;
-    public Button pauseButton;
-
-                //public Slider timer;
-                //public SpriteRenderer clockImage;
-                //public Sprite[] clockSprite;
-
-    private Stopwatch stopwatch;
+    public Button area1Button, area2Button, pauseButton;
     public Text gameText;
     public GameObject[] UIImage; 
     public GameObject menu;
-
-    private bool buttonsEnabled;
-    private bool elapsedChickenShowTime;
-    private bool firstTrial;
-    private bool isCoroutine;
-
+    private Stopwatch stopwatch;
     private TrialData trialData;
     private DataManager istance_DataManager;
     private ErrorTrialManager istance_ErrorTrialManager;
+    private bool buttonsEnabled, elapsedAnimalShowTime, firstTrial, isCoroutine;
 
     void Start()
     {
@@ -47,7 +35,7 @@ public class ButtonsManager : MonoBehaviour
         isCoroutine = false;
         buttonsEnabled = false;
         firstTrial = false;
-        elapsedChickenShowTime = false;
+        elapsedAnimalShowTime = false;
     }
 
     void Update()
@@ -62,7 +50,7 @@ public class ButtonsManager : MonoBehaviour
                     this.FirstTrial();
                 }
             }
-            else if (TrialsManager.instance.chickensReady)
+            else if (TrialsManager.instance.animalsReady)
             {
                 if (!buttonsEnabled)
                 {
@@ -75,15 +63,11 @@ public class ButtonsManager : MonoBehaviour
                     gameText.GetComponent<AudioSource>().Play();
                 }
 
-                //Check if the time is greater than ChickenShowTime
-                if (stopwatch.IsRunning && stopwatch.ElapsedMilliseconds > (TrialsManager.instance.chickenShowTime * 1000) && !elapsedChickenShowTime)
+                //Check if the time is greater than AnimalShowTime
+                if (stopwatch.IsRunning && stopwatch.ElapsedMilliseconds > (TrialsManager.instance.animalShowTime * 1000) && !elapsedAnimalShowTime)
                 {
-                    foreach (GameObject c in istance_DataManager.activeChickens)
-                    {
-                        c.SetActive(false);
-                    }
-
-                    elapsedChickenShowTime = true;
+                    foreach (GameObject c in istance_DataManager.activeAnimals) c.SetActive(false);
+                    elapsedAnimalShowTime = true;
                 }
 
                 //Check if the time is greater than maxTrialTime -> incorrect answer for trial
@@ -165,7 +149,9 @@ public class ButtonsManager : MonoBehaviour
         Debug.Log("ERROR TRIAL");
         yield return new WaitForSeconds(timeAudio + 0.3f);
 
-        istance_ErrorTrialManager.CollectData(istance_DataManager.data, istance_DataManager.areas, istance_DataManager.activeChickens);
+        foreach (GameObject c in istance_DataManager.activeAnimals) c.SetActive(true);
+
+        istance_ErrorTrialManager.CollectData(istance_DataManager.data, istance_DataManager.activeAnimals);
         foreach (GameObject f in istance_DataManager.fences)
         {
             f.SetActive(false);
@@ -178,16 +164,17 @@ public class ButtonsManager : MonoBehaviour
 
         UIImage[1].SetActive(false);
 
-        istance_ErrorTrialManager.ActiveHays(1);
-        istance_ErrorTrialManager.ActiveHays(2);
+        //istance_ErrorTrialManager.ActiveHays(1);
+        //istance_ErrorTrialManager.ActiveHays(2);
 
         isCoroutine = false;
     }
 
-    public void endErrorTrial()
+    public void EndErrorTrial()
     {
         istance_ErrorTrialManager.Reset();
-        StartCoroutine(NewTrial(0.4f));
+        gameObject.GetComponent<DragManager>().Reset();
+        StartCoroutine(NewTrial(-0.3f));
         isCoroutine = true;
     }
 
@@ -250,7 +237,7 @@ public class ButtonsManager : MonoBehaviour
         //Reset all the values
         this.Reset();
         istance_DataManager.Reset();
-        TrialsManager.instance.chickensReady = false;
+        TrialsManager.instance.animalsReady = false;
 
         istance_DataManager.SetNewTrialData(trialData);
 
@@ -261,7 +248,7 @@ public class ButtonsManager : MonoBehaviour
         stopwatch.Reset();
         this.Buttons(false);
         buttonsEnabled = false;
-        elapsedChickenShowTime = false;
+        elapsedAnimalShowTime = false;
         menu.SetActive(false);
         foreach (GameObject f in istance_DataManager.fences) f.SetActive(true);
         foreach (GameObject a in istance_DataManager.areas) a.SetActive(true);
