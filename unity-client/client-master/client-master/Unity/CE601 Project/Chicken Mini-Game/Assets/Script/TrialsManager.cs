@@ -58,7 +58,6 @@ public class TrialsManager : MonoBehaviour
             errorImage.SetActive(true);
             errorImage.GetComponent<AudioSource>().Play();
             connectionStarted = false;
-
         }
     }
 
@@ -66,13 +65,13 @@ public class TrialsManager : MonoBehaviour
     {
         TrialData nextTrial=null;
 
-        if (upcomingTrials.Count > 1)
+        if (upcomingTrials.Count > 1 && (incorrectCount+correctCount)<=50)
         {
             nextTrial = upcomingTrials.Pop();
             animalShowTime = nextTrial.getAnimalShowTime();
             maxTrialTime = nextTrial.getMaxTrialTime();
         }
-        else if(upcomingTrials.Count == 1)
+        else if(upcomingTrials.Count == 1 && (incorrectCount + correctCount) <= 50)
         {
             nextTrial = upcomingTrials.Pop();
             client.CompleteTrials();

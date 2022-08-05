@@ -129,7 +129,7 @@ public class ErrorTrialManager : MonoBehaviour
 
     IEnumerator WaitAndThenDo()
     {
-        yield return new WaitForSeconds(5f);
+        yield return new WaitForSeconds(2f);
         gameObject.GetComponent<ButtonsManager>().EndErrorTrial();
     }
 
