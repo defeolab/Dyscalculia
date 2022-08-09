@@ -15,7 +15,7 @@ class GameServer:
         self.running = True
         
         # lookup table is shared in the server to avoid multiple opens
-        self.lookup_table = pandas.read_csv("./dataset/trial_lookup.csv")
+        self.lookup_table = pandas.read_csv("./dataset/trial_lookup_filtering_coeff.csv")
 
     def run(self):
 
