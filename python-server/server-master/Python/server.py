@@ -32,7 +32,7 @@ class GameServer:
             client, address = self.server_socket.accept()
             player_id = self.db.get_player(address[0])
             if player_id == - 1:
-                player_id = self.add_player(address[0])
+                player_id = self.db.add_player(address[0])
             print("Player " + str(player_id) + " has joined")
 
             # Starting a thread to handle the player
