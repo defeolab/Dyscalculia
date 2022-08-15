@@ -42,8 +42,8 @@ for index, trial in trial_list.iterrows():
 
 maxabslognn = max(logratio_nn, key=abs)
 maxabslognv = max(logratio_nv, key=abs)
-print("\nMAX ABS LOG nonnum:\t {}".format(maxabslognn))
-print("MAX ABS LOG num:\t {}\n".format(maxabslognv))
+# print("\nMAX ABS LOG nonnum:\t {}".format(maxabslognn))
+# print("MAX ABS LOG num:\t {}\n".format(maxabslognv))
 
 for index, log_ratio in enumerate(logratio_nn):
     y_list.append(log_ratio/maxabslognn)
@@ -57,5 +57,8 @@ for index, log_ratio in enumerate(logratio_nv):
 
 lookup_table = pd.read_csv("trial_lookup.csv")
 lookup_table["Diff_coeff_filtering"] = coeff_filtering
+# Negative values make reference to invalid cases.
+lookup_table["Diff_coeff_filtering"] = lookup_table["Diff_coeff_filtering"] /lookup_table["Diff_coeff_filtering"].abs().max()
 
+lookup_table.drop(["Unnamed: 10", "Unnamed: 11"], axis = 1, inplace=True)
 lookup_table.to_csv("trial_lookup_filtering_coeff.csv")
