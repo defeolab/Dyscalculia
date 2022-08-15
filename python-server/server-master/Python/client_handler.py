@@ -99,7 +99,7 @@ class PlayerHandler(Thread) :
                 new_data = self.client.recv(2048).decode("utf-8").strip()
                 data += new_data
             
-            print(data)
+            #print(data)
 
             # Update database for the player and update running results
             
@@ -112,18 +112,21 @@ class PlayerHandler(Thread) :
             results_to_add = []
             correct = 0
             for result in results["results"] :
-                results_to_add.append(TrialResult(decision_time=result["DecisionTime"], correct=result["Correct"], raw_trial_data=result["TrialData"]))
+                results_to_add.append(TrialResult(difficulty = self.running_results["diff"], decision_time=result["DecisionTime"], correct=result["Correct"], raw_trial_data=result["TrialData"]))
                 correct += int(result["Correct"])
 
             self.running_results["acc"] = correct/len(results["results"])
+
             self.db.add_results(self.player_id, results_to_add)
 
             # update difficulty factor for SHARPENING ONLY
             if self.running_results["acc"] >= 0.8 :
-                self.running_results["diff"] += 0.1
+                if self.running_results["diff"] + 0.1 < 1 :
+                    self.running_results["diff"] += 0.1
 
             elif self.running_results["acc"] <= 0.5 :
-                self.running_results["diff"] -= 0.1
+                if self.running_results["diff"] > 0 :
+                    self.running_results["diff"] -= 0.1
 
             return "SUCCESS" + "\n"
 
@@ -136,8 +139,8 @@ class PlayerHandler(Thread) :
         margin = 0.02
         total_trials = 4
 
-        valid_trials = self.lookup_table[self.lookup_table["Difficulty Coefficient"] > (self.running_results["diff"] - margin)]
-        valid_trials = valid_trials[valid_trials["Difficulty Coefficient"] < (self.running_results["diff"] + margin)]
+        valid_trials = self.lookup_table[self.lookup_table["Diff_coeff_filtering"] > (self.running_results["diff"] - margin)]
+        valid_trials = valid_trials[valid_trials["Diff_coeff_filtering"] < (self.running_results["diff"] + margin)]
         valid_trials = valid_trials[:total_trials]
         valid_trials = valid_trials.reset_index()
         
@@ -146,7 +149,6 @@ class PlayerHandler(Thread) :
         for i, r in valid_trials.iterrows() :
             
             matrix.append([float(r["NumLeft"]), float(r["NumRight"]), float(r["FieldAreaLeft"]), float(r["FieldAreaRight"]), float(r["ItemSurfaceAreaLeft"]), float(r["ItemSurfaceAreaRight"]), 4, 8])
-        print(self.lookup_table.head())
         print(matrix)
         return matrix
 
