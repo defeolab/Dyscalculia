@@ -164,8 +164,8 @@ public class ButtonsManager : MonoBehaviour
 
         UIImage[1].SetActive(false);
 
-        //istance_ErrorTrialManager.ActiveHays(1);
-        //istance_ErrorTrialManager.ActiveHays(2);
+        istance_ErrorTrialManager.ActiveHays(1);
+        istance_ErrorTrialManager.ActiveHays(2);
 
         isCoroutine = false;
     }

@@ -17,6 +17,7 @@ public class TrialsManager : MonoBehaviour
     public int area1Value, area2Value;
 
     public int correctCount = 0, incorrectCount = 0;
+    public int totalCount = 0;
 
     //For now they're used to check if the connection's established and when the trials're finished
     public GameObject errorImage, finishImage;
@@ -65,14 +66,16 @@ public class TrialsManager : MonoBehaviour
     {
         TrialData nextTrial=null;
 
-        if (upcomingTrials.Count > 1 && (incorrectCount+correctCount)<=50)
+        if (totalCount <= 2 && (incorrectCount+correctCount)<=50)
         {
             nextTrial = upcomingTrials.Pop();
             animalShowTime = nextTrial.getAnimalShowTime();
             maxTrialTime = nextTrial.getMaxTrialTime();
+            totalCount++;
         }
-        else if(upcomingTrials.Count == 1 && (incorrectCount + correctCount) <= 50)
+        else if(totalCount == 3 && (incorrectCount + correctCount) <= 50)
         {
+            totalCount = 0;
             nextTrial = upcomingTrials.Pop();
             client.CompleteTrials();
             
