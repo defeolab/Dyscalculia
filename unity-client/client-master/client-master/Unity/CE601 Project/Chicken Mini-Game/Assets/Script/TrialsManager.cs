@@ -31,6 +31,7 @@ public class TrialsManager : MonoBehaviour
         
         instance = this;
         ConnectWithClient(); 
+        totalCount = 0;
     }
 
     public void Reset()
@@ -65,15 +66,15 @@ public class TrialsManager : MonoBehaviour
     public TrialData GetNextTrial()
     {
         TrialData nextTrial=null;
+        totalCount++;
 
-        if (totalCount <= 2 && (incorrectCount+correctCount)<=50)
+        if (totalCount <= 3 && (incorrectCount+correctCount)<=50)
         {
             nextTrial = upcomingTrials.Pop();
             animalShowTime = nextTrial.getAnimalShowTime();
             maxTrialTime = nextTrial.getMaxTrialTime();
-            totalCount++;
         }
-        else if(totalCount == 3 && (incorrectCount + correctCount) <= 50)
+        else if(totalCount == 4 && (incorrectCount + correctCount) <= 50)
         {
             totalCount = 0;
             nextTrial = upcomingTrials.Pop();
