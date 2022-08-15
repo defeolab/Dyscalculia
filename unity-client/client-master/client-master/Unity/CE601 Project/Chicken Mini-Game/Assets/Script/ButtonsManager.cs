@@ -181,7 +181,7 @@ public class ButtonsManager : MonoBehaviour
     IEnumerator NewTrial(float timeAudio) 
     {
         int number = TrialsManager.instance.incorrectCount + TrialsManager.instance.correctCount + 1;
-        Debug.Log("TRIAL N°" + number);
+        Debug.Log("TRIAL N°" + number + "   " + TrialsManager.instance.totalCount);
         yield return new WaitForSeconds(timeAudio + 0.3f);
         
         //Reset all the Managers
@@ -204,7 +204,7 @@ public class ButtonsManager : MonoBehaviour
 
     public void FirstTrial()
     {
-        Debug.Log("FIRST TRIAL");
+        Debug.Log("FIRST TRIAL    " + TrialsManager.instance.totalCount);
 
         //Reset all the Managers
         TrialsManager.instance.Reset();
