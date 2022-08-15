@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
-
+/*
 public class ErrorTrialManager : MonoBehaviour
 {
     private List<Vector3> positionsArea1;
@@ -275,9 +275,9 @@ public class ErrorTrialManager : MonoBehaviour
             }
         }
     }
-}
+}*/
 
-/*public class ErrorTrialManager : MonoBehaviour
+public class ErrorTrialManager : MonoBehaviour
 {
     private List<Vector3> positionsArea1, positionsArea2;
     public List<GameObject> pointsOfHays1, pointsOfHays2, activeHays, refSlidersAnimals;
@@ -591,4 +591,4 @@ public class ErrorTrialManager : MonoBehaviour
             }
         }
     }
-}*/
+}

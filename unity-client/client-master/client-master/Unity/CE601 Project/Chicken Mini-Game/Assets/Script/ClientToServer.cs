@@ -48,7 +48,7 @@ public class ClientToServer : MonoBehaviour
         writer.WriteLine("COMPLETE:" + resultsJson);
 
         string line = reader.ReadLine();
-        //TrialsManager.instance.ClearResults();
+        TrialsManager.instance.ClearResults();
         if (line != "SUCCESS")
         {
             Debug.Log("Unable to complete trials on server");

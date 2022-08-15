@@ -1540,7 +1540,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7106715985bcbc1468768ce3125bf099, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  completedTrials: []
   animalsReady: 0
   trialStarted: 0
   connectionStarted: 0
@@ -1550,6 +1549,20 @@ MonoBehaviour:
   area2Value: 0
   correctCount: 0
   incorrectCount: 0
+  totalCount: 0
+  currentTrial:
+    area1Data:
+      circleRadius: 0
+      sizeOfChicken: 0
+      averageSpaceBetween: 0
+      numberOfChickens: 0
+    area2Data:
+      circleRadius: 0
+      sizeOfChicken: 0
+      averageSpaceBetween: 0
+      numberOfChickens: 0
+    chickenShowTime: 0
+    maxTrialTime: 0
   errorImage: {fileID: 1928544760}
   finishImage: {fileID: 1963950028}
 --- !u!4 &480365265
@@ -1617,11 +1630,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 00fbe38068275bc448570362fc450a12, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  pointsOfHays1: []
+  pointsOfHays2: []
   activeHays: []
+  refSlidersAnimals: []
   hay_area1_pos: {x: 0, y: 0, z: 0}
   hay_area2_pos: {x: 0, y: 0, z: 0}
   fences: {fileID: 6705098946168679719}
   hay: {fileID: 1676520349}
+  skipButton: {fileID: 2086033684}
+  canvasSliders: {fileID: 1366312099}
+  sliderArea1: {fileID: 2142348884}
+  sliderArea2: {fileID: 708302652}
+  setHays_noSliders: 0
 --- !u!114 &480365268
 MonoBehaviour:
   m_ObjectHideFlags: 0

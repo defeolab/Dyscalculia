@@ -92,13 +92,13 @@ public class ControllData : MonoBehaviour
     private void HandleWin()
     {
         TrialsManager.instance.correctCount += 1;
-        Debug.Log(TrialsManager.instance.completedTrials.Count + ":  " + istance_DataManager.StampForControllData());
+        //Debug.Log(TrialsManager.instance.completedTrials.Count + ":  " + istance_DataManager.StampForControllData());
     }
 
     private void HandleLoss()
     {
         TrialsManager.instance.incorrectCount += 1;
-        Debug.Log(TrialsManager.instance.completedTrials.Count + ":  " + istance_DataManager.StampForControllData());
+        //Debug.Log(TrialsManager.instance.completedTrials.Count + ":  " + istance_DataManager.StampForControllData());
 
         float c_1 = 0;
         float c_2 = 0;

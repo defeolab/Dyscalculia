@@ -97,7 +97,7 @@ public class ButtonsManager : MonoBehaviour
     private void ButtonSelected(int selectedArea, int unselectedArea)
     {
         stopwatch.Stop();
-        Debug.Log("Area selected: "+ selectedArea + " Time elapsed: " + stopwatch.Elapsed);
+        Debug.Log("Number of Animals in area selected: "+ selectedArea + " Time elapsed: " + stopwatch.Elapsed);
 
         bool correct = selectedArea > unselectedArea;
         double elapsedTime = stopwatch.Elapsed.TotalMilliseconds;
@@ -164,8 +164,8 @@ public class ButtonsManager : MonoBehaviour
 
         UIImage[1].SetActive(false);
 
-        istance_ErrorTrialManager.ActiveHays(1);
-        istance_ErrorTrialManager.ActiveHays(2);
+        //istance_ErrorTrialManager.ActiveHays(1);
+        //istance_ErrorTrialManager.ActiveHays(2);
 
         isCoroutine = false;
     }
@@ -180,8 +180,6 @@ public class ButtonsManager : MonoBehaviour
 
     IEnumerator NewTrial(float timeAudio) 
     {
-        int number = TrialsManager.instance.incorrectCount + TrialsManager.instance.correctCount + 1;
-        Debug.Log("TRIAL N°" + number + "   " + TrialsManager.instance.totalCount);
         yield return new WaitForSeconds(timeAudio + 0.3f);
         
         //Reset all the Managers
@@ -199,13 +197,15 @@ public class ButtonsManager : MonoBehaviour
         {
             Debug.Log("Finished"); //it's used for not block the gameplay
         }
+
         isCoroutine = false;
+
+        int number = TrialsManager.instance.incorrectCount + TrialsManager.instance.correctCount + 1;
+        Debug.Log("TRIAL N°" + number + "   " + TrialsManager.instance.totalCount);
     }
 
     public void FirstTrial()
     {
-        Debug.Log("FIRST TRIAL    " + TrialsManager.instance.totalCount);
-
         //Reset all the Managers
         TrialsManager.instance.Reset();
         istance_DataManager.Reset();
@@ -213,6 +213,8 @@ public class ButtonsManager : MonoBehaviour
 
         TrialData nextTrial = TrialsManager.instance.GetNextTrial();
         istance_DataManager.SetNewTrialData(nextTrial);
+
+        Debug.Log("FIRST TRIAL    " + TrialsManager.instance.totalCount);
     }
 
     public void PauseTrial()
