@@ -136,7 +136,7 @@ class PlayerHandler(Thread) :
         return "SERVER SAYS: " + data
     
     def lookup_trials(self) :
-        margin = 0.02
+        margin = 0.005
         total_trials = 4
 
         valid_trials = self.lookup_table[self.lookup_table["Diff_coeff_filtering"] > (self.running_results["diff"] - margin)]
