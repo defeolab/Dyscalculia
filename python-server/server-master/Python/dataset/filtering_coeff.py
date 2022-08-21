@@ -16,7 +16,7 @@ import pandas as pd
 import numpy as np
 import math
 
-trial_list = pd.read_excel("/Users/Enterprise/Desktop/OneDrive/Essex/Dyscalculia/Dyscalculia/python-server/server-master/Python/dataset/diff_coefficients.xlsx")
+trial_list = pd.read_excel("dataset/diff_coefficients.xlsx")
 
 ratio_lr_nv = []
 logratio_nv = []
@@ -55,7 +55,7 @@ for index, log_ratio in enumerate(logratio_nv):
         pass
     coeff_filtering.append(diff_coef(index, x_list[index], y_list[index]))
 
-lookup_table = pd.read_csv("trial_lookup.csv")
+lookup_table = pd.read_csv("dataset/trial_lookup.csv")
 lookup_table["Diff_coeff_filtering"] = coeff_filtering
 # Negative values make reference to invalid cases.
 lookup_table["Diff_coeff_filtering"] = lookup_table["Diff_coeff_filtering"] /lookup_table["Diff_coeff_filtering"].abs().max()

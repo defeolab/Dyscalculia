@@ -55,6 +55,7 @@ class PlayerHandler(Thread) :
         self.running = True
         self.lookup_table = lookup_table
         self.running_results = {}
+        self.first_communication = True
 
     def run(self) :
 
@@ -137,10 +138,16 @@ class PlayerHandler(Thread) :
     
     def lookup_trials(self) :
         margin = 0.005
-        total_trials = 4
+
+        if self.first_communication :
+            total_trials = 6
+            self.first_communication = False
+        else :
+            total_trials = 5
 
         valid_trials = self.lookup_table[self.lookup_table["Diff_coeff_filtering"] > (self.running_results["diff"] - margin)]
         valid_trials = valid_trials[valid_trials["Diff_coeff_filtering"] < (self.running_results["diff"] + margin)]
+        valid_trials = valid_trials.sample(frac=1).reset_index()
         valid_trials = valid_trials[:total_trials]
         valid_trials = valid_trials.reset_index()
         

@@ -68,13 +68,13 @@ public class TrialsManager : MonoBehaviour
     {
         totalCount++;
 
-        if (totalCount <= 6 && (incorrectCount+correctCount)<=50)
+        if (totalCount <= 5 && (incorrectCount+correctCount)<=50)
         {
             currentTrial = upcomingTrials.Pop();
             animalShowTime = currentTrial.getAnimalShowTime();
             maxTrialTime = currentTrial.getMaxTrialTime();
         }
-        else if(totalCount == 7 && (incorrectCount + correctCount) <= 50)
+        else if(totalCount == 6 && (incorrectCount + correctCount) <= 50)
         {
             totalCount = 1;
             currentTrial = upcomingTrials.Pop();
