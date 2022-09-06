@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags:
+  - EndWaypoint
+  - Chicken
+  - GameText
+  - Settings
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - 
+  - Water
+  - UI
+  - 
+  - 
+  - Animal
+  - Background
+  - ErrorsLine
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Background
+    uniqueID: 1944200993
+    locked: 0
+  - name: UI
+    uniqueID: 4162597777
+    locked: 0
+  - name: Default
+    uniqueID: 0
+    locked: 0
+  - name: Animal
+    uniqueID: 1246473743
+    locked: 0
+  - name: ErrorsLine
+    uniqueID: 3726724825
+    locked: 0
