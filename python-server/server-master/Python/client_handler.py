@@ -54,17 +54,21 @@ class PlayerHandler(Thread) :
         self.player_id = player_id
         self.running = True
         self.lookup_table = lookup_table
-        self.running_results = {}
-        self.first_communication = True
+        self.running_results = {} 
+        self.first_communication = True # sending trials is different for the first run, should probably be changed
+        self.mode = "filtering" # 0 for sharpening | 1 for filtering
+        self.num_trials = 5
 
     def run(self) :
 
         # If there is data in the database about the player
-        # loadtrial information into the running results
+        # load trial information into the running results
 
         # if first time player...
-        self.running_results["diff"] = 0.1
-        self.running_results["acc"] = -1
+        self.running_results["sharpening_diff"] = 0.1
+        self.running_results["sharpening_acc"] = -1
+        self.running_results["filtering_diff"] = 0.1
+        self.running_results["filtering_acc"] = -1
 
         # else load according to database
         # TODO 
@@ -72,7 +76,6 @@ class PlayerHandler(Thread) :
         print("Game " + str(self.player_id) + " is running") 
         while self.running :
             data = self.client.recv(2048)
-         
             reply = self.process_reply(data.decode("utf-8"))
             self.client.send(str.encode(reply))
         time.sleep(0.5)
@@ -83,7 +86,7 @@ class PlayerHandler(Thread) :
         elif "TRIALS:" in data :
             print("SENDING TRIALS TO GAME")
 
-            print("Diff: " + str(self.running_results["diff"]))
+            print("Diff: " + str(self.running_results[self.mode +"_diff"]))
             
             trials_matrix = TransformMatrix(self.lookup_trials())
             return convert_trials_to_json(convert_matrix_to_trials(trials_matrix))
@@ -113,21 +116,29 @@ class PlayerHandler(Thread) :
             results_to_add = []
             correct = 0
             for result in results["results"] :
-                results_to_add.append(TrialResult(difficulty = self.running_results["diff"], decision_time=result["DecisionTime"], correct=result["Correct"], raw_trial_data=result["TrialData"]))
+                results_to_add.append(TrialResult(mode = self.mode, difficulty = self.running_results[self.mode + self.mode + "_diff"], decision_time=result["DecisionTime"], correct=result["Correct"], raw_trial_data=result["TrialData"]))
                 correct += int(result["Correct"])
 
-            self.running_results["acc"] = correct/len(results["results"])
+            self.running_results[self.mode + "_acc"] = correct/len(results["results"])
 
             self.db.add_results(self.player_id, results_to_add)
 
-            # update difficulty factor for SHARPENING ONLY
-            if self.running_results["acc"] >= 0.8 :
-                if self.running_results["diff"] + 0.1 < 1 :
-                    self.running_results["diff"] += 0.1
+            # update difficulty factor
+            step = 0.05
+            if self.running_results[self.mode + "_acc"] >= 0.8 :
+                if self.running_results[self.mode + "_diff"] + step < 1 :
+                    self.running_results[self.mode + "_diff"] += step
 
-            elif self.running_results["acc"] <= 0.5 :
-                if self.running_results["diff"] > 0 :
-                    self.running_results["diff"] -= 0.1
+            elif self.running_results[self.mode + "_acc"] <= 0.5 :
+                if self.running_results[self.mode + "_diff"] - step > 0 :
+                    self.running_results[self.mode + "_diff"] -= step
+
+            # Change modes 
+            # Currently just alternates on every sent trial
+            if self.mode == "filtering" :
+                self.mode = "sharpening"
+            else :
+                self.mode == "filtering"
 
             return "SUCCESS" + "\n"
 
@@ -140,13 +151,18 @@ class PlayerHandler(Thread) :
         margin = 0.005
 
         if self.first_communication :
-            total_trials = 6
+            total_trials = self.num_trials + 1
             self.first_communication = False
         else :
-            total_trials = 5
+            total_trials = self.num_trials
 
-        valid_trials = self.lookup_table[self.lookup_table["Diff_coeff_filtering"] > (self.running_results["diff"] - margin)]
-        valid_trials = valid_trials[valid_trials["Diff_coeff_filtering"] < (self.running_results["diff"] + margin)]
+        if self.mode == "filtering" :
+            col = "Diff_coeff_filtering"
+        else :
+            col = "Difficulty Coefficient"
+
+        valid_trials = self.lookup_table[self.lookup_table[col] > (self.running_results[self.mode + "_diff"] - margin)]
+        valid_trials = valid_trials[valid_trials[col] < (self.running_results[self.mode + "_diff"] + margin)]
         valid_trials = valid_trials.sample(frac=1).reset_index()
         valid_trials = valid_trials[:total_trials]
         valid_trials = valid_trials.reset_index()
