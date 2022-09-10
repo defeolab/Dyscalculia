@@ -4,20 +4,13 @@ using UnityEngine;
 
 public class DragManager : MonoBehaviour
 {
-    public bool isDragActive_area1 = false;
-    public bool isDragActive_area2 = false;
-    public bool active = false;
-    public bool findDrag1 = false;
-    public bool findDrag2 = false;
+    public bool isDragActive_area1, isDragActive_area2, active , findDrag1, findDrag2;
     private Vector3 screenPosition;
     public Vector3 worldPosition;
-    public List<GameObject> draggableAnimals1 = new List<GameObject>();
-    public List<GameObject> draggableAnimals2 = new List<GameObject>();
+    public List<GameObject> draggableAnimals1 , draggableAnimals2;
 
-    //public GameObject draggedArea1, draggedArea2;
-    public GameObject draggedArea1;
-    public GameObject draggedArea2;
-    public GameObject fences;
+    public GameObject draggedArea1, draggedArea2, fences;
+    public Collider colliderArea1, colliderArea2;
 
     void Awake()
     {
@@ -168,18 +161,57 @@ public class DragManager : MonoBehaviour
         {
             isDragActive_area1 = false;
             findDrag1 = false;
-            CheckPositionHay(1);
+            CheckPositionHay(1, gameObject.GetComponent<ErrorTrialManager>().version);
+            
         }
         else if (a == 2)
         {
             isDragActive_area2 = false;
             findDrag2 = false;
-            CheckPositionHay(2);
+            CheckPositionHay(2, gameObject.GetComponent<ErrorTrialManager>().version);
         }
     }
 
-    private void CheckPositionHay(int a)
+    private void CheckPositionHay(int a, int version)
     {
+        if (version==1 && !gameObject.GetComponent<ErrorTrialManager>().setHays_noSliders)
+        {
+            if (a == 1)
+            {
+                if (colliderArea1.bounds.Contains(draggedArea1.transform.position))
+                {
+                    draggedArea1.transform.position = draggedArea1.GetComponent<Animals>().positionFinal;
+                    draggedArea1.GetComponent<Animals>().errorStarted = false;
+                    draggedArea1.SetActive(false);
+                    draggableAnimals1.Remove(draggedArea1);
+
+                    gameObject.GetComponent<ErrorTrialManager>().IncreaseSlider(colliderArea1, 1);
+                }
+                else
+                {
+                    draggedArea1.transform.position = draggedArea1.GetComponent<Animals>().positionFinal;
+                    draggedArea1.GetComponent<Animator>().SetBool("eat", true);
+                }
+            }
+            else if (a == 2)
+            {
+                if (colliderArea2.bounds.Contains(draggedArea2.transform.position))
+                {
+                    draggedArea2.transform.position = draggedArea2.GetComponent<Animals>().positionFinal;
+                    draggedArea2.GetComponent<Animals>().errorStarted = false;
+                    draggedArea2.SetActive(false);
+                    draggableAnimals2.Remove(draggedArea1);
+
+                    gameObject.GetComponent<ErrorTrialManager>().IncreaseSlider(colliderArea2, 2);
+                }
+                else
+                {
+                    draggedArea2.transform.position = draggedArea2.GetComponent<Animals>().positionFinal;
+                    draggedArea2.GetComponent<Animator>().SetBool("eat", true);
+                }
+            }
+        }
+
 
         if (a == 1)
         {
@@ -187,12 +219,17 @@ public class DragManager : MonoBehaviour
             {
                 if (Vector3.Distance(draggedArea1.transform.position, gameObject.GetComponent<ErrorTrialManager>().hay_area1_pos) < 0.5f)
                 {
-                    draggedArea1.transform.position = gameObject.GetComponent<ErrorTrialManager>().hay_area1_pos;
-                    draggedArea1.GetComponent<Rigidbody>().rotation = Quaternion.Euler(new Vector3(180f, 270f, 90f));
-                    draggedArea1.GetComponent<Animals>().errorStarted = false;
+                    draggedArea1.GetComponent<Animals>().setAnimalError(1, gameObject.GetComponent<ErrorTrialManager>().hay_area1_pos, gameObject.GetComponent<ErrorTrialManager>().sizeAnimals1);
+                    gameObject.GetComponent<ErrorTrialManager>().positionedAnimals1.Add(draggedArea1);
                     draggableAnimals1.Remove(draggedArea1);
 
-                    if (draggableAnimals1.Count != 0) gameObject.GetComponent<ErrorTrialManager>().ActiveHays(a);
+                    if (draggableAnimals1.Count != 0)
+                    {
+                        if ((version == 1 && gameObject.GetComponent<ErrorTrialManager>().setHays_noSliders)||(version==3)) gameObject.GetComponent<ErrorTrialManager>().ActiveHays_1_3(a);
+                        if (version == 2) gameObject.GetComponent<ErrorTrialManager>().ActiveHays_2(a);
+                    }
+
+                    if(version == 2 && draggableAnimals1.Count == 0 && gameObject.GetComponent<ErrorTrialManager>().intHays1 == 10) gameObject.GetComponent<ErrorTrialManager>().ActiveTensAnimal(a);
                 }
                 else
                 {
@@ -208,12 +245,17 @@ public class DragManager : MonoBehaviour
             {
                 if (Vector3.Distance(draggedArea2.transform.position, gameObject.GetComponent<ErrorTrialManager>().hay_area2_pos) < 0.5f)
                 {
-                    draggedArea2.transform.position = gameObject.GetComponent<ErrorTrialManager>().hay_area2_pos;
-                    draggedArea2.GetComponent<Rigidbody>().rotation = Quaternion.Euler(new Vector3(0f, 270f, 90f));
-                    draggedArea2.GetComponent<Animals>().errorStarted = false;
+                    draggedArea2.GetComponent<Animals>().setAnimalError(2, gameObject.GetComponent<ErrorTrialManager>().hay_area2_pos, gameObject.GetComponent<ErrorTrialManager>().sizeAnimals2);
+                    gameObject.GetComponent<ErrorTrialManager>().positionedAnimals2.Add(draggedArea2);
                     draggableAnimals2.Remove(draggedArea2);
 
-                    if (draggableAnimals2.Count != 0) gameObject.GetComponent<ErrorTrialManager>().ActiveHays(a);
+                    if (draggableAnimals2.Count != 0)
+                    {
+                        if ((version == 1 && gameObject.GetComponent<ErrorTrialManager>().setHays_noSliders) || (version == 3)) gameObject.GetComponent<ErrorTrialManager>().ActiveHays_1_3(a);
+                        if (version == 2) gameObject.GetComponent<ErrorTrialManager>().ActiveHays_2(a);
+                    }
+
+                    if (version == 2 && draggableAnimals2.Count == 0 && gameObject.GetComponent<ErrorTrialManager>().intHays2 == 10) gameObject.GetComponent<ErrorTrialManager>().ActiveTensAnimal(a);
                 }
                 else
                 {

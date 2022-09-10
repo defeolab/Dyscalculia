@@ -19,10 +19,7 @@ public class Animals : MonoBehaviour
     public DragManager dragManager;
     public Vector3 positionFinal;
     public int number;
-    public bool findFinalPos;
-    public bool startWalk;
-    public bool arrived;
-    public bool errorStarted;
+    public bool findFinalPos,startWalk,arrived,errorStarted;
 
     void Start()
     {
@@ -68,7 +65,7 @@ public class Animals : MonoBehaviour
                     dragManager.draggedArea1 = gameObject;
                 }
             }
-            else if (errorStarted && area.name == "Area2")
+            else if (area.name == "Area2")
             {
                 var distanceBetween = Vector2.Distance(dragManager.worldPosition, this.transform.position);
 
@@ -107,9 +104,65 @@ public class Animals : MonoBehaviour
         }
     }
 
-    public void setAnimalError()
+    public void setAnimalError(int a, Vector3 position, float size)
     {
-        errorStarted = true;
+        if (a == 1)
+        {
+            this.transform.position = position;
+            GetComponent<Rigidbody>().rotation = Quaternion.Euler(new Vector3(0f, 270f, 90f));
+            this.transform.localScale = new Vector3(size, size, size);
+            animator.SetBool("eat", false);
+            this.errorStarted = false;
+        }
+        else if(a == 2)
+        {
+            this.transform.position = position;
+            GetComponent<Rigidbody>().rotation = Quaternion.Euler(new Vector3(180f, 270f, 90f));
+            this.transform.localScale = new Vector3(size, size, size);
+            animator.SetBool("eat", false);
+            this.errorStarted = false;
+        }
+        else if (a == 0)
+        {
+            errorStarted = true;
+            animator.SetBool("walk", false);
+        }
+    }
+
+    public void setTensAnimal(int a, float size)
+    {
+        if (a == 1) 
+        {
+            transform.position = new Vector3(-4, 7, 0);
+            GetComponent<Rigidbody>().rotation = Quaternion.Euler(new Vector3(0f, 270f, 90f));
+        }
+        else if (a == 2)
+        {
+            transform.position = new Vector3(4, 7, 0);
+            GetComponent<Rigidbody>().rotation = Quaternion.Euler(new Vector3(180f, 270f, 90f));
+        }
+
         animator.SetBool("walk", false);
+        animator.SetBool("eat", false);
+        animalModel.GetComponent<SkinnedMeshRenderer>().material = newMaterialRef[0];
+        this.transform.localScale = new Vector3(size, size, size);
+    }
+
+    public void setSliderAnimal(int a)
+    {
+        if (a == 1)
+        {
+            transform.position = new Vector3(-1.21f, -4.25f, 0f);
+            transform.rotation = Quaternion.Euler(new Vector3(-90f, 270f, 90f));
+            animator.SetBool("walk", true);
+            errorStarted = false;
+        }
+        else if(a == 2)
+        {
+            transform.position = new Vector3(1.21f, -4.25f, 0f);
+            transform.rotation = Quaternion.Euler(new Vector3(-90f, 270f, 90f));
+            animator.SetBool("walk", true);
+            errorStarted = false;
+        }
     }
 }

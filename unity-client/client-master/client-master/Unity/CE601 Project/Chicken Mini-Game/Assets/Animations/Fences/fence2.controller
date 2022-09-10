@@ -166,7 +166,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: fences2_close
-  m_Speed: -1
+  m_Speed: -3
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -8064743972590555797}
@@ -193,7 +193,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: 'fences2_open '
-  m_Speed: 1
+  m_Speed: 2
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 4625301535950613176}
