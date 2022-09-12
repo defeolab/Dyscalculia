@@ -6,12 +6,12 @@ public class TrialsManager : MonoBehaviour
 {
     public static TrialsManager instance = null;
     private static ClientToServer client;
-    
+
     private Stack<TrialData> upcomingTrials;
     //public List<TrialData> completedTrials;
     public List<TrialResult> completedTrialResults { get; set; }
 
-    public bool animalsReady =false, trialStarted, connectionStarted=false;
+    public bool animalsReady = false, trialStarted, connectionStarted = false;
 
     public float maxTrialTime, animalShowTime;
     public int area1Value, area2Value;
@@ -27,11 +27,11 @@ public class TrialsManager : MonoBehaviour
     {
         //this.completedTrials = new List<TrialData>();
         this.completedTrialResults = new List<TrialResult>();
-        
+
         errorImage.SetActive(false);
-        
+
         instance = this;
-        ConnectWithClient(); 
+        ConnectWithClient();
         totalCount = 0;
     }
 
@@ -66,28 +66,18 @@ public class TrialsManager : MonoBehaviour
 
     public TrialData GetNextTrial()
     {
-        totalCount++;
-
-        if (totalCount <= 5 && (incorrectCount+correctCount)<=50)
+        if (upcomingTrials.Count != 0)
         {
             currentTrial = upcomingTrials.Pop();
             animalShowTime = currentTrial.getAnimalShowTime();
             maxTrialTime = currentTrial.getMaxTrialTime();
         }
-        else if(totalCount == 6 && (incorrectCount + correctCount) <= 50)
-        {
-            totalCount = 1;
-            currentTrial = upcomingTrials.Pop();
-            client.CompleteTrials();
-            
-            this.upcomingTrials = client.GetTrials(); ;
-        }
         else
         {
-            Debug.Log("Trials finished for now");
-            finishImage.SetActive(true);
+            client.CompleteTrials();
+            this.upcomingTrials = client.GetTrials();
         }
-        
+
         return currentTrial;
     }
 
