@@ -8,7 +8,6 @@ public class TrialsManager : MonoBehaviour
     private static ClientToServer client;
 
     private Stack<TrialData> upcomingTrials;
-    //public List<TrialData> completedTrials;
     public List<TrialResult> completedTrialResults { get; set; }
 
     public bool animalsReady = false, trialStarted, connectionStarted = false;
@@ -18,14 +17,13 @@ public class TrialsManager : MonoBehaviour
 
     public int correctCount = 0, incorrectCount = 0, totalCount;
 
-    public TrialData currentTrial = null;
+    private TrialData currentTrial = null;
 
     //For now they're used to check if the connection's established and when the trials're finished
     public GameObject errorImage, finishImage;
 
     public void Start()
     {
-        //this.completedTrials = new List<TrialData>();
         this.completedTrialResults = new List<TrialResult>();
 
         errorImage.SetActive(false);
@@ -53,6 +51,7 @@ public class TrialsManager : MonoBehaviour
             errorImage.SetActive(false);
             errorImage.GetComponent<AudioSource>().Stop();
             this.upcomingTrials = client.GetTrials();
+
             //Debug.Log(upcomingTrials.ToString());
         }
         catch (Exception e)
@@ -64,7 +63,7 @@ public class TrialsManager : MonoBehaviour
         }
     }
 
-    public TrialData GetNextTrial()
+    public TrialData GetTrial()
     {
         if (upcomingTrials.Count != 0)
         {
@@ -75,8 +74,30 @@ public class TrialsManager : MonoBehaviour
         else
         {
             client.CompleteTrials();
+            Debug.Log("FIND NEW TRIAL");
             this.upcomingTrials = client.GetTrials();
+            Debug.Log(upcomingTrials.ToString());
+            this.GetTrial();
         }
+
+        return currentTrial;
+    }
+
+    public TrialData GetNextTrial()
+    {
+        if (upcomingTrials.Count>1)
+        {
+            currentTrial = upcomingTrials.Pop();
+        }
+        else if (upcomingTrials.Count==1)
+        {
+            currentTrial = upcomingTrials.Pop();
+            client.CompleteTrials();
+            this.upcomingTrials = client.GetTrials(); ;
+        }
+
+        animalShowTime = currentTrial.getAnimalShowTime();
+        maxTrialTime = currentTrial.getMaxTrialTime();
 
         return currentTrial;
     }
