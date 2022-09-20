@@ -151,7 +151,7 @@ class PlayerHandler(Thread) :
         margin = 0.005
 
         if self.first_communication :
-            total_trials = self.num_trials + 1
+            total_trials = self.num_trials + 0
             self.first_communication = False
         else :
             total_trials = self.num_trials
