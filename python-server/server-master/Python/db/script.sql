@@ -7,6 +7,9 @@ CREATE TABLE player
     username  VARCHAR(30) NULL,
     ip_address INT(11) UNSIGNED NOT NULL,
 
+    -- acc_sharp DECIMAL(5, 2),
+    -- acc_filt DECIMAL(5, 2)
+
     PRIMARY KEY (player_id),
     INDEX (player_id)
 ) ENGINE = InnoDB;

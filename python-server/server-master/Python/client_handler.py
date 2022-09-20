@@ -57,7 +57,7 @@ class PlayerHandler(Thread) :
         self.running_results = {} 
         self.first_communication = True # sending trials is different for the first run, should probably be changed
         self.mode = "filtering" # 0 for sharpening | 1 for filtering
-        self.num_trials = 5
+        self.num_trials = 1
 
     def run(self) :
 
@@ -151,7 +151,7 @@ class PlayerHandler(Thread) :
         margin = 0.005
 
         if self.first_communication :
-            total_trials = self.num_trials + 1
+            total_trials = self.num_trials + 0
             self.first_communication = False
         else :
             total_trials = self.num_trials
