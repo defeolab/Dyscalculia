@@ -258,8 +258,8 @@ public class ButtonsManager : MonoBehaviour
         {
             istance_DataManager.SetNewTrialData(nextTrial);
 
-            int number = TrialsManager.instance.incorrectCount + TrialsManager.instance.correctCount + 1;
-            Debug.Log("TRIAL N°" + number + "   " + TrialsManager.instance.totalCount);
+            int number = TrialsManager.instance.incorrectCount + TrialsManager.instance.correctCount;
+            Debug.Log("TRIAL N°" + number);
         }
         else
         {
@@ -284,7 +284,8 @@ public class ButtonsManager : MonoBehaviour
         TrialData nextTrial = TrialsManager.instance.GetNextTrial();
         istance_DataManager.SetNewTrialData(nextTrial);
 
-        Debug.Log("FIRST TRIAL    " + TrialsManager.instance.totalCount);
+        int number = TrialsManager.instance.incorrectCount + TrialsManager.instance.correctCount;
+        Debug.Log("TRIAL N°" + number);
     }
 
     public void PauseTrial()

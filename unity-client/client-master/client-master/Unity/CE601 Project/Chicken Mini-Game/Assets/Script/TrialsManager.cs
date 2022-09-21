@@ -15,7 +15,7 @@ public class TrialsManager : MonoBehaviour
     public float maxTrialTime, animalShowTime;
     public int area1Value, area2Value;
 
-    public int correctCount = 0, incorrectCount = 0, totalCount;
+    public int correctCount = 0, incorrectCount = 0;
 
     private TrialData currentTrial = null;
 
@@ -30,7 +30,6 @@ public class TrialsManager : MonoBehaviour
 
         instance = this;
         ConnectWithClient();
-        totalCount = 0;
     }
 
     public void Reset()
@@ -85,16 +84,15 @@ public class TrialsManager : MonoBehaviour
 
     public TrialData GetNextTrial()
     {
-        if (upcomingTrials.Count>1)
+
+        if (correctCount + incorrectCount != 0)
         {
-            currentTrial = upcomingTrials.Pop();
-        }
-        else if (upcomingTrials.Count==1)
-        {
-            currentTrial = upcomingTrials.Pop();
             client.CompleteTrials();
-            this.upcomingTrials = client.GetTrials(); ;
+            this.upcomingTrials = client.GetTrials();
+            Debug.Log(upcomingTrials.Count);
         }
+
+        currentTrial = upcomingTrials.Pop();
 
         animalShowTime = currentTrial.getAnimalShowTime();
         maxTrialTime = currentTrial.getMaxTrialTime();
@@ -110,8 +108,9 @@ public class TrialsManager : MonoBehaviour
     public void ClearResults()
     {
         this.completedTrialResults.Clear();
-        //this.completedTrials.Clear();
-        //this.upcomingTrials.Clear();
+        this.upcomingTrials.Clear();
+
+        Debug.Log(upcomingTrials.Count);
     }
 
     //Not used for now

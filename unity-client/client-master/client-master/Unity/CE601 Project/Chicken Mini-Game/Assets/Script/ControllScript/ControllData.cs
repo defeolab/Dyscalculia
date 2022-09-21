@@ -135,7 +135,7 @@ public class ControllData : MonoBehaviour
         istance_DataManager.Reset();
         this.Reset();
 
-        TrialData nextTrial = TrialsManager.instance.GetNextTrial();
+        TrialData nextTrial = TrialsManager.instance.GetTrial();
 
         if (nextTrial != null)
         {

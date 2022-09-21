@@ -45,6 +45,7 @@ public class ClientToServer : MonoBehaviour
     {
         TrialsResults results = new TrialsResults(TrialsManager.instance.completedTrialResults);
         String resultsJson = JsonUtility.ToJson(results);
+
         writer.WriteLine("COMPLETE:" + resultsJson);
 
         string line = reader.ReadLine();
@@ -52,7 +53,7 @@ public class ClientToServer : MonoBehaviour
         if (line != "SUCCESS")
         {
             Debug.Log("Unable to complete trials on server");
-        }
+        }     
     }
 
     //Close Connection
