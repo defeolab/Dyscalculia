@@ -9,10 +9,11 @@ from area_data import AreaData
 
 class TrialResult:
 
-    def __init__(self, difficulty, decision_time, correct, raw_trial_data = None, trial_data = None):
+    def __init__(self, difficulty, decision_time, correct, mode, raw_trial_data = None, trial_data = None):
         self.decision_time = decision_time
         self.correct = correct
         self.difficulty = difficulty
+        self.mode = mode
         if raw_trial_data != None:
             #print(raw_trial_data)
             raw_data = raw_trial_data["area1Data"]

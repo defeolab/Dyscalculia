@@ -7,8 +7,12 @@ CREATE TABLE player
     username  VARCHAR(30) NULL,
     ip_address INT(11) UNSIGNED NOT NULL,
 
-    -- acc_sharp DECIMAL(5, 2),
-    -- acc_filt DECIMAL(5, 2)
+    -- sharp_total BIGINT(20),
+    -- filt_total BIGINT(20),
+    -- sharp_corr BIGINT(20),
+    -- filt_corr BIGINT(20,)
+    -- sharp_acc DECIMAL(5, 2),
+    -- filt_acc DECIMAL(5, 2)
 
     PRIMARY KEY (player_id),
     INDEX (player_id)

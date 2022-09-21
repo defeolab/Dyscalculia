@@ -65,10 +65,16 @@ class PlayerHandler(Thread) :
         # load trial information into the running results
 
         # if first time player...
-        self.running_results["sharpening_diff"] = 0.1
-        self.running_results["sharpening_acc"] = -1
+        self.running_results["filtering_total"] = 0 # total number of filtering trials
+        self.running_results["filtering_correct"] = 0
         self.running_results["filtering_diff"] = 0.1
+        self.running_results["sharpening_total"] = 0 # total number of sharpening trials
+        self.running_results["sharpening_correct"] = 0
+        self.running_results["sharpening_diff"] = 0.1
+
+        self.running_results["sharpening_acc"] = -1
         self.running_results["filtering_acc"] = -1
+        
 
         # else load according to database
         # TODO 
@@ -99,6 +105,7 @@ class PlayerHandler(Thread) :
             data = data[9:]
             print(data)
             print("###################################")
+            data = data.strip()
             while data[-2:] != "]}" :
                 new_data = self.client.recv(2048).decode("utf-8").strip()
                 data += new_data
@@ -116,14 +123,16 @@ class PlayerHandler(Thread) :
             results_to_add = []
             correct = 0
             for result in results["results"] :
-                results_to_add.append(TrialResult(mode = self.mode, difficulty = self.running_results[self.mode + self.mode + "_diff"], decision_time=result["DecisionTime"], correct=result["Correct"], raw_trial_data=result["TrialData"]))
+                results_to_add.append(TrialResult(mode = self.mode, difficulty = self.running_results[self.mode + "_diff"], decision_time=result["DecisionTime"], correct=result["Correct"], raw_trial_data=result["TrialData"]))
                 correct += int(result["Correct"])
-
-            self.running_results[self.mode + "_acc"] = correct/len(results["results"])
 
             self.db.add_results(self.player_id, results_to_add)
 
             # update difficulty factor
+            self.running_results[self.mode + "_total"] += 1
+            self.running_results[self.mode + "_correct"] += correct
+            self.running_results[self.mode + "_acc"] = self.running_results[self.mode + "_correct"] / self.running_results[self.mode + "_total"]
+
             step = 0.05
             if self.running_results[self.mode + "_acc"] >= 0.8 :
                 if self.running_results[self.mode + "_diff"] + step < 1 :
@@ -140,6 +149,9 @@ class PlayerHandler(Thread) :
             else :
                 self.mode == "filtering"
 
+            # update player stats
+            print(self.running_results)
+
             return "SUCCESS" + "\n"
 
         elif "SETTINGS:" in data:
@@ -150,11 +162,7 @@ class PlayerHandler(Thread) :
     def lookup_trials(self) :
         margin = 0.005
 
-        if self.first_communication :
-            total_trials = self.num_trials + 0
-            self.first_communication = False
-        else :
-            total_trials = self.num_trials
+        total_trials = self.num_trials
 
         if self.mode == "filtering" :
             col = "Diff_coeff_filtering"
@@ -170,9 +178,8 @@ class PlayerHandler(Thread) :
         # generate trial matrices
         matrix = []
         for i, r in valid_trials.iterrows() :
-            
             matrix.append([float(r["NumLeft"]), float(r["NumRight"]), float(r["FieldAreaLeft"]), float(r["FieldAreaRight"]), float(r["ItemSurfaceAreaLeft"]), float(r["ItemSurfaceAreaRight"]), 4, 8])
-        print(matrix)
+        print("NUMBER OF TRIALS SENT: " + str(len(matrix)))
         return matrix
 
 # Legacy
