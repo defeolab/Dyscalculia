@@ -12,6 +12,7 @@ from trial_result import TrialResult
 from correlated_data_generator import generate_correlated_trials
 from trial_util import convert_trials_to_json, convert_matrix_to_trials
 from transform_matrix import TransformMatrix
+import random
 
 def calculate_next_correlation(average_decision_time, correct_answer_ratio):
     if correct_answer_ratio < 0.3:
@@ -181,7 +182,13 @@ class PlayerHandler(Thread) :
         target_diff = self.running_results[self.mode + "_diff"]
 
         trial = self.lookup_table.iloc[(self.lookup_table[col]-target_diff).abs().argsort()[:2]]
-        r = trial.iloc[0]
+
+        # alternating sides
+        if random.uniform(0, 1) >= 0.5 :
+            r = trial.iloc[0]
+        else :
+            r = trial.iloc[1]
+            
         # generate trial matrices
         matrix = []
         matrix.append([float(r["NumLeft"]), float(r["NumRight"]), float(r["FieldAreaLeft"]), float(r["FieldAreaRight"]), float(r["ItemSurfaceAreaLeft"]), float(r["ItemSurfaceAreaRight"]), 4, 8])
