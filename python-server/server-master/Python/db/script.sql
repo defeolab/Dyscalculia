@@ -12,7 +12,11 @@ CREATE TABLE player
     -- sharp_corr BIGINT(20),
     -- filt_corr BIGINT(20,)
     -- sharp_acc DECIMAL(5, 2),
-    -- filt_acc DECIMAL(5, 2)
+    -- filt_acc DECIMAL(5, 2),
+    -- sharp_total_time DECIMAL(5, 2),
+    -- filt_total_time DECIMAL(5, 2),
+    -- sharp_avg_time DECIMAL(5, 2),
+    -- filt_avg_time DECIMAL(5, 2),
 
     PRIMARY KEY (player_id),
     INDEX (player_id)

@@ -67,15 +67,20 @@ class PlayerHandler(Thread) :
         # if first time player...
         self.running_results["filtering_total"] = 0 # total number of filtering trials
         self.running_results["filtering_correct"] = 0
+        self.running_results["filtering_acc"] = -1
         self.running_results["filtering_diff"] = 0.1
+        self.running_results["filtering_avg_time"] = -1 # average time of responding to a filtering trial
+        self.running_results["filtering_total_time"] = -1 # average time of responding to a filtering trial
+
+
         self.running_results["sharpening_total"] = 0 # total number of sharpening trials
         self.running_results["sharpening_correct"] = 0
         self.running_results["sharpening_diff"] = 0.1
-
         self.running_results["sharpening_acc"] = -1
-        self.running_results["filtering_acc"] = -1
+        self.running_results["sharpening_avg_time"] = -1 # average time of responding to a sharpening trial
+        self.running_results["sharpening_total_time"] = -1 # average time of responding to a sharpening trial
         
-
+        
         # else load according to database
         # TODO 
 
@@ -128,12 +133,15 @@ class PlayerHandler(Thread) :
 
             self.db.add_results(self.player_id, results_to_add)
 
-            # update difficulty factor
+            # updating player stats
             self.running_results[self.mode + "_total"] += 1
             self.running_results[self.mode + "_correct"] += correct
             self.running_results[self.mode + "_acc"] = self.running_results[self.mode + "_correct"] / self.running_results[self.mode + "_total"]
+            self.running_results[self.mode + "_total_time"] += result["DecisionTime"]
+            self.running_results[self.mode + "_avg_time"] = self.running_results[self.mode + "_total_time"] / self.running_results[self.mode + "_total"]
+            
 
-            step = 0.05
+            step = 0.05 # increments difficulty 5% at a time
             if self.running_results[self.mode + "_acc"] >= 0.8 :
                 if self.running_results[self.mode + "_diff"] + step < 1 :
                     self.running_results[self.mode + "_diff"] += step
@@ -144,12 +152,13 @@ class PlayerHandler(Thread) :
 
             # Change modes 
             # Currently just alternates on every sent trial
+            # TODO Kudi is working on a better way to do this
             if self.mode == "filtering" :
                 self.mode = "sharpening"
             else :
                 self.mode == "filtering"
 
-            # update player stats
+            # TODO: update player stats in the database
             print(self.running_results)
 
             return "SUCCESS" + "\n"
@@ -169,16 +178,13 @@ class PlayerHandler(Thread) :
         else :
             col = "Difficulty Coefficient"
 
-        valid_trials = self.lookup_table[self.lookup_table[col] > (self.running_results[self.mode + "_diff"] - margin)]
-        valid_trials = valid_trials[valid_trials[col] < (self.running_results[self.mode + "_diff"] + margin)]
-        valid_trials = valid_trials.sample(frac=1).reset_index()
-        valid_trials = valid_trials[:total_trials]
-        valid_trials = valid_trials.reset_index()
-        
+        target_diff = self.running_results[self.mode + "_diff"]
+
+        trial = self.lookup_table.iloc[(self.lookup_table[col]-target_diff).abs().argsort()[:2]]
+        r = trial.iloc[0]
         # generate trial matrices
         matrix = []
-        for i, r in valid_trials.iterrows() :
-            matrix.append([float(r["NumLeft"]), float(r["NumRight"]), float(r["FieldAreaLeft"]), float(r["FieldAreaRight"]), float(r["ItemSurfaceAreaLeft"]), float(r["ItemSurfaceAreaRight"]), 4, 8])
+        matrix.append([float(r["NumLeft"]), float(r["NumRight"]), float(r["FieldAreaLeft"]), float(r["FieldAreaRight"]), float(r["ItemSurfaceAreaLeft"]), float(r["ItemSurfaceAreaRight"]), 4, 8])
         print("NUMBER OF TRIALS SENT: " + str(len(matrix)))
         return matrix
 
