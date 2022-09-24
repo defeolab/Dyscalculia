@@ -57,7 +57,7 @@ class DBConnector:
     def add_result(self, player_id, result):
         cursor = self.cnx.cursor()
         now = datetime.now()
-        add_result = ("INSERT INTO trial_result_new (player_id, difficulty, mode, correct, decision_time, "
+        add_result = ("INSERT INTO trial_result_new (player_id, difficulty, trial_mode, correct, decision_time, "
                       "area_1_circle_radius, area_1_size_of_chicken, area_1_average_space_between, "
                       "area_1_number_of_chickens, area_2_circle_radius, area_2_size_of_chicken, "
                       "area_2_average_space_between, area_2_number_of_chickens, chicken_show_time, created) "

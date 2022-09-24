@@ -72,7 +72,7 @@ class PlayerHandler(Thread) :
         self.running_results["filtering_diff"] = 0.1
         self.running_results["filtering_avg_time"] = -1 # average time of responding to a filtering trial
         self.running_results["filtering_total_time"] = -1 # average time of responding to a filtering trial
-
+        self.running_results["filtering_history"] = []
 
         self.running_results["sharpening_total"] = 0 # total number of sharpening trials
         self.running_results["sharpening_correct"] = 0
@@ -80,7 +80,7 @@ class PlayerHandler(Thread) :
         self.running_results["sharpening_acc"] = -1
         self.running_results["sharpening_avg_time"] = -1 # average time of responding to a sharpening trial
         self.running_results["sharpening_total_time"] = -1 # average time of responding to a sharpening trial
-        
+        self.running_results["sharpening_history"] = []
         
         # else load according to database
         # TODO 
@@ -188,7 +188,7 @@ class PlayerHandler(Thread) :
             r = trial.iloc[0]
         else :
             r = trial.iloc[1]
-            
+
         # generate trial matrices
         matrix = []
         matrix.append([float(r["NumLeft"]), float(r["NumRight"]), float(r["FieldAreaLeft"]), float(r["FieldAreaRight"]), float(r["ItemSurfaceAreaLeft"]), float(r["ItemSurfaceAreaRight"]), 4, 8])

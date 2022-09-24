@@ -33,7 +33,7 @@ CREATE TABLE trial_result_new
     trial_result_id              BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
     player_id                    BIGINT(20) UNSIGNED NOT NULL,
     difficulty                   DECIMAL(5, 2),
-    mode                         VARCHAR(255),
+    trial_mode                         VARCHAR(255),
     correct                      BIT NOT NULL,
     decision_time                BIGINT(20) NOT NULL,
     area_1_circle_radius         DECIMAL(5, 2) NULL,
