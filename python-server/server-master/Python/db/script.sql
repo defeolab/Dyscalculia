@@ -24,7 +24,7 @@ CREATE TABLE player
 --     sharp_avg_time DECIMAL(5, 2),
 --     filt_avg_time DECIMAL(5, 2)
 
---     player (FOREIGN KEY to player)
+--     FOREIGN KEY (player_id) REFERENCES player(player_id)
 
 -- ) ENGINE = InnoDB;
 

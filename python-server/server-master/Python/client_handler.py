@@ -58,7 +58,8 @@ class PlayerHandler(Thread) :
         self.running_results = {} 
         self.first_communication = True # sending trials is different for the first run, should probably be changed
         self.mode = "filtering" # 0 for sharpening | 1 for filtering
-        self.num_trials = 1
+        self.num_trials = 1 # number of trials sent to the client at a time
+        self.history_size = 5 
 
     def run(self) :
 
@@ -109,8 +110,8 @@ class PlayerHandler(Thread) :
             print("PROCESSING TRIALS RESULTS")
             # TODO WHY DOES IT SEND THE ENTIRE THING IN TWO PACKAGES? WHY NOT A SINGLE ONE?
             data = data[9:]
-            print(data)
-            print("###################################")
+            # print(data)
+            # print("###################################")
             data = data.strip()
             while data[-2:] != "]}" :
                 new_data = self.client.recv(2048).decode("utf-8").strip()
@@ -140,7 +141,10 @@ class PlayerHandler(Thread) :
             self.running_results[self.mode + "_acc"] = self.running_results[self.mode + "_correct"] / self.running_results[self.mode + "_total"]
             self.running_results[self.mode + "_total_time"] += result["DecisionTime"]
             self.running_results[self.mode + "_avg_time"] = self.running_results[self.mode + "_total_time"] / self.running_results[self.mode + "_total"]
-            
+            self.running_results[self.mode + "_history"].append(correct)
+
+            if len(self.running_results[self.mode + "_history"]) > self.history_size : self.running_results[self.mode + "_history"].pop(0)
+            #print(self.running_results[self.mode + "_history"])
 
             step = 0.05 # increments difficulty 5% at a time
             if self.running_results[self.mode + "_acc"] >= 0.8 :

@@ -23,14 +23,15 @@ class DBConnector:
 
         return cursor.lastrowid
 
+
     def add_player(self, address):
         cursor = self.cnx.cursor()
-        add_player = ("INSERT INTO player (ip_address) VALUES (INET_ATON('{}'))".format(address))
 
+        # add player to the database
+        add_player = ("INSERT INTO player (ip_address) VALUES (INET_ATON('{}'))".format(address))
         cursor.execute(add_player)
 
         self.cnx.commit()
-
         cursor.close()
 
         return cursor.lastrowid
@@ -53,6 +54,29 @@ class DBConnector:
             return -1
         print("Recovered Player ID to: " + str(results[0][0]))
         return int(results[0][0])
+
+    def add_player_stats(self, player, stats) :
+        cursor = self.cnx.cursor()
+        add_stats = (
+            "INSERT INTO player_stats (sharp_total, filt_total, sharp_corr, filt_corr, sharp_acc, filt_acc, sharp_total_time, filt_total_time, sharp_avg_time, filt_avg_time, sharp_diff, filt_diff, player_id) "
+            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+        )
+
+        data = (stats["sharpening_total"], stats["filtering_total"], stats["sharpening_correct"], stats["filtering_correct"],
+            stats["sharpening_acc"], stats["filtering_acc"], stats["sharpening_total_time"], stats["filtering_total_time"], 
+            stats["sharpening_avg_time"], stats["filtering_avg_time"], stats["sharpening_diff"], stats["filtering_diff"], player
+        )
+
+        cursor.execute(add_stats, data)
+        self.cnx.commit()
+        cursor.close()
+
+
+    def get_player_stats(self, player_id) :
+        pass
+
+    def update_player_stats(self, player_id, new_stats) :
+        pass
 
     def add_result(self, player_id, result):
         cursor = self.cnx.cursor()
