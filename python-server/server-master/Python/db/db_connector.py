@@ -5,6 +5,7 @@ from datetime import datetime
 from trial import Trial
 from area_data import AreaData
 from trial_result import TrialResult
+from decimal import Decimal
 
 class DBConnector:
 
@@ -124,8 +125,22 @@ class DBConnector:
         return running_results
 
 
-    def update_player_stats(self, player_id, new_stats) :
-        pass
+    def update_player_stats(self, player_id: int, new_stats: Dict[str, Any]) -> None :
+        cursor = self.cnx.cursor()
+        update_stats= ("UPDATE player_info "
+                      "SET filtering_total=%s, filtering_correct=%s, filtering_diff=%s, filtering_total_time=%s, sharpening_total=%s, sharpening_correct=%s, sharpening_diff=%s, sharpening_total_time=%s "
+                      "WHERE player_id = %s "  
+                      )
+        
+        data = (new_stats['filtering_total'], new_stats['filtering_correct'], new_stats['filtering_diff'], new_stats['filtering_total_time'], 
+                new_stats['sharpening_total'], new_stats['sharpening_correct'],new_stats['sharpening_diff'], new_stats['sharpening_total_time'], 
+                player_id)
+
+        cursor.execute(update_stats, data)
+        self.cnx.commit()
+        cursor.close()
+        
+
 
     def add_result(self, player_id, result):
         cursor = self.cnx.cursor()

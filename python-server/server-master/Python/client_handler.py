@@ -151,6 +151,7 @@ class PlayerHandler(Thread) :
 
             # TODO: update player stats in the database
             print(self.running_results)
+            self.db.update_player_stats(self.player_id, self.running_results)
 
             return "SUCCESS" + "\n"
 
