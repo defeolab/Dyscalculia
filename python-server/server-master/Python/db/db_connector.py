@@ -1,3 +1,5 @@
+from typing import Any, Dict
+from click import launch
 import mysql.connector
 from datetime import datetime
 from trial import Trial
@@ -34,6 +36,8 @@ class DBConnector:
         self.cnx.commit()
         cursor.close()
 
+        self.init_player_stats(cursor.lastrowid)
+
         return cursor.lastrowid
 
     def get_player(self, address):
@@ -66,14 +70,59 @@ class DBConnector:
             stats["sharpening_acc"], stats["filtering_acc"], stats["sharpening_total_time"], stats["filtering_total_time"], 
             stats["sharpening_avg_time"], stats["filtering_avg_time"], stats["sharpening_diff"], stats["filtering_diff"], player
         )
-
+    
         cursor.execute(add_stats, data)
         self.cnx.commit()
         cursor.close()
 
+    def init_player_stats(self, player_id) :
+        cursor = self.cnx.cursor()
+        add_stats = (
+            "INSERT INTO player_info (player_id,filtering_total, filtering_correct, filtering_diff, filtering_total_time,sharpening_total, sharpening_correct, sharpening_diff, sharpening_total_time) "
+            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+        )
 
-    def get_player_stats(self, player_id) :
-        pass
+        data = (player_id, 0, 0, 0.1, 0, 0, 0, 0.1, 0)
+
+        try:
+            cursor.execute(add_stats, data)
+            self.cnx.commit()
+            cursor.close()
+        except:
+            print("something went wrong during player creation, aborting")
+            cursor.execute("DELETE FROM player WHERE player_id = '{}'".format(player_id))
+            self.cnx.commit()
+            cursor.close()
+            raise
+
+    def get_player_stats(self, player_id: int, hystory_size: int) -> Dict[str, Any] :
+        cursor = self.cnx.cursor()
+        get_stats = ("SELECT * FROM player_info WHERE player_id = '{}'".format(player_id))
+
+        cursor.execute(get_stats)
+        running_results = {}
+
+        for line in cursor:
+            running_results["filtering_total"] = line[1] # total number of filtering trials
+            running_results["filtering_correct"] = line[2]
+            running_results["filtering_acc"] = -1 if line[1] <= 0 else line[2]/line[1]
+            running_results["filtering_diff"] = float(line[3])
+            running_results["filtering_total_time"] = line[4] # average time of responding to a filtering trial
+            running_results["filtering_avg_time"] = -1 if line[4] <= 0 else line[4]/line[1]# average time of responding to a filtering trial
+            running_results["filtering_history"] = []
+
+            running_results["sharpening_total"] = line[5] # total number of sharpening trials
+            running_results["sharpening_correct"] = line[6]
+            running_results["sharpening_acc"] = -1 if line[5] <= 0 else line[6]/line[7]
+            running_results["sharpening_diff"] = float(line[7])
+            running_results["sharpening_total_time"] = line[8] # average time of responding to a sharpening trial
+            running_results["sharpening_avg_time"] = -1 if line[8] <=0 else line[8]/line[5] # average time of responding to a sharpening trial
+            running_results["sharpening_history"] = []
+        
+        cursor.close()
+
+        return running_results
+
 
     def update_player_stats(self, player_id, new_stats) :
         pass
@@ -134,3 +183,6 @@ class DBConnector:
 
     def close(self):
         self.cnx.close()
+
+class DBException(BaseException):
+    pass

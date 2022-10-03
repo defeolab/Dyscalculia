@@ -63,34 +63,20 @@ class PlayerHandler(Thread) :
 
     def run(self) :
 
-        # If there is data in the database about the player
-        # load trial information into the running results
+        #At this point there must be data about this player's statistics
+        #load them and run the player
 
-        # if first time player...
-        self.running_results["filtering_total"] = 0 # total number of filtering trials
-        self.running_results["filtering_correct"] = 0
-        self.running_results["filtering_acc"] = -1
-        self.running_results["filtering_diff"] = 0.1
-        self.running_results["filtering_avg_time"] = -1 # average time of responding to a filtering trial
-        self.running_results["filtering_total_time"] = -1 # average time of responding to a filtering trial
-        self.running_results["filtering_history"] = []
-
-        self.running_results["sharpening_total"] = 0 # total number of sharpening trials
-        self.running_results["sharpening_correct"] = 0
-        self.running_results["sharpening_diff"] = 0.1
-        self.running_results["sharpening_acc"] = -1
-        self.running_results["sharpening_avg_time"] = -1 # average time of responding to a sharpening trial
-        self.running_results["sharpening_total_time"] = -1 # average time of responding to a sharpening trial
-        self.running_results["sharpening_history"] = []
+        self.running_results = self.db.get_player_stats(self.player_id, self.history_size)
+        print(self.running_results)
         
-        # else load according to database
-        # TODO 
-
         print("Game " + str(self.player_id) + " is running") 
         while self.running :
             data = self.client.recv(2048)
+            print("processing")
             reply = self.process_reply(data.decode("utf-8"))
+            print("processed")
             self.client.send(str.encode(reply))
+            print("sent")
         time.sleep(0.5)
 
     def process_reply(self, data) :

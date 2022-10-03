@@ -26,3 +26,19 @@ CREATE TABLE trial_result_new (
     created datetime,
     PRIMARY KEY (trial_result_id)
 );
+
+CREATE TABLE player_info (
+    player_id bigint(20) unsigned,
+    
+    filtering_total bigint(20) unsigned,
+    filtering_correct bigint(20) unsigned,
+    filtering_diff decimal (5,2),
+    filtering_total_time bigint(20),
+    
+    sharpening_total bigint(20) unsigned,
+    sharpening_correct bigint(20) unsigned,
+    sharpening_diff decimal (5,2),
+    sharpening_total_time bigint(20),
+    
+    PRIMARY KEY (player_id)
+);
