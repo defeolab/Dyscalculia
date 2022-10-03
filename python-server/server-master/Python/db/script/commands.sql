@@ -12,6 +12,8 @@ CREATE TABLE trial_result_new (
     player_id bigint(20) unsigned,
     correct bit(1),
     decision_time bigint(20),
+    difficulty decimal (5,2),
+    trial_mode VARCHAR(32),
     area_1_circle_radius decimal (5,2),
     area_1_size_of_chicken decimal (5,2),
     area_1_average_space_between decimal (5,2),
