@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, List, Tuple
 from click import launch
 import mysql.connector
 from datetime import datetime
@@ -96,7 +96,7 @@ class DBConnector:
             cursor.close()
             raise
 
-    def get_player_stats(self, player_id: int, hystory_size: int) -> Dict[str, Any] :
+    def get_player_stats(self, player_id: int, history_size: int) -> Dict[str, Any] :
         cursor = self.cnx.cursor()
         get_stats = ("SELECT * FROM player_info WHERE player_id = '{}'".format(player_id))
 
@@ -110,7 +110,6 @@ class DBConnector:
             running_results["filtering_diff"] = float(line[3])
             running_results["filtering_total_time"] = line[4] # average time of responding to a filtering trial
             running_results["filtering_avg_time"] = -1 if line[4] <= 0 else line[4]/line[1]# average time of responding to a filtering trial
-            running_results["filtering_history"] = []
 
             running_results["sharpening_total"] = line[5] # total number of sharpening trials
             running_results["sharpening_correct"] = line[6]
@@ -118,12 +117,34 @@ class DBConnector:
             running_results["sharpening_diff"] = float(line[7])
             running_results["sharpening_total_time"] = line[8] # average time of responding to a sharpening trial
             running_results["sharpening_avg_time"] = -1 if line[8] <=0 else line[8]/line[5] # average time of responding to a sharpening trial
-            running_results["sharpening_history"] = []
+            
+            
+            running_results["filtering_history"], running_results["sharpening_history"] = self.fetch_history(player_id, history_size, cursor)
         
         cursor.close()
 
         return running_results
 
+    def fetch_history(self, player_id: int, history_size: int, cursor: mysql.connector.connection.CursorBase) -> Tuple[List[int], List[int]]:
+        fetch_history = (   "SELECT created, correct FROM trial_result_new WHERE player_id = %s AND "
+                            "trial_mode = %s "
+                            "ORDER BY created DESC "
+                            "LIMIT %s"
+                        )
+        
+        data_filtering = (player_id, "filtering", history_size)
+        cursor.execute(fetch_history, data_filtering)
+        filtering_history = []
+        for line in cursor:
+            filtering_history.append(line[1])
+
+        data_sharpening = (player_id, "sharpening", history_size) 
+        sharpening_history = []
+        cursor.execute(fetch_history, data_sharpening)
+        for line in cursor:
+            sharpening_history.append(line[1])
+        
+        return list(reversed(filtering_history)), list(reversed(sharpening_history))
 
     def update_player_stats(self, player_id: int, new_stats: Dict[str, Any]) -> None :
         cursor = self.cnx.cursor()
