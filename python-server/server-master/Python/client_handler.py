@@ -1,6 +1,7 @@
 import json
 import random
 import math
+from player_evaluate import PlayerEvaluator
 import settings_manager
 
 import time
@@ -55,20 +56,20 @@ class PlayerHandler(Thread) :
         self.player_id = player_id
         self.running = True
         self.lookup_table = lookup_table
-        self.running_results = {} 
         self.first_communication = True # sending trials is different for the first run, should probably be changed
         self.mode = "filtering" # 0 for sharpening | 1 for filtering
         self.num_trials = 1 # number of trials sent to the client at a time
         self.history_size = 5 
+        self.player_evaluator = PlayerEvaluator(lookup_table, player_id, self.num_trials, self.history_size)
 
     def run(self) :
 
         #At this point there must be data about this player's statistics
         #load them and run the player
 
-        self.running_results = self.db.get_player_stats(self.player_id, self.history_size)
-        print(self.running_results)
-        
+        running_results = self.db.get_player_stats(self.player_id, self.history_size)
+        print(running_results)
+        self.player_evaluator.set_running_results(running_results)
         print("Game " + str(self.player_id) + " is running") 
         while self.running :
             data = self.client.recv(2048)
@@ -85,9 +86,9 @@ class PlayerHandler(Thread) :
         elif "TRIALS:" in data :
             print("SENDING TRIALS TO GAME")
 
-            print("Diff: " + str(self.running_results[self.mode +"_diff"]))
+            print("Diff: " + str(self.player_evaluator.running_results[self.mode +"_diff"]))
             
-            trials_matrix = TransformMatrix(self.lookup_trials())
+            trials_matrix = TransformMatrix(self.player_evaluator.get_trial(self.mode))
             return convert_trials_to_json(convert_matrix_to_trials(trials_matrix))
    
 
@@ -116,30 +117,12 @@ class PlayerHandler(Thread) :
             results_to_add = []
             correct = 0
             for result in results["results"] :
-                results_to_add.append(TrialResult(mode = self.mode, difficulty = self.running_results[self.mode + "_diff"], decision_time=result["DecisionTime"], correct=result["Correct"], raw_trial_data=result["TrialData"]))
+                results_to_add.append(TrialResult(mode = self.mode, difficulty = self.player_evaluator.running_results[self.mode + "_diff"], decision_time=result["DecisionTime"], correct=result["Correct"], raw_trial_data=result["TrialData"]))
                 correct += int(result["Correct"])
 
-            self.db.add_results(self.player_id, results_to_add)
-
             # updating player stats
-            self.running_results[self.mode + "_total"] += 1
-            self.running_results[self.mode + "_correct"] += correct
-            self.running_results[self.mode + "_acc"] = self.running_results[self.mode + "_correct"] / self.running_results[self.mode + "_total"]
-            self.running_results[self.mode + "_total_time"] += result["DecisionTime"]
-            self.running_results[self.mode + "_avg_time"] = self.running_results[self.mode + "_total_time"] / self.running_results[self.mode + "_total"]
-            self.running_results[self.mode + "_history"].append(correct)
-
-            if len(self.running_results[self.mode + "_history"]) > self.history_size : self.running_results[self.mode + "_history"].pop(0)
+            self.player_evaluator.update_statistics(correct, result["DecisionTime"], self.mode)
             #print(self.running_results[self.mode + "_history"])
-
-            step = 0.05 # increments difficulty 5% at a time
-            if self.running_results[self.mode + "_acc"] >= 0.8 :
-                if self.running_results[self.mode + "_diff"] + step < 1 :
-                    self.running_results[self.mode + "_diff"] += step
-
-            elif self.running_results[self.mode + "_acc"] <= 0.5 :
-                if self.running_results[self.mode + "_diff"] - step > 0 :
-                    self.running_results[self.mode + "_diff"] -= step
 
             # Change modes 
             # Currently just alternates on every sent trial
@@ -150,8 +133,9 @@ class PlayerHandler(Thread) :
                 self.mode == "filtering"
 
             # TODO: update player stats in the database
-            print(self.running_results)
-            self.db.update_player_stats(self.player_id, self.running_results)
+            print(self.player_evaluator.running_results)
+            self.db.add_results(self.player_id, results_to_add)
+            self.db.update_player_stats(self.player_id, self.player_evaluator.running_results)
 
             return "SUCCESS" + "\n"
 
@@ -160,6 +144,7 @@ class PlayerHandler(Thread) :
         
         return "SERVER SAYS: " + data
     
+    #moved to player_evaluate
     def lookup_trials(self) :
         margin = 0.005
 
