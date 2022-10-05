@@ -42,14 +42,14 @@ class GameServer:
             print("Number of players: " + str(len(self.players)))
 
 
-
 # LEGACY
 class Create_Game:
     
     def __init__ (self, trials_matrix):
         self.trials_matrix = trials_matrix
+        self.lookup_table = pandas.read_csv("./dataset/lookup_table.csv")
            
-    def run(self, simulation_on, nnd_selector, alpha, sigma, ServerSocket, host, port, DB, ThreadCount):
+    def run(self, simulation_on, nnd_selector, alpha, sigma, ServerSocket=None, host=None, port=None, DB=None, ThreadCount=None):
         
         # REAL GAME
         if simulation_on == 0:
@@ -94,7 +94,7 @@ class Create_Game:
             Client = ''
             player_id = 1
             print('Player ID: ' + str(player_id))
-            print('SENT DATA: ' + str(self.trials_matrix))
+            print('SENT DATA: ' + str(self.trials_matrix[0]))
             print()
             
             if player_id == 1:
@@ -108,4 +108,5 @@ class Create_Game:
                 # performing the ChildSimulator method, which represents the simulation of a child
                 # playing our game, and obtain back a response_vector, in its simulated version
                 response_vector = game.Run(self.trials_matrix, nnd_selector, alpha, sigma)
+                print(response_vector)
         return response_vector

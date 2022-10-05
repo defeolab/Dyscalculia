@@ -1,5 +1,6 @@
 import socket
 from db.db_connector import DBConnector
+from dummy_client_handler import SimulatedClient
 from server import Create_Game, GameServer
 from mapping_matrix import dummy_matrix_generator
 from plot_trials import PlotTrials
@@ -13,7 +14,7 @@ ThreadCount = 0
 
 # simulation_on is a flag that indicated if the game is a simulated one or not
 # 1 means SIMULATED, 0 means REAL
-simulation_on = 0
+simulation_on = 1
 
 # Non-Numerical variable selection (at the moment, we select just one of them)
 # Can be Either Field Area (nnd_selector = 1) or Item Surface Area (nnd_selector = 2)
@@ -74,10 +75,12 @@ nnd_general = 0
 # else:
 #     trials_matrix = dummy_matrix_generator(nnd_selector, nnd_number)
 
-game = GameServer(server_socket, host, port, db)
-game.run()
-# game = Create_Game(trials_matrix)
-# response_vector = game.run(simulation_on, nnd_selector, alpha, sigma, ServerSocket, host, port, DB, ThreadCount)
+if simulation_on == 0:
+    game = GameServer(server_socket, host, port, db)
+    game.run()
+else:
+    client = SimulatedClient(0.5, 0.5)
+    client.run(100)
 
 # print('MAIN Response Vector: ' + str(response_vector))
 # print(len(response_vector))

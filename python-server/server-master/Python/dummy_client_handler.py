@@ -1,7 +1,76 @@
+from typing import Any, Dict, Tuple
 import numpy as np
 from distributions import GaussianThreshold, UniformOutput
 import math
-     
+import pandas
+import numpy as np
+
+from player_evaluate import PlayerEvaluator
+
+def init_running_results() -> Dict[str, Any]:
+    running_results = {}
+
+    running_results["filtering_total"] = 0 # total number of filtering trials
+    running_results["filtering_correct"] = 0
+    running_results["filtering_acc"] = -1 
+    running_results["filtering_diff"] = 0.1
+    running_results["filtering_total_time"] = 0 # average time of responding to a filtering trial
+    running_results["filtering_avg_time"] = -1 # average time of responding to a filtering trial
+    running_results["filtering_history"] = []
+
+    running_results["sharpening_total"] = 0 # total number of sharpening trials
+    running_results["sharpening_correct"] = 0
+    running_results["sharpening_acc"] = -1 
+    running_results["sharpening_diff"] = 0.1
+    running_results["sharpening_total_time"] = 0 # average time of responding to a sharpening trial
+    running_results["sharpening_avg_time"] = -1 # average time of responding to a sharpening trial
+    running_results["sharpening_history"] = []
+
+    return running_results
+
+class SimulatedClient:
+    def __init__(self, filtering_diff: float, sharpening_difficulty: float):
+        self.filtering_diff = filtering_diff
+        self.sharpening_diff = sharpening_difficulty
+        self.lookup_table = pandas.read_csv("./dataset/lookup_table.csv")
+
+    def run(self, trials: int, history_size: int = 10) -> None:
+        self.player_evaluator = PlayerEvaluator(self.lookup_table, 1, trials, history_size, alt_mode_weight=0.5)
+
+        self.player_evaluator.set_running_results(init_running_results())
+        mode = "filtering"
+
+        performance = []
+
+        for i in range(0, trials):
+            
+            trial = self.player_evaluator.get_trial(mode)
+
+            correct, decision_time = self.predict_trial(trial)
+
+            self.player_evaluator.update_statistics(correct, decision_time, mode)
+
+            performance.append(correct)
+
+            if mode == "filtering":
+                mode = 'sharpening'
+            else:
+                mode = 'filtering'
+        
+        print(f"Dummy client run, performance: {performance}, running results: {self.player_evaluator.running_results}")
+
+    def predict_trial(self, trial: pandas.Series) -> Tuple[int, float]:
+        correct = 1
+        #simple predictor, if aggregated trial difficulty is higher than player ability just mispredict
+        if self.player_evaluator.last_diffs[0] + self.player_evaluator.last_diffs[1] > self.sharpening_diff + self.filtering_diff:
+            correct = 0
+        
+        return correct, 500.0
+
+
+
+
+#LEGACY   
 class DummyClientHandler:
     
     def __init__ (self, trials_matrix):

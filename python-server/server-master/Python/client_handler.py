@@ -123,7 +123,7 @@ class PlayerHandler(Thread) :
             # updating player stats
             self.player_evaluator.update_statistics(correct, result["DecisionTime"], self.mode)
             #print(self.running_results[self.mode + "_history"])
-
+            
             # Change modes 
             # Currently just alternates on every sent trial
             # TODO Kudi is working on a better way to do this
