@@ -10,10 +10,10 @@ using Debug = UnityEngine.Debug;
 
 public class ButtonsManager : MonoBehaviour
 {
-    public Button area1Button, area2Button, pauseButton;
+    public Button area1Button, area2Button;
     public Text gameText;
-    public GameObject[] UIImage, UIImageErrors; 
-    public GameObject menu;
+    public GameObject UIImageCorrect, UIImageIncorrect, UIImageTimeOut, UIImageWhy, UIImageErrorRight, UIImageErrorWrong; 
+    public GameObject menu, pauseButton;
     private Stopwatch stopwatch;
     private TrialData trialData;
     private DataManager istance_DataManager;
@@ -29,8 +29,12 @@ public class ButtonsManager : MonoBehaviour
 
         this.Buttons(false);
         menu.SetActive(false);
-        foreach (GameObject i in UIImage) i.SetActive(false);
-        foreach (GameObject i in UIImageErrors) i.SetActive(false);
+        UIImageCorrect.SetActive(false);
+        UIImageIncorrect.SetActive(false);
+        UIImageTimeOut.SetActive(false);
+        UIImageWhy.SetActive(false);
+        UIImageErrorRight.SetActive(false);
+        UIImageErrorWrong.SetActive(false);
 
         gameText.text = "";
         isCoroutine = false;
@@ -78,10 +82,13 @@ public class ButtonsManager : MonoBehaviour
                     double elapsedTime = stopwatch.Elapsed.TotalMilliseconds;
                     TrialsManager.instance.AddTrialResult(elapsedTime, false);
                     gameText.text = "";
-                    this.HandleLoss();
+                    this.HandleLossForTime();
                     this.Buttons(false);                   
                 }
             }
+
+            if (isCoroutine) pauseButton.SetActive(false);
+            else pauseButton.SetActive(true);
         }
     }
 
@@ -151,39 +158,51 @@ public class ButtonsManager : MonoBehaviour
 
     private void HandleWin()
     {
-        UIImage[0].SetActive(true);
-        UIImage[0].GetComponent<AudioSource>().Play();
+        UIImageCorrect.SetActive(true);
+        UIImageCorrect.GetComponent<AudioSource>().Play();
         TrialsManager.instance.correctCount += 1;
         
-        StartCoroutine(NewTrial(UIImage[0].GetComponent<AudioSource>().clip.length));
+        StartCoroutine(NewTrial(UIImageCorrect.GetComponent<AudioSource>().clip.length));
         isCoroutine = true;
     }
 
     private void HandleLoss()
     {
-        UIImage[1].SetActive(true);
-        UIImage[1].GetComponent<AudioSource>().Play();
+        UIImageIncorrect.SetActive(true);
+        UIImageIncorrect.GetComponent<AudioSource>().Play();
         TrialsManager.instance.incorrectCount += 1;
 
-        StartCoroutine(startErrorTrial(UIImage[1].GetComponent<AudioSource>().clip.length));
+        StartCoroutine(startErrorTrial(UIImageIncorrect.GetComponent<AudioSource>().clip.length));
+        isCoroutine = true;
+    }
+
+    private void HandleLossForTime()
+    {
+        UIImageTimeOut.SetActive(true);
+        UIImageTimeOut.GetComponent<AudioSource>().Play();
+        TrialsManager.instance.incorrectCount += 1;
+
+        StartCoroutine(startErrorTrial(UIImageTimeOut.GetComponent<AudioSource>().clip.length));
         isCoroutine = true;
     }
 
     private void CorrectAnswer_ErrorTrial()
     {
-        UIImageErrors[0].SetActive(true);
-        UIImageErrors[0].GetComponent<AudioSource>().Play();
-        
-        StartCoroutine(EndErrorTrial(UIImageErrors[0].GetComponent<AudioSource>().clip.length));
+        UIImageErrorRight.SetActive(true);
+        UIImageErrorRight.GetComponent<AudioSource>().Play();
+        if (gameObject.GetComponent<ErrorTrialManager>().version == 1 && !gameObject.GetComponent<ErrorTrialManager>().setHays_noSliders) gameObject.GetComponent<ErrorTrialManager>().canvasSliders.SetActive(false);
+
+        StartCoroutine(EndErrorTrial(UIImageErrorRight.GetComponent<AudioSource>().clip.length));
         isCoroutine = true;
     }
 
     private void IncorrectAnswer_ErrorTrial()
     {
-        UIImageErrors[1].SetActive(true);
-        UIImageErrors[1].GetComponent<AudioSource>().Play();
+        UIImageErrorWrong.SetActive(true);
+        UIImageErrorWrong.GetComponent<AudioSource>().Play();
+        if(gameObject.GetComponent<ErrorTrialManager>().version==1 && !gameObject.GetComponent<ErrorTrialManager>().setHays_noSliders) gameObject.GetComponent<ErrorTrialManager>().canvasSliders.SetActive(false);
 
-        StartCoroutine(WaitAndThenDo(UIImageErrors[1].GetComponent<AudioSource>().clip.length));
+        StartCoroutine(WaitAndThenDo(UIImageErrorWrong.GetComponent<AudioSource>().clip.length));
         isCoroutine = true;
     }
 
@@ -192,17 +211,18 @@ public class ButtonsManager : MonoBehaviour
         Debug.Log("ERROR TRIAL");
         yield return new WaitForSeconds(timeAudio + 0.3f);
 
-        UIImage[1].SetActive(false);
-        UIImage[2].SetActive(true);
-        UIImage[2].GetComponent<AudioSource>().Play();
+        UIImageTimeOut.SetActive(false);
+        UIImageIncorrect.SetActive(false);
+        UIImageWhy.SetActive(true);
+        UIImageWhy.GetComponent<AudioSource>().Play();
 
-        yield return new WaitForSeconds(UIImage[1].GetComponent<AudioSource>().clip.length + 0.3f);
+        yield return new WaitForSeconds(UIImageWhy.GetComponent<AudioSource>().clip.length + 0.3f);
 
         TrialsManager.instance.trialStarted = false;
 
         foreach (GameObject c in istance_DataManager.activeAnimals) c.SetActive(true);
 
-        istance_ErrorTrialManager.CollectData(istance_DataManager.data, istance_DataManager.activeAnimals, 2);
+        istance_ErrorTrialManager.CollectData(istance_DataManager.data, istance_DataManager.activeAnimals, 3);
 
         /*
         version 1 = if the animals are on a line the child should place them hay after hay; if not create the slider
@@ -220,7 +240,7 @@ public class ButtonsManager : MonoBehaviour
             a.SetActive(false);
         }
 
-        UIImage[2].SetActive(false);
+        UIImageWhy.SetActive(false);
 
         isCoroutine = false;
     }
@@ -239,8 +259,10 @@ public class ButtonsManager : MonoBehaviour
     {
         yield return new WaitForSeconds(timeAudio + 0.3f);
 
-        UIImageErrors[1].SetActive(false);
+        UIImageErrorWrong.SetActive(false);
+        if (gameObject.GetComponent<ErrorTrialManager>().version == 1 && !gameObject.GetComponent<ErrorTrialManager>().setHays_noSliders) gameObject.GetComponent<ErrorTrialManager>().canvasSliders.SetActive(true);
         gameObject.GetComponent<ErrorTrialManager>().Retry();
+        isCoroutine = false;
     }
 
     IEnumerator NewTrial(float timeAudio) 
@@ -263,7 +285,7 @@ public class ButtonsManager : MonoBehaviour
         }
         else
         {
-            Debug.Log("waiting"); //it's used for not block the gameplay
+            Debug.Log("finish"); //it's used for not block the gameplay
         }
 
         isCoroutine = false;        
@@ -284,7 +306,7 @@ public class ButtonsManager : MonoBehaviour
         TrialData nextTrial = TrialsManager.instance.GetNextTrial();
         istance_DataManager.SetNewTrialData(nextTrial);
 
-        int number = TrialsManager.instance.incorrectCount + TrialsManager.instance.correctCount;
+        int number = (TrialsManager.instance.incorrectCount + TrialsManager.instance.correctCount) + 1;
         Debug.Log("TRIAL N°" + number);
     }
 
@@ -298,23 +320,27 @@ public class ButtonsManager : MonoBehaviour
             menu.SetActive(true);
             menu.GetComponent<Menu>().SetActiveSettingsMenu(false); //active only Pause Menu
             gameText.GetComponent<AudioSource>().Stop();
-            foreach (GameObject i in UIImage) i.GetComponent<AudioSource>().Stop();
+            //foreach (GameObject i in UIImage) i.GetComponent<AudioSource>().Stop();
         }
 
     }
 
     public void RestartTrial()
     {
-        Debug.Log("RESTART TRIAL");
         menu.SetActive(false);
-        
-        //Reset all the values
-        this.Reset();
-        istance_DataManager.Reset();
-        TrialsManager.instance.animalsReady = false;
 
-        istance_DataManager.SetNewTrialData(trialData);
+        if (!gameObject.GetComponent<ErrorTrialManager>().startError)
+        {
 
+            Debug.Log("RESTART TRIAL");
+            
+            //Reset all the values
+            this.Reset();
+            istance_DataManager.Reset();
+            TrialsManager.instance.animalsReady = false;
+
+            istance_DataManager.SetNewTrialData(trialData);
+        }
     }
 
     public void Reset()
@@ -326,7 +352,12 @@ public class ButtonsManager : MonoBehaviour
         menu.SetActive(false);
         foreach (GameObject f in istance_DataManager.fences) f.SetActive(true);
         foreach (GameObject a in istance_DataManager.areas) a.SetActive(true);
-        foreach (GameObject i in UIImage) i.SetActive(false);
-        foreach (GameObject i in UIImageErrors) i.SetActive(false);
+
+        UIImageCorrect.SetActive(false);
+        UIImageIncorrect.SetActive(false);
+        UIImageTimeOut.SetActive(false);
+        UIImageWhy.SetActive(false);
+        UIImageErrorRight.SetActive(false);
+        UIImageErrorWrong.SetActive(false);
     }
 }
