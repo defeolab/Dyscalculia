@@ -4,11 +4,16 @@ from server import Create_Game, GameServer
 from mapping_matrix import dummy_matrix_generator
 from plot_trials import PlotTrials
 from transform_matrix import TransformMatrix
+import sys
 
 server_socket = socket.socket()
 db = DBConnector()
-host = '127.0.0.1'
-port = 65432
+if sys.argv[1] != "r":
+    host = '127.0.0.1'
+    port = 65432
+else:
+    host = '192.168.1.30'
+    port = 65432
 ThreadCount = 0
 
 # simulation_on is a flag that indicated if the game is a simulated one or not
