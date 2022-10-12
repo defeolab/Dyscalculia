@@ -55,7 +55,7 @@ public class TrialsManager : MonoBehaviour
     {
         try
         {
-            client = new ClientToServer();
+            client = new ClientToServer(remote);
             Debug.Log("Logged in successfully");
             connectionStarted = true;
             errorImage.SetActive(false);
