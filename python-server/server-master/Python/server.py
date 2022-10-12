@@ -52,6 +52,7 @@ class GameServer:
                 self.running = any( map(lambda x : x.running, self.players) )
 
         print("No more connections, server shutting down")
+        self.server_socket.close()
             
 
 
