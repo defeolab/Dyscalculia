@@ -30,6 +30,8 @@ public class TrialsManager : MonoBehaviour
     //For now they're used to check if the connection's established and when the trials're finished
     public GameObject errorImage, finishImage;
 
+    public bool remote;
+
     public void Start()
     {
         this.completedTrialResults = new List<TrialResult>();

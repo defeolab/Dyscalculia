@@ -78,6 +78,7 @@ class PlayerHandler(Thread) :
             self.client.send(str.encode(reply))
             print("sent")
         time.sleep(0.5)
+        print("terminating thread")
 
     def process_reply(self, data) :
         if data.strip() == "TRIAL" :
@@ -157,6 +158,8 @@ class PlayerHandler(Thread) :
 
         elif "SETTINGS:" in data:
             pass
+        elif "END:" in data:
+            self.running = False
         
         return "SERVER SAYS: " + data
     

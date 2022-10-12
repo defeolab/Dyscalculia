@@ -40,6 +40,7 @@ class GameServer:
             player_thread.run()
             self.players.append(player_thread)
             print("Number of players: " + str(len(self.players)))
+            
 
 
 
