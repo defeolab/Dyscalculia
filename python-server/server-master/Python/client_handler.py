@@ -13,6 +13,7 @@ from correlated_data_generator import generate_correlated_trials
 from trial_util import convert_trials_to_json, convert_matrix_to_trials
 from transform_matrix import TransformMatrix
 import random
+import socket
 
 def calculate_next_correlation(average_decision_time, correct_answer_ratio):
     if correct_answer_ratio < 0.3:
@@ -71,12 +72,14 @@ class PlayerHandler(Thread) :
         
         print("Game " + str(self.player_id) + " is running") 
         while self.running :
-            data = self.client.recv(2048)
-            print("processing")
-            reply = self.process_reply(data.decode("utf-8"))
-            print("processed")
-            self.client.send(str.encode(reply))
-            print("sent")
+            try:
+                data = self.client.recv(2048)
+                reply = self.process_reply(data.decode("utf-8"))
+                self.client.send(str.encode(reply))
+            except socket.error as e :
+                print(e)
+                self.running = False
+                break
         time.sleep(0.5)
         print("terminating thread")
 

@@ -8,7 +8,7 @@ import sys
 
 server_socket = socket.socket()
 db = DBConnector()
-if sys.argv[1] != "r":
+if len(sys.argv) <=1:
     host = '127.0.0.1'
     port = 65432
 else:
