@@ -14,7 +14,7 @@ ThreadCount = 0
 
 # simulation_on is a flag that indicated if the game is a simulated one or not
 # 1 means SIMULATED, 0 means REAL
-simulation_on = 1
+simulation_on = 0
 
 # Non-Numerical variable selection (at the moment, we select just one of them)
 # Can be Either Field Area (nnd_selector = 1) or Item Surface Area (nnd_selector = 2)
