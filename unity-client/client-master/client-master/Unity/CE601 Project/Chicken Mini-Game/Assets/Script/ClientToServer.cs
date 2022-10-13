@@ -8,7 +8,7 @@ public class ClientToServer : MonoBehaviour
 {
     const int port = 65432;
 
-    const String remote_host = "87.18.102.77";
+    const String remote_host = "87.19.52.63";
     const int remote_port = 51831;
 
     private readonly StreamReader reader;
