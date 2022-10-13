@@ -17,9 +17,9 @@ public class Animals : MonoBehaviour
     public AreaTrialData areaData;
     public Animator animator;
     public DragManager dragManager;
-    public Vector3 positionFinal;
+    public Vector3 positionFinal, positionFinalError;
     public int number;
-    public bool findFinalPos,startWalk,arrived,errorStarted;
+    public bool findFinalPos,startWalk,arrived,errorStarted, setPostionError;
 
     void Start()
     {
@@ -27,6 +27,7 @@ public class Animals : MonoBehaviour
         newMaterialRef = new Material[4];
         startWalk = false;
         arrived = false;
+        setPostionError=false;
         newMaterialRef = Resources.LoadAll("Materials", typeof(Material)).Cast<Material>().ToArray();
     }
 
@@ -75,8 +76,14 @@ public class Animals : MonoBehaviour
                     dragManager.draggedArea2 = gameObject;
                 }
             }
-
         }
+
+        if (setPostionError)
+        {
+            this.transform.position = positionFinalError;
+            animator.SetBool("eat", false);
+        }
+
     }
 
     public void SetAnimal(GameObject area, int number, AreaTrialData areaData)
@@ -113,6 +120,10 @@ public class Animals : MonoBehaviour
             this.transform.localScale = new Vector3(size, size, size);
             animator.SetBool("eat", false);
             this.errorStarted = false;
+            this.setPostionError = true;
+            positionFinalError = position;
+
+
         }
         else if(a == 2)
         {
@@ -121,6 +132,8 @@ public class Animals : MonoBehaviour
             this.transform.localScale = new Vector3(size, size, size);
             animator.SetBool("eat", false);
             this.errorStarted = false;
+            this.setPostionError = true;
+            positionFinalError = position;
         }
         else if (a == 0)
         {
