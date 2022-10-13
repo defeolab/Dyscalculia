@@ -8,13 +8,17 @@ public class ClientToServer : MonoBehaviour
 {
     const int port = 65432;
 
+    const String remote_host = "87.19.52.63";
+    const int remote_port = 51831;
+
     private readonly StreamReader reader;
     private readonly StreamWriter writer;
 
-    public ClientToServer()
+    public ClientToServer(bool remote)
     {
         // Connecting to the server and creating objects for communications
-        TcpClient tcpClient = new TcpClient("localhost", port);
+        
+        TcpClient tcpClient = remote ? new TcpClient(remote_host, remote_port) : new TcpClient("localhost", port);
         NetworkStream stream = tcpClient.GetStream();
         reader = new StreamReader(stream);
         writer = new StreamWriter(stream);
