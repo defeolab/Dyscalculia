@@ -93,7 +93,7 @@ public class TrialsManager : MonoBehaviour
 
     public TrialData GetNextTrial()
     {
-        if (correctCount + incorrectCount == 2)
+        if (correctCount + incorrectCount == 6)
         {
             client.CompleteTrials();
             client.Dispose();
