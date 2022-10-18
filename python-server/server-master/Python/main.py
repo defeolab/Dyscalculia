@@ -5,15 +5,12 @@ from mapping_matrix import dummy_matrix_generator
 from plot_trials import PlotTrials
 from transform_matrix import TransformMatrix
 import sys
+from argument_parser import parse_arguments
+
+args = parse_arguments(sys.argv[1:])
 
 server_socket = socket.socket()
 db = DBConnector()
-if len(sys.argv) <=1:
-    host = '127.0.0.1'
-    port = 65432
-else:
-    host = '192.168.1.30'
-    port = 65432
 ThreadCount = 0
 
 # simulation_on is a flag that indicated if the game is a simulated one or not
@@ -79,7 +76,7 @@ nnd_general = 0
 # else:
 #     trials_matrix = dummy_matrix_generator(nnd_selector, nnd_number)
 
-game = GameServer(server_socket, host, port, db)
+game = GameServer(server_socket, args.host, args.port, db, args.disable_shutdown)
 game.run()
 # game = Create_Game(trials_matrix)
 # response_vector = game.run(simulation_on, nnd_selector, alpha, sigma, ServerSocket, host, port, DB, ThreadCount)

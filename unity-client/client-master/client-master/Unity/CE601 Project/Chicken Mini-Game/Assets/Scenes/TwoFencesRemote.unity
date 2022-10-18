@@ -1033,11 +1033,13 @@ MonoBehaviour:
   animator: {fileID: 0}
   dragManager: {fileID: 480365268}
   positionFinal: {x: 0, y: 0, z: 0}
+  positionFinalError: {x: 0, y: 0, z: 0}
   number: 0
   findFinalPos: 0
   startWalk: 0
   arrived: 0
   errorStarted: 0
+  setPostionError: 0
 --- !u!95 &78766072
 Animator:
   serializedVersion: 3
@@ -2688,11 +2690,13 @@ MonoBehaviour:
   animator: {fileID: 0}
   dragManager: {fileID: 480365268}
   positionFinal: {x: 0, y: 0, z: 0}
+  positionFinalError: {x: 0, y: 0, z: 0}
   number: 0
   findFinalPos: 0
   startWalk: 0
   arrived: 0
   errorStarted: 0
+  setPostionError: 0
 --- !u!65 &399628025
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3359,7 +3363,8 @@ MonoBehaviour:
   incorrectCount: 0
   errorImage: {fileID: 1928544760}
   finishImage: {fileID: 1963950028}
-  remote: 1
+  remote: 0
+  useLan: 1
 --- !u!4 &480365265
 Transform:
   m_ObjectHideFlags: 0
@@ -14922,11 +14927,13 @@ MonoBehaviour:
   animator: {fileID: 0}
   dragManager: {fileID: 480365268}
   positionFinal: {x: 0, y: 0, z: 0}
+  positionFinalError: {x: 0, y: 0, z: 0}
   number: 0
   findFinalPos: 0
   startWalk: 0
   arrived: 0
   errorStarted: 0
+  setPostionError: 0
 --- !u!95 &8442423759574660149
 Animator:
   serializedVersion: 3
@@ -15104,11 +15111,13 @@ MonoBehaviour:
   animator: {fileID: 0}
   dragManager: {fileID: 480365268}
   positionFinal: {x: 0, y: 0, z: 0}
+  positionFinalError: {x: 0, y: 0, z: 0}
   number: 0
   findFinalPos: 0
   startWalk: 0
   arrived: 0
   errorStarted: 0
+  setPostionError: 0
 --- !u!65 &9132811587633618232
 BoxCollider:
   m_ObjectHideFlags: 0

@@ -31,6 +31,7 @@ public class TrialsManager : MonoBehaviour
     public GameObject errorImage, finishImage;
 
     public bool remote;
+    public bool useLan;
 
     public void Start()
     {
@@ -55,7 +56,7 @@ public class TrialsManager : MonoBehaviour
     {
         try
         {
-            client = new ClientToServer(remote);
+            client = new ClientToServer(remote, useLan);
             Debug.Log("Logged in successfully");
             connectionStarted = true;
             errorImage.SetActive(false);

@@ -6,13 +6,14 @@ import select
 
 class GameServer:
 
-    def __init__(self, server_socket, host, port, db) -> None:
+    def __init__(self, server_socket, host, port, db, disable_shutdown) -> None:
         self.server_socket = server_socket
         self.host = host 
         self.port = port
         self.db = db
         self.players = []
         self.running = True
+        self.disable_shutdown=disable_shutdown
         
         # lookup table is shared in the server to avoid multiple opens
         self.lookup_table = pandas.read_csv("./dataset/lookup_table.csv")
@@ -47,7 +48,7 @@ class GameServer:
                 self.players.append(player_thread)
                 print("Number of players: " + str(len(self.players)))
             
-            if len(readable) == 0 and len(self.players) > 0:
+            if len(readable) == 0 and len(self.players) > 0 and self.disable_shutdown == False:
                 #quick check to see if there are no connected clients
                 self.running = any( map(lambda x : x.running, self.players) )
 
