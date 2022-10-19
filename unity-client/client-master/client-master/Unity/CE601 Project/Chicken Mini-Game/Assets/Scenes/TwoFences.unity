@@ -3363,6 +3363,8 @@ MonoBehaviour:
   incorrectCount: 0
   errorImage: {fileID: 1928544760}
   finishImage: {fileID: 1963950028}
+  remote: 0
+  useLan: 0
 --- !u!4 &480365265
 Transform:
   m_ObjectHideFlags: 0
