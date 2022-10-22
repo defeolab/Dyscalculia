@@ -324,6 +324,7 @@ public class ErrorTrialManager : MonoBehaviour
             }
         }
     }
+
     public void CollectData(TrialData data, List<GameObject> activeAnimals, int v)
     {
         fences.SetActive(true);

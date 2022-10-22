@@ -36,5 +36,11 @@ public class TrialData
     {
         return maxTrialTime;
     }
+
+    internal void SetTime(float newChickenShowTime, float newMaxTrialTime)
+    {
+        this.chickenShowTime = newChickenShowTime;
+        this.maxTrialTime = newMaxTrialTime;
+    }
 }
 

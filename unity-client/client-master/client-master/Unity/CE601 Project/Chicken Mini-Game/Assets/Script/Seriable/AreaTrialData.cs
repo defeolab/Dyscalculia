@@ -39,4 +39,12 @@ public class AreaTrialData
     {
         this.averageSpaceBetween = asb;
     }
+
+    internal void SetValuesForControls(float newCircleRadius, float newSizeOfChicken, float newAverageSpaceBetween, int newNumberOfChickens)
+    {
+        this.circleRadius = newCircleRadius;
+        this.sizeOfChicken = newSizeOfChicken;
+        this.averageSpaceBetween = newAverageSpaceBetween;
+        this.numberOfChickens = newNumberOfChickens;
+    }
 }

@@ -1,6 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Collections;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using Newtonsoft.Json;
+using System.IO;
+using System.Diagnostics;
+using Debug = UnityEngine.Debug;
 
 public class TrialsManager : MonoBehaviour
 {
@@ -9,6 +16,7 @@ public class TrialsManager : MonoBehaviour
 
     private Stack<TrialData> upcomingTrials;
     public List<TrialResult> completedTrialResults { get; set; }
+    //public List<TrialData> prova = new List<TrialData>();
 
     public bool animalsReady = false, trialStarted, connectionStarted = false;
 
@@ -22,11 +30,15 @@ public class TrialsManager : MonoBehaviour
     //For now they're used to check if the connection's established and when the trials're finished
     public GameObject errorImage, finishImage;
 
+    public bool remote;
+    public bool useLan;
+
     public void Start()
     {
         this.completedTrialResults = new List<TrialResult>();
 
         errorImage.SetActive(false);
+        finishImage.SetActive(false);
 
         instance = this;
         ConnectWithClient();
@@ -44,7 +56,7 @@ public class TrialsManager : MonoBehaviour
     {
         try
         {
-            client = new ClientToServer();
+            client = new ClientToServer(remote, useLan);
             Debug.Log("Logged in successfully");
             connectionStarted = true;
             errorImage.SetActive(false);
@@ -84,20 +96,33 @@ public class TrialsManager : MonoBehaviour
 
     public TrialData GetNextTrial()
     {
-
-        if (correctCount + incorrectCount != 0)
+        if (correctCount + incorrectCount == 6)
         {
             client.CompleteTrials();
-            this.upcomingTrials = client.GetTrials();
-            Debug.Log(upcomingTrials.Count);
+            client.Dispose();
+            finishImage.SetActive(true);
+            finishImage.GetComponent<AudioSource>().Play();
+            StartCoroutine(ReturnHome(finishImage.GetComponent<AudioSource>().clip.length));
+        }
+        else
+        {
+            if (correctCount + incorrectCount != 0)
+            {
+                client.CompleteTrials();
+                this.upcomingTrials = client.GetTrials();
+            }
+        
+            currentTrial = upcomingTrials.Pop();
+
+            //currentTrial = this.ChangeValuesForControls(upcomingTrials.Pop());
+
+            animalShowTime = currentTrial.getAnimalShowTime();
+            maxTrialTime = currentTrial.getMaxTrialTime();
+
+            return currentTrial;
         }
 
-        currentTrial = upcomingTrials.Pop();
-
-        animalShowTime = currentTrial.getAnimalShowTime();
-        maxTrialTime = currentTrial.getMaxTrialTime();
-
-        return currentTrial;
+        return null;
     }
 
     public void AddTrialResult(double decisionTime, bool correct)
@@ -109,8 +134,21 @@ public class TrialsManager : MonoBehaviour
     {
         this.completedTrialResults.Clear();
         this.upcomingTrials.Clear();
+    }
 
-        Debug.Log(upcomingTrials.Count);
+    IEnumerator ReturnHome(float timeAudio)
+    {
+        yield return new WaitForSeconds(timeAudio + 0.3f);
+        SceneManager.LoadScene(0);
+    }
+
+    private TrialData ChangeValuesForControls(TrialData trial)
+    {
+        trial.area1Data.SetValuesForControls(1.2f, 5.5f, 1.1f, 4);
+        trial.area2Data.SetValuesForControls(0.95f, 7f, 1.35f, 5);
+        trial.SetTime(6f, 8f);
+
+        return trial;
     }
 
     //Not used for now

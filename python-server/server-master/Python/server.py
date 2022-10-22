@@ -2,17 +2,18 @@ import socket
 import pandas
 from client_handler import ClientHandler, PlayerHandler
 from dummy_client_handler import DummyClientHandler
- 
+import select
 
 class GameServer:
 
-    def __init__(self, server_socket, host, port, db) -> None:
+    def __init__(self, server_socket, host, port, db, disable_shutdown) -> None:
         self.server_socket = server_socket
         self.host = host 
         self.port = port
         self.db = db
         self.players = []
         self.running = True
+        self.disable_shutdown=disable_shutdown
         
         # lookup table is shared in the server to avoid multiple opens
         self.lookup_table = pandas.read_csv("./dataset/lookup_table.csv")
@@ -27,19 +28,33 @@ class GameServer:
         print('Waiting for a Connection..')
         self.server_socket.listen(5)
         
-        while self.running :
-            # Accepting player connection
-            client, address = self.server_socket.accept()
-            player_id = self.db.get_player(address[0])
-            if player_id == - 1:
-                player_id = self.db.add_player(address[0])
-            print("Player " + str(player_id) + " has joined")
+        read_list = [self.server_socket]
 
-            # Starting a thread to handle the player
-            player_thread = PlayerHandler(self.lookup_table, client, self.db, player_id)
-            player_thread.run()
-            self.players.append(player_thread)
-            print("Number of players: " + str(len(self.players)))
+        while self.running :
+            #handle non blocking connection
+            readable, _, __ = select.select(read_list, [], [], 0.5)
+
+            for s in readable:
+                # Accepting player connection
+                client, address = self.server_socket.accept()
+                player_id = self.db.get_player(address[0])
+                if player_id == - 1:
+                    player_id = self.db.add_player(address[0])
+                print("Player " + str(player_id) + " has joined")
+
+                # Starting a thread to handle the player
+                player_thread = PlayerHandler(self.lookup_table, client, self.db, player_id)
+                player_thread.start()
+                self.players.append(player_thread)
+                print("Number of players: " + str(len(self.players)))
+            
+            if len(readable) == 0 and len(self.players) > 0 and self.disable_shutdown == False:
+                #quick check to see if there are no connected clients
+                self.running = any( map(lambda x : x.running, self.players) )
+
+        print("No more connections, server shutting down")
+        self.server_socket.close()
+            
 
 
 # LEGACY
