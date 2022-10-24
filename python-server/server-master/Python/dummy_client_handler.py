@@ -1,11 +1,14 @@
 from typing import Any, Dict, Tuple
+from AI.PlayerSimulator import PlayerSimulator
 import numpy as np
 from distributions import GaussianThreshold, UniformOutput
 import math
 import pandas
 import numpy as np
 
+
 from player_evaluate import PlayerEvaluator
+from transform_matrix import TransformMatrix
 
 def init_running_results() -> Dict[str, Any]:
     running_results = {}
@@ -29,12 +32,15 @@ def init_running_results() -> Dict[str, Any]:
     return running_results
 
 class SimulatedClient:
-    def __init__(self, filtering_diff: float, sharpening_difficulty: float):
+    def __init__(self, filtering_diff: float, sharpening_difficulty: float, alpha: float = 10.0, sigma: float = 0.05):
         self.filtering_diff = filtering_diff
         self.sharpening_diff = sharpening_difficulty
         self.lookup_table = pandas.read_csv("./dataset/lookup_table.csv")
+        self.alpha = alpha
+        self.sigma = sigma
 
     def run(self, trials: int, history_size: int = 10) -> None:
+        self.player = PlayerSimulator(self.alpha, self.sigma)
         self.player_evaluator = PlayerEvaluator(self.lookup_table, 1, trials, history_size, alt_mode_weight=0.5)
 
         self.player_evaluator.set_running_results(init_running_results())
@@ -44,9 +50,9 @@ class SimulatedClient:
 
         for i in range(0, trials):
             
-            trial = self.player_evaluator.get_trial(mode)
+            trial = self.player_evaluator.get_trial(mode)[0]
 
-            correct, decision_time = self.predict_trial(trial)
+            correct, decision_time = self.player.predict(trial)
 
             self.player_evaluator.update_statistics(correct, decision_time, mode)
 

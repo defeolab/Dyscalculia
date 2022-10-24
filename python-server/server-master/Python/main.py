@@ -77,8 +77,12 @@ nnd_general = 0
 # else:
 #     trials_matrix = dummy_matrix_generator(nnd_selector, nnd_number)
 
-game = GameServer(server_socket, args.host, args.port, db, args.disable_shutdown)
-game.run()
+if args.simulate_child:
+    client = SimulatedClient(0.5, 0.5)
+    client.run(args.simulate_n_trials)
+else:
+    game = GameServer(server_socket, args.host, args.port, db, args.disable_shutdown)
+    game.run()
 # game = Create_Game(trials_matrix)
 # response_vector = game.run(simulation_on, nnd_selector, alpha, sigma, ServerSocket, host, port, DB, ThreadCount)
 

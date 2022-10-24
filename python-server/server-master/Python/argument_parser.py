@@ -16,6 +16,14 @@ def parse_arguments(args_list: List[str]) -> Namespace:
 
     parser.add_argument("--disable_shutdown", help="specify if the server has to stay on even if there are no clients connected",
                         action="store_true")
+
+    parser.add_argument("--simulate_child", help="specify that you are not expecting a client connection and just want to use the simulated child",
+                        action="store_true")
+
+    parser.add_argument("--simulate_n_trials", help="number of trials for the simulation",
+                        type=int, default=10)
+
+    
     
     args = parser.parse_args(args_list)
 
