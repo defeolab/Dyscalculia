@@ -10,7 +10,8 @@ class PlayerSimulator:
 
 
         self.boundary_vector = unit_vector(np.array([-math.sin(math.radians(alpha)), math.cos(math.radians(alpha))]))
-        self.transform_mat = np.array([[self.boundary_vector[0], self.boundary_vector[1]], [self.boundary_vector[1], -self.boundary_vector[0]]])
+        self.transform_mat =np.linalg.inv(np.array([[self.boundary_vector[0], self.boundary_vector[1]], [self.boundary_vector[1], -self.boundary_vector[0]]]))
+        
 
         
     
@@ -27,19 +28,11 @@ class PlayerSimulator:
 
         is_right = nd_coord > 0
 
-        #trial_vec = np.dot(self.transform_mat, vcol(trial_vec))
+        trial_vec = np.dot(self.transform_mat, vcol(trial_vec))
         looks_right = trial_vec > 0
 
-        #return bool(looks_right[0] == is_right), 2.0
+        #assert True == False    
 
-        if nnd_coord*nd_coord >0:
-            #looks congruent even after noise
-            return True, 2.0
-        elif nd_coord > 0:
-            #incongruent, 4th quadrant
-            return np.all((trial_vec>(-self.boundary_vector))), 2.0
-        else:
-            #incongruent, 2nd quadrant
-            #print(f"-- {trial_vec} {np.all((trial_vec>self.boundary_vector))}")
-            return np.all((trial_vec>self.boundary_vector))==False, 2.0
+        return bool(looks_right[1] == is_right), 2.0
+
 
