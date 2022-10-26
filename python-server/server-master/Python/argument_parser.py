@@ -17,13 +17,19 @@ def parse_arguments(args_list: List[str]) -> Namespace:
     parser.add_argument("--disable_shutdown", help="specify if the server has to stay on even if there are no clients connected",
                         action="store_true")
 
-    parser.add_argument("--simulate_child", help="specify that you are not expecting a client connection and just want to use the simulated child",
+    parser.add_argument("--sim_child", help="specify that you are not expecting a client connection and just want to use the simulated child",
                         action="store_true")
 
-    parser.add_argument("--simulate_n_trials", help="number of trials for the simulation",
-                        type=int, default=10)
-
+    parser.add_argument("--sim_n_trials", help="number of trials for the simulation",
+                        type=int, default=32)
     
+    parser.add_argument("--sim_plot", help="option to enable plots at the end of the simulation", action="store_true")
+
+    parser.add_argument("--sim_alpha", help="simulated filtering angle", type=float, default=10.0)
+    parser.add_argument("--sim_sigma", help="simulated sharpening standard deviation", type=float, default=0.2)
+
+    parser.add_argument("--sim_mock_trials", help="pick mock trials for the simulation (not fetched from lookup table)", 
+                        action= "store_true")
     
     args = parser.parse_args(args_list)
 

@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import numpy.random
 
 def unit_vector(vector):
     """ Returns the unit vector of the vector.  """
@@ -19,3 +20,18 @@ def angle_between(v1, v2):
     v2_u = unit_vector(v2)
     rads = np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
     return rads
+
+def get_mock_trials(trials: int):
+    nd_range = np.linspace(-1.5, 1.5, num = int(math.sqrt(trials)))
+    nnd_range = np.linspace(-1.5, 1.5, num = int(math.sqrt(trials)))
+
+    ret = []
+
+    for nd in nd_range:
+        for nnd in nnd_range:
+            ret.append([-1,-1,-1,-1,-1,-1,nd, nnd])
+
+    return ret
+
+def vcol(vec: np.ndarray) -> np.ndarray:
+    return vec.reshape((vec.size,1))

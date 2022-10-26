@@ -1,5 +1,7 @@
 from typing import Any, Dict, Tuple
 from AI.PlayerSimulator import PlayerSimulator
+from AI.ai_plot import plot_trials
+from AI.ai_utils import get_mock_trials
 import numpy as np
 from distributions import GaussianThreshold, UniformOutput
 import math
@@ -32,14 +34,15 @@ def init_running_results() -> Dict[str, Any]:
     return running_results
 
 class SimulatedClient:
-    def __init__(self, filtering_diff: float, sharpening_difficulty: float, alpha: float = 10.0, sigma: float = 0.05):
+    def __init__(self, filtering_diff: float, sharpening_difficulty: float, alpha: float = 10.0, sigma: float = 0.05, mock_trials: bool = False):
         self.filtering_diff = filtering_diff
         self.sharpening_diff = sharpening_difficulty
         self.lookup_table = pandas.read_csv("./dataset/lookup_table.csv")
         self.alpha = alpha
         self.sigma = sigma
+        self.mock_trials = mock_trials
 
-    def run(self, trials: int, history_size: int = 10) -> None:
+    def run(self, trials: int, plot: bool, history_size: int = 10) -> None:
         self.player = PlayerSimulator(self.alpha, self.sigma)
         self.player_evaluator = PlayerEvaluator(self.lookup_table, 1, trials, history_size, alt_mode_weight=0.5)
 
@@ -48,13 +51,26 @@ class SimulatedClient:
 
         performance = []
 
+        proposed_trials = []
+        corrects = []
+        times = []
+
+        if self.mock_trials:
+            mock_trials = get_mock_trials(trials)
+            trials = len(mock_trials)
+
         for i in range(0, trials):
             
-            trial = self.player_evaluator.get_trial(mode)[0]
+            trial = mock_trials[i] if self.mock_trials else self.player_evaluator.get_trial(mode)[0]
 
             correct, decision_time = self.player.predict(trial)
 
-            self.player_evaluator.update_statistics(correct, decision_time, mode)
+            proposed_trials.append(trial)
+            corrects.append(correct)
+            times.append(decision_time)
+
+            if self.mock_trials == False:
+                self.player_evaluator.update_statistics(correct, decision_time, mode)
 
             performance.append(correct)
 
@@ -63,7 +79,11 @@ class SimulatedClient:
             else:
                 mode = 'filtering'
         
-        print(f"Dummy client run, performance: {performance}, running results: {self.player_evaluator.running_results}")
+        if plot:
+            plot_trials(self.player, proposed_trials, corrects, times)
+        else:
+            print(f"Dummy client run, performance: {performance}, running results: {self.player_evaluator.running_results}")
+        
 
     def predict_trial(self, trial: pandas.Series) -> Tuple[int, float]:
         correct = 1

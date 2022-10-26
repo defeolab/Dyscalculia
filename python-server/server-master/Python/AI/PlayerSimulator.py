@@ -1,4 +1,4 @@
-from AI.ai_utils import angle_between, unit_vector
+from AI.ai_utils import angle_between, unit_vector, vcol
 import numpy as np
 from typing import Any, List, Tuple
 import math
@@ -10,7 +10,9 @@ class PlayerSimulator:
 
 
         self.boundary_vector = unit_vector(np.array([-math.sin(math.radians(alpha)), math.cos(math.radians(alpha))]))
+        self.transform_mat = np.array([[self.boundary_vector[0], self.boundary_vector[1]], [self.boundary_vector[1], -self.boundary_vector[0]]])
 
+        
     
     def predict(self, trial: List[Any]) -> Tuple[bool, float]:
         #print(trial)
@@ -18,18 +20,26 @@ class PlayerSimulator:
         nnd_coord = trial[7]
         
         #sharpening effect: add random noise
-        #nd_coord += np.random.normal(scale=self.sigma)
-        #nnd_coord += np.random.normal(scale=self.sigma)
+        nd_coord += np.random.normal(scale=self.sigma)
+        nnd_coord += np.random.normal(scale=self.sigma)
 
         trial_vec = unit_vector(np.array([nd_coord, nnd_coord]))
 
+        is_right = nd_coord > 0
+
+        #trial_vec = np.dot(self.transform_mat, vcol(trial_vec))
+        looks_right = trial_vec > 0
+
+        #return bool(looks_right[0] == is_right), 2.0
+
         if nnd_coord*nd_coord >0:
-            #congruent even after noise
+            #looks congruent even after noise
             return True, 2.0
-        elif nnd_coord > 0:
+        elif nd_coord > 0:
             #incongruent, 4th quadrant
             return np.all((trial_vec>(-self.boundary_vector))), 2.0
         else:
             #incongruent, 2nd quadrant
-            return np.all((trial_vec>self.boundary_vector)), 2.0
+            #print(f"-- {trial_vec} {np.all((trial_vec>self.boundary_vector))}")
+            return np.all((trial_vec>self.boundary_vector))==False, 2.0
 
