@@ -42,7 +42,7 @@ class PlayerEvaluator:
         
         # generate trial matrices
         matrix = []
-        matrix.append([float(r["NumLeft"]), float(r["NumRight"]), float(r["FieldAreaLeft"]), float(r["FieldAreaRight"]), float(r["ItemSurfaceAreaLeft"]), float(r["ItemSurfaceAreaRight"]),float(r["nd_LogRatio"]), float(r["nnd_LogRatio"])])
+        matrix.append([float(r["NumLeft"]), float(r["NumRight"]), float(r["FieldAreaLeft"]), float(r["FieldAreaRight"]), float(r["ItemSurfaceAreaLeft"]), float(r["ItemSurfaceAreaRight"]),4,8,float(r["nd_LogRatio"]), float(r["nnd_LogRatio"])])
         #print("NUMBER OF TRIALS SENT: " + str(len(matrix)))
 
         #store the two difficulties for this trial (not available after client response)

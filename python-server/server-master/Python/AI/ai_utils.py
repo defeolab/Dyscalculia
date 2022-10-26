@@ -29,7 +29,7 @@ def get_mock_trials(trials: int):
 
     for nd in nd_range:
         for nnd in nnd_range:
-            ret.append([-1,-1,-1,-1,-1,-1,nd, nnd])
+            ret.append([-1,-1,-1,-1,-1,-1,-1,-1,nd, nnd])
 
     return ret
 

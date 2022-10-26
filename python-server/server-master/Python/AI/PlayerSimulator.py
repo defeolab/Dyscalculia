@@ -19,8 +19,8 @@ class PlayerSimulator:
     
     def predict(self, trial: List[Any]) -> Tuple[bool, float]:
         #print(trial)
-        nd_coord = trial[6]
-        nnd_coord = trial[7]
+        nd_coord = trial[8]
+        nnd_coord = trial[9]
 
         is_right = nd_coord > 0
         #sharpening effect: add random noise

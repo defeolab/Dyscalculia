@@ -17,7 +17,7 @@ def plot_trials(player: PlayerSimulator, trials: List[List[Any]], corrects: List
 
     colors = {True: 'green', False: 'red'}
 
-    coords = list(map(lambda x: x[6:],trials))
+    coords = list(map(lambda x: x[8:],trials))
     
     
     for i, coord in enumerate(coords):
