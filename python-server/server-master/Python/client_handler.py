@@ -151,7 +151,7 @@ class PlayerHandler(Thread) :
             if self.mode == "filtering" :
                 self.mode = "sharpening"
             else :
-                self.mode == "filtering"
+                self.mode = "filtering"
 
             # TODO: update player stats in the database
             print(self.running_results)
