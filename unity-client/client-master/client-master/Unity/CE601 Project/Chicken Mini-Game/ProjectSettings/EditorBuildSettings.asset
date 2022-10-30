@@ -17,4 +17,7 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/TwoFences_DifferentColors.unity
     guid: 9b57918315a17814f9572688f1be8110
+  - enabled: 0
+    path: Assets/Scenes/TwoFencesRemote.unity
+    guid: d9cdc20fc26c32f4b84bc1bd28c0c690
   m_configObjects: {}

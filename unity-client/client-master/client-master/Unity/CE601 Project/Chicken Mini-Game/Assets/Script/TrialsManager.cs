@@ -96,7 +96,7 @@ public class TrialsManager : MonoBehaviour
 
     public TrialData GetNextTrial()
     {
-        if (correctCount + incorrectCount == 6)
+        if (correctCount + incorrectCount == 50)
         {
             client.CompleteTrials();
             client.Dispose();
@@ -110,11 +110,10 @@ public class TrialsManager : MonoBehaviour
             {
                 client.CompleteTrials();
                 this.upcomingTrials = client.GetTrials();
-            }
-        
-            currentTrial = upcomingTrials.Pop();
-
+            }    
+            
             //currentTrial = this.ChangeValuesForControls(upcomingTrials.Pop());
+            currentTrial = upcomingTrials.Pop();
 
             animalShowTime = currentTrial.getAnimalShowTime();
             maxTrialTime = currentTrial.getMaxTrialTime();

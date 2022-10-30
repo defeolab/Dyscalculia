@@ -15,6 +15,7 @@ public class InitialVideo : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        vid.url = System.IO.Path.Combine(Application.streamingAssetsPath, "TOTAL.mp4");
         vid.time = 0;
         vid.Play();
         isplaying = true;
