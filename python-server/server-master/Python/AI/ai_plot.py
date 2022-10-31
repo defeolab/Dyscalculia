@@ -5,6 +5,7 @@ from AI.PlayerSimulator import PlayerSimulator
 from typing import List, Tuple, Any
 import matplotlib.pyplot as plt
 from AI.ai_utils import angle_between, unit_vector
+import numpy as np
 
 def plot_trials(player: PlayerSimulator, trials: List[List[Any]], corrects: List[bool], times: List[float]):
 
@@ -23,6 +24,8 @@ def plot_trials(player: PlayerSimulator, trials: List[List[Any]], corrects: List
     for i, coord in enumerate(coords):
         #print(corrects[i])
         ax.scatter(coord[0], coord[1], color = colors[corrects[i]])
+        #ax.text(coord[0]-0.1, coord[1]+0.1, str(round(times[i],2)), color = colors[corrects[i]])
+        ax.annotate(str(round(times[i],2)), (coord[0], coord[1]))
         #print(f">>{coord}")
         
 

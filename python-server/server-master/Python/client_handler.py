@@ -1,7 +1,7 @@
 import json
 import random
 import math
-from AI.player_evaluate import SimpleEvaluator
+from AI.SimpleEvaluator import SimpleEvaluator
 import settings_manager
 
 import time

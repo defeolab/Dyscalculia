@@ -5,6 +5,12 @@ import random
 from pandas import DataFrame
 
 class PlayerEvaluator:
+    """
+        This class is in charge of two things:
+
+            - Understand the ability of the player
+            - Proposing the trials to match their ability
+    """
     def __init__(self) -> None:
         pass
     
@@ -22,6 +28,11 @@ class PlayerEvaluator:
 
     
 class SimpleEvaluator(PlayerEvaluator):
+    """
+        An evaluator subclass that is consistent with the previous ai implementation
+
+        
+    """
     def __init__(self, lookup_table: DataFrame, player_id: int, num_trials: int, history_size:int, alt_mode_weight: float = 0.0, fetched_samples: int = 16, selection_factor: int = 4):
         self.lookup_table = lookup_table
         self.player_id = player_id
@@ -78,14 +89,6 @@ class SimpleEvaluator(PlayerEvaluator):
         if len(self.running_results[self.mode + "_history"]) > self.history_size : self.running_results[self.mode + "_history"].pop(0)
 
         steps = self._old_step(correct, decision_time, self.mode)
-
-        for t_mode, step in zip(["filtering", "sharpening"], steps):
-            if self.running_results[t_mode + "_diff"] + step > 1 :
-                self.running_results[t_mode + "_diff"] = 0.99
-            elif self.running_results[t_mode + "_diff"] + step < 0 :
-                self.running_results[t_mode + "_diff"] = 0.01
-            else:
-                self.running_results[t_mode + "_diff"] += step
         
         if self.mode == "filtering" :
             self.mode = "sharpening"
@@ -163,6 +166,15 @@ class SimpleEvaluator(PlayerEvaluator):
 
         #print(f"m_fi: {momentum_fi}, t_f: {time_factor}, weights: {weights[0]}, diff_f: {diff_factor_fi}")
         #print(f"m_sh: {momentum_sh}, t_f: {time_factor}, weights: {weights[1]}, diff_f: {diff_factor_sh}")
+        steps = [step_fi, step_sh]
+        for t_mode, step in zip(["filtering", "sharpening"], steps):
+            if self.running_results[t_mode + "_diff"] + step > 1 :
+                self.running_results[t_mode + "_diff"] = 0.99
+            elif self.running_results[t_mode + "_diff"] + step < 0 :
+                self.running_results[t_mode + "_diff"] = 0.01
+            else:
+                self.running_results[t_mode + "_diff"] += step
+
         return step_fi, step_sh
 
         

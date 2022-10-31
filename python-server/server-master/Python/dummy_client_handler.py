@@ -9,7 +9,7 @@ import pandas
 import numpy as np
 
 
-from AI.player_evaluate import SimpleEvaluator
+from AI.SimpleEvaluator import SimpleEvaluator
 from transform_matrix import TransformMatrix
 
 def init_running_results() -> Dict[str, Any]:
