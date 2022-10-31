@@ -1,7 +1,7 @@
 import json
 import random
 import math
-from player_evaluate import PlayerEvaluator
+from AI.player_evaluate import SimpleEvaluator
 import settings_manager
 
 import time
@@ -61,7 +61,7 @@ class PlayerHandler(Thread) :
         self.mode = "filtering" # 0 for sharpening | 1 for filtering
         self.num_trials = 1 # number of trials sent to the client at a time
         self.history_size = 5 
-        self.player_evaluator = PlayerEvaluator(lookup_table, player_id, self.num_trials, self.history_size)
+        self.player_evaluator = SimpleEvaluator(lookup_table, player_id, self.num_trials, self.history_size)
 
     def run(self) :
 
@@ -90,9 +90,9 @@ class PlayerHandler(Thread) :
         elif "TRIALS:" in data :
             print("SENDING TRIALS TO GAME")
 
-            print("Diff: " + str(self.player_evaluator.running_results[self.mode +"_diff"]))
+            print("Diff: " + str(self.player_evaluator.get_stats()))
             
-            trials_matrix = TransformMatrix(self.player_evaluator.get_trial(self.mode))
+            trials_matrix = TransformMatrix(self.player_evaluator.get_trial())
             return convert_trials_to_json(convert_matrix_to_trials(trials_matrix))
    
 
@@ -121,20 +121,17 @@ class PlayerHandler(Thread) :
             results_to_add = []
             correct = 0
             for result in results["results"] :
-                results_to_add.append(TrialResult(mode = self.mode, difficulty = self.player_evaluator.running_results[self.mode + "_diff"], decision_time=result["DecisionTime"], correct=result["Correct"], raw_trial_data=result["TrialData"]))
+                results_to_add.append(TrialResult(mode = self.mode, difficulty = self.player_evaluator.get_stats(), decision_time=result["DecisionTime"], correct=result["Correct"], raw_trial_data=result["TrialData"]))
                 correct += int(result["Correct"])
 
             # updating player stats
-            self.player_evaluator.update_statistics(correct, result["DecisionTime"], self.mode)
+            self.player_evaluator.update_statistics(correct, result["DecisionTime"])
             #print(self.running_results[self.mode + "_history"])
             
             # Change modes 
             # Currently just alternates on every sent trial
             # TODO Kudi is working on a better way to do this
-            if self.mode == "filtering" :
-                self.mode = "sharpening"
-            else :
-                self.mode == "filtering"
+            
 
             # TODO: update player stats in the database
             print(self.player_evaluator.running_results)

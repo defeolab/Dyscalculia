@@ -5,7 +5,24 @@ import random
 from pandas import DataFrame
 
 class PlayerEvaluator:
-    def __init__(self, lookup_table: DataFrame, player_id: int, num_trials: int, history_size:int, alt_mode_weight: float = 0.2, fetched_samples: int = 16, selection_factor: int = 4):
+    def __init__(self) -> None:
+        pass
+    
+    def set_running_results(self, running_results: Dict[str, Any]) -> None:
+        self.running_results = running_results 
+
+    def get_stats(self) -> Any:
+        pass
+
+    def get_trials(self) -> List[Any]:
+        pass
+
+    def update_statistics(self) -> None:
+        pass
+
+    
+class SimpleEvaluator(PlayerEvaluator):
+    def __init__(self, lookup_table: DataFrame, player_id: int, num_trials: int, history_size:int, alt_mode_weight: float = 0.0, fetched_samples: int = 16, selection_factor: int = 4):
         self.lookup_table = lookup_table
         self.player_id = player_id
         self.num_trials = num_trials
@@ -13,13 +30,14 @@ class PlayerEvaluator:
         self.alt_mode_weight = alt_mode_weight
         self.fetched_samples = fetched_samples
         self.selected_samples = fetched_samples//selection_factor
+        self.mode = "filtering"
 
-    def set_running_results(self, running_results: Dict[str, Any]) -> None:
-        self.running_results = running_results
+    def get_stats(self) -> Any:
+        return self.running_results[self.mode + "_diff"]
     
-    def get_trial(self, mode: str) -> None:
+    def get_trial(self) -> List[Any]:
 
-        if mode == "filtering" :
+        if self.mode == "filtering" :
             col = "Diff_coeff_filtering"
             weights = [1-self.alt_mode_weight, self.alt_mode_weight]
         else :
@@ -30,15 +48,15 @@ class PlayerEvaluator:
         self.lookup_table['aggregated_diff'] = self.lookup_table['Diff_coeff_filtering']*weights[0] + self.lookup_table['Difficulty Coefficient']*weights[1]
 
         #find closest trials according to difficulty of current mode 
-        target_main_diff = self.running_results[mode + "_diff"]
+        target_main_diff = self.running_results[self.mode + "_diff"]
         fetched_trials = self.lookup_table.iloc[(self.lookup_table[col]-target_main_diff).abs().argsort()[:self.fetched_samples]]
 
         #find the closest trials in terms of aggregated difficulty
-        target_agg_diff = self.running_results['filtering_diff']*weights[0]+self.running_results["sharpening_diff"]*weights[1]
-        selected_trials = fetched_trials.iloc[(fetched_trials['aggregated_diff']-target_agg_diff).abs().argsort()[:self.selected_samples]]
+        #target_agg_diff = self.running_results['filtering_diff']*weights[0]+self.running_results["sharpening_diff"]*weights[1]
+        #fetched_trials = fetched_trials.iloc[(fetched_trials['aggregated_diff']-target_agg_diff).abs().argsort()[:self.selected_samples]]
 
         # pick a random one among the selected trials
-        r = selected_trials.iloc[random.choice(range(self.selected_samples))]
+        r = fetched_trials.iloc[random.choice(range(self.selected_samples))]
         
         # generate trial matrices
         matrix = []
@@ -49,17 +67,17 @@ class PlayerEvaluator:
         self.last_diffs = [r['Diff_coeff_filtering'], r['Difficulty Coefficient']]
         return matrix
 
-    def update_statistics(self, correct: int, decision_time: float, mode:str) -> None:
-        self.running_results[mode + "_total"] += 1
-        self.running_results[mode + "_correct"] += correct
-        self.running_results[mode + "_acc"] = self.running_results[mode + "_correct"] / self.running_results[mode + "_total"]
-        self.running_results[mode + "_total_time"] += decision_time
-        self.running_results[mode + "_avg_time"] = self.running_results[mode + "_total_time"] / self.running_results[mode + "_total"]
-        self.running_results[mode + "_history"].append(correct)
+    def update_statistics(self, correct: int, decision_time: float) -> None:
+        self.running_results[self.mode + "_total"] += 1
+        self.running_results[self.mode + "_correct"] += correct
+        self.running_results[self.mode + "_acc"] = self.running_results[self.mode + "_correct"] / self.running_results[self.mode + "_total"]
+        self.running_results[self.mode + "_total_time"] += decision_time
+        self.running_results[self.mode + "_avg_time"] = self.running_results[self.mode + "_total_time"] / self.running_results[self.mode + "_total"]
+        self.running_results[self.mode + "_history"].append(correct)
 
-        if len(self.running_results[mode + "_history"]) > self.history_size : self.running_results[mode + "_history"].pop(0)
+        if len(self.running_results[self.mode + "_history"]) > self.history_size : self.running_results[self.mode + "_history"].pop(0)
 
-        steps = self.get_step(correct, decision_time, mode)
+        steps = self._old_step(correct, decision_time, self.mode)
 
         for t_mode, step in zip(["filtering", "sharpening"], steps):
             if self.running_results[t_mode + "_diff"] + step > 1 :
@@ -69,12 +87,33 @@ class PlayerEvaluator:
             else:
                 self.running_results[t_mode + "_diff"] += step
         
+        if self.mode == "filtering" :
+            self.mode = "sharpening"
+        else :
+            self.mode = "filtering"
         #print(f"{steps}, {self.running_results['filtering_diff']}, {self.running_results['sharpening_diff']}")
         #print(f"ld: {self.last_diffs}")
         #assert False == True
 
+    def _old_step(self, correct: int, decision_time:float, mode:str) -> Tuple[float, float]:
+        if len(self.running_results[self.mode + "_history"]) > self.history_size : self.running_results[self.mode + "_history"].pop(0)
+            #print(self.running_results[self.mode + "_history"])
+
+        step = 0.05 # increments difficulty 5% at a time
+        if self.running_results[self.mode + "_acc"] >= 0.8 :
+            if self.running_results[self.mode + "_diff"] + step < 1 :
+                self.running_results[self.mode + "_diff"] += step
+
+        elif self.running_results[self.mode + "_acc"] <= 0.5 :
+            if self.running_results[self.mode + "_diff"] - step > 0 :
+                self.running_results[self.mode + "_diff"] -= step
+        
+        if self.mode == "filtering":
+            return step, 0.0
+        else:
+            return 0.0, step
                     
-    def get_step(self, correct: int, decision_time:float, mode: str) -> Tuple[float, float]:
+    def _get_step(self, correct: int, decision_time:float, mode: str) -> Tuple[float, float]:
         
         #base step (represents maximum possible increment)
         base_step = 1

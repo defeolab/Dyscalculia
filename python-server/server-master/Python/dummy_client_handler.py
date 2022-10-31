@@ -9,7 +9,7 @@ import pandas
 import numpy as np
 
 
-from player_evaluate import PlayerEvaluator
+from AI.player_evaluate import SimpleEvaluator
 from transform_matrix import TransformMatrix
 
 def init_running_results() -> Dict[str, Any]:
@@ -44,7 +44,7 @@ class SimulatedClient:
 
     def run(self, trials: int, plot: bool, history_size: int = 10) -> None:
         self.player = PlayerSimulator(self.alpha, self.sigma)
-        self.player_evaluator = PlayerEvaluator(self.lookup_table, 1, trials, history_size, alt_mode_weight=0.5)
+        self.player_evaluator = SimpleEvaluator(self.lookup_table, 1, trials, history_size, alt_mode_weight=0.5)
 
         self.player_evaluator.set_running_results(init_running_results())
         mode = "filtering"
@@ -61,7 +61,7 @@ class SimulatedClient:
 
         for i in range(0, trials):
             
-            trial = mock_trials[i] if self.mock_trials else self.player_evaluator.get_trial(mode)[0]
+            trial = mock_trials[i] if self.mock_trials else self.player_evaluator.get_trial()[0]
 
             correct, decision_time = self.player.predict(trial)
 
@@ -70,14 +70,10 @@ class SimulatedClient:
             times.append(decision_time)
 
             if self.mock_trials == False:
-                self.player_evaluator.update_statistics(correct, decision_time, mode)
+                self.player_evaluator.update_statistics(correct, decision_time)
 
             performance.append(correct)
 
-            if mode == "filtering":
-                mode = 'sharpening'
-            else:
-                mode = 'filtering'
         
         if plot:
             plot_trials(self.player, proposed_trials, corrects, times)
