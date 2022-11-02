@@ -96,7 +96,7 @@ public class TrialsManager : MonoBehaviour
 
     public TrialData GetNextTrial()
     {
-        if (correctCount + incorrectCount == 50)
+        if (correctCount + incorrectCount == 2)
         {
             client.CompleteTrials();
             client.Dispose();

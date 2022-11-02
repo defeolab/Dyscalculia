@@ -10,7 +10,7 @@ public class ClientToServer : MonoBehaviour
 
     const String remote_host = "87.19.52.63";
     const int remote_port = 51831;
-    const String lan_host = "192.168.1.30"; //REPLACE HERE WITH THE LOCAL IP OF THE LAB PC
+    const String lan_host = "192.168.1.142"; //REPLACE HERE WITH THE LOCAL IP OF THE LAB PC
     
 
     private readonly StreamReader reader;

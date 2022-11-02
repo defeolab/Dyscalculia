@@ -60,7 +60,7 @@ public class Animals : MonoBehaviour
             {
                 var distanceBetween = Vector2.Distance(dragManager.worldPosition, this.transform.position);
 
-                if (distanceBetween < 0.2f)
+                if (distanceBetween < 0.3f)
                 {
                     dragManager.findDrag1 = true;
                     dragManager.draggedArea1 = gameObject;
@@ -70,7 +70,7 @@ public class Animals : MonoBehaviour
             {
                 var distanceBetween = Vector2.Distance(dragManager.worldPosition, this.transform.position);
 
-                if (distanceBetween < 0.2f)
+                if (distanceBetween < 0.3f)
                 {
                     dragManager.findDrag2 = true;
                     dragManager.draggedArea2 = gameObject;
