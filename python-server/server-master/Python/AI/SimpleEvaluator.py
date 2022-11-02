@@ -15,15 +15,33 @@ class PlayerEvaluator:
         pass
     
     def set_running_results(self, running_results: Dict[str, Any]) -> None:
+        """
+            Function for understanding the current level/history of the player after it has been fetched from the db
+        """
         self.running_results = running_results 
 
     def get_stats(self) -> Any:
+        """
+            Simple function to return the level of the current player in a printable formate
+        """
         pass
 
-    def get_trials(self) -> List[Any]:
+    def get_trial(self) -> List[Any]:
+        """
+            Function to return a trial depending on the current state of the evaluator
+        """
+        pass
+    
+    def set_trial(self, trial: List[Any]) -> None:
+        """
+            Function that has to be called to force the use of a custom trial instead of letting the evaluator decide the next trial through get_trial
+        """
         pass
 
     def update_statistics(self) -> None:
+        """
+            after get_trial or set_trial has been called, use this function to update the player statistics based on the player response
+        """
         pass
 
     
@@ -77,6 +95,11 @@ class SimpleEvaluator(PlayerEvaluator):
         #store the two difficulties for this trial (not available after client response)
         self.last_diffs = [r['Diff_coeff_filtering'], r['Difficulty Coefficient']]
         return matrix
+
+    def set_trial(self, trial: List[Any]) -> None:
+
+        #for code compatibility
+        self.last_diffs = [0.5, 0.5]
 
     def update_statistics(self, correct: int, decision_time: float) -> None:
         self.running_results[self.mode + "_total"] += 1

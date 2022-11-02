@@ -1,6 +1,8 @@
 import numpy as np
 import math
 import numpy.random
+import scipy as sp
+from scipy import integrate
 
 def unit_vector(vector):
     """ Returns the unit vector of the vector.  """
@@ -35,3 +37,31 @@ def get_mock_trials(trials: int):
 
 def vcol(vec: np.ndarray) -> np.ndarray:
     return vec.reshape((vec.size,1))
+
+
+def PAD_find_trial(target_error_prob: float, target_error_diff: float, decision_matrix: np.ndarray, boundary_vector: np.ndarray, sigma: float):
+    
+    a = float(boundary_vector[1]/boundary_vector[0])
+    ax = lambda x: x*a
+
+    integral_bound = 5
+
+    def compute_error_probability(nd_variable: float, nnd_variable: float):
+        """
+            this function computes the approximated probability that the player defined by the decision_matrix (filtering) 
+            and the sigma_coefficient (sharpening) predicts the trial defined by nd and nnd variables incorrectly
+        """
+
+        gauss_func = lambda y,x : math.exp(-0.5*(1/(sigma**2))*(((x-nd_variable)**2)+((y-nnd_variable)**2)))
+
+        total_area = integrate.dblquad(gauss_func, -integral_bound,integral_bound,-integral_bound,integral_bound)
+        error_area_quad2 =  integrate.dblquad(gauss_func, -integral_bound,0, ax, integral_bound)
+        error_area_quad4 = integrate.dblquad(gauss_func, 0, integral_bound, -integral_bound, ax)
+
+        return (error_area_quad2+error_area_quad4)/total_area
+    
+
+
+
+
+

@@ -33,6 +33,8 @@ def parse_arguments(args_list: List[str]) -> Namespace:
     
     args = parser.parse_args(args_list)
 
+
+    #process arguments
     if args.use_lan and args.use_remote: 
         parser.error("you can only specify either lan or remote connection") 
 
