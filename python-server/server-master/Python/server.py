@@ -6,7 +6,7 @@ import select
 
 class GameServer:
 
-    def __init__(self, server_socket, host, port, db, disable_shutdown) -> None:
+    def __init__(self, server_socket, host, port, db, disable_shutdown, always_new_player) -> None:
         self.server_socket = server_socket
         self.host = host 
         self.port = port
@@ -14,6 +14,7 @@ class GameServer:
         self.players = []
         self.running = True
         self.disable_shutdown=disable_shutdown
+        self.always_new_player = always_new_player
         
         # lookup table is shared in the server to avoid multiple opens
         self.lookup_table = pandas.read_csv("./dataset/lookup_table.csv")
@@ -35,11 +36,16 @@ class GameServer:
             readable, _, __ = select.select(read_list, [], [], 0.5)
 
             for s in readable:
+            
                 # Accepting player connection
                 client, address = self.server_socket.accept()
-                player_id = self.db.get_player(address[0])
-                if player_id == - 1:
-                    player_id = self.db.add_player(address[0])
+
+                if self.always_new_player:
+                    player_id = self.db.add_player("0")
+                else:
+                    player_id = self.db.get_player(address[0])
+                    if player_id == - 1:
+                        player_id = self.db.add_player(address[0])
                 print("Player " + str(player_id) + " has joined")
 
                 # Starting a thread to handle the player

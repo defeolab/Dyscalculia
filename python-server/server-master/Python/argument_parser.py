@@ -17,19 +17,33 @@ def parse_arguments(args_list: List[str]) -> Namespace:
     parser.add_argument("--disable_shutdown", help="specify if the server has to stay on even if there are no clients connected",
                         action="store_true")
     
+    parser.add_argument("--always_new_player", help= "if enabled, the server creates a new player in the database for every connection without trying to locate their info first",
+                        action="store_true")
+
+    parser.add_argument("--usability_test", help="set this parameter to automatically set the environment for the usability test",
+                        action="store_true")
+
     args = parser.parse_args(args_list)
 
     if args.use_lan and args.use_remote: 
         parser.error("you can only specify either lan or remote connection") 
 
+    if args.usability_test:
+        args.use_remote = False
+        args.use_lan = True
+        args.always_new_player = True
+        args.disable_shutdown = True
+
     if args.use_remote:
         args.host = '192.168.1.30'
     elif args.use_lan:
-        args.host = 'INSERT_LOCAL_LAB_ADDRESS_HERE'
+        args.host = '192.168.1.30'
     else:
         args.host = '127.0.0.1'
 
     args.port = 65432
+
+
 
     return args
 
