@@ -19,11 +19,15 @@ class TrialAdapter:
         
         self.lookup_table["DistanceFromTarget"] = (((self.lookup_table["nd_LogRatio"])-target_nd_coord)**2) + (((self.lookup_table["nnd_LogRatio"])-target_nnd_coord)**2)
 
-        closest_trial = self.lookup_table.sort_values(by=['DistanceFromTarget']).iloc[0]
+        r = self.lookup_table.sort_values(by=['DistanceFromTarget']).iloc[0]
 
         #print(f"{target_nd_coord} - {closest_trial['nd_LogRatio']} : {target_nnd_coord} - {closest_trial['nnd_LogRatio']}")
 
-        return closest_trial
+        matrix = []
+        matrix.append([float(r["NumLeft"]), float(r["NumRight"]), float(r["FieldAreaLeft"]), float(r["FieldAreaRight"]), float(r["ItemSurfaceAreaLeft"]), float(r["ItemSurfaceAreaRight"]),4,8,float(r["nd_LogRatio"]), float(r["nnd_LogRatio"])])
+        
+
+        return matrix
 
 
 

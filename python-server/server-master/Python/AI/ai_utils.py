@@ -3,6 +3,10 @@ import math
 import numpy.random
 import scipy as sp
 from scipy import integrate
+from scipy.optimize import fmin_l_bfgs_b
+import random
+
+from typing import Callable, Tuple
 
 def unit_vector(vector):
     """ Returns the unit vector of the vector.  """
@@ -38,29 +42,68 @@ def get_mock_trials(trials: int):
 def vcol(vec: np.ndarray) -> np.ndarray:
     return vec.reshape((vec.size,1))
 
+def compute_error_probability(nd_variable: float, nnd_variable: float, sigma: float, integral_bound:float, ax: Callable):
+    """
+        this function computes the approximated probability that the player defined by the decision_matrix (filtering) 
+        and the sigma_coefficient (sharpening) predicts the trial defined by nd and nnd variables incorrectly
+    """
 
-def PAD_find_trial(target_error_prob: float, target_error_diff: float, decision_matrix: np.ndarray, boundary_vector: np.ndarray, sigma: float):
+    gauss_func = lambda y,x : math.exp(-0.5*(1/(sigma**2))*(((x-nd_variable)**2)+((y-nnd_variable)**2)))
+
+    total_area, _ = integrate.dblquad(gauss_func, -integral_bound,integral_bound,-integral_bound,integral_bound)
+
+    if nd_variable < 0:
+        error_area, _ =  integrate.dblquad(gauss_func, -integral_bound, integral_bound, ax, integral_bound)
+    else:
+        error_area, _ =  integrate.dblquad(gauss_func, -integral_bound, integral_bound,-integral_bound, ax)
+
+    return error_area/total_area
+
+def compute_perceived_difficulty(trial_vec: np.ndarray, decision_matrix: np.ndarray, max_decision_score: float):
+        
+    #transform vector in the decision space
+    trial_vec = np.dot(decision_matrix, vcol(trial_vec))
+
+    decision_score = float(trial_vec[1])
+
+    #normalize
+    decision_score = decision_score/max_decision_score
+    return 1-decision_score
+
+def PAD_find_trial(target_error_prob: float, target_perceived_diff: float, decision_matrix: np.ndarray, boundary_vector: np.ndarray, sigma: float) -> Tuple[float, float,float]:
     
     a = float(boundary_vector[1]/boundary_vector[0])
     ax = lambda x: x*a
 
     integral_bound = 5
+    max_decision_score = 2*math.sqrt(2)
+    nd_bound = 2
+    nnd_bound = 2
 
-    def compute_error_probability(nd_variable: float, nnd_variable: float):
-        """
-            this function computes the approximated probability that the player defined by the decision_matrix (filtering) 
-            and the sigma_coefficient (sharpening) predicts the trial defined by nd and nnd variables incorrectly
-        """
-
-        gauss_func = lambda y,x : math.exp(-0.5*(1/(sigma**2))*(((x-nd_variable)**2)+((y-nnd_variable)**2)))
-
-        total_area = integrate.dblquad(gauss_func, -integral_bound,integral_bound,-integral_bound,integral_bound)
-        error_area_quad2 =  integrate.dblquad(gauss_func, -integral_bound,0, ax, integral_bound)
-        error_area_quad4 = integrate.dblquad(gauss_func, 0, integral_bound, -integral_bound, ax)
-
-        return (error_area_quad2+error_area_quad4)/total_area
+    prob_func = lambda x, y: compute_error_probability(x,y, sigma, integral_bound, ax)
+    diff_func = lambda x: compute_perceived_difficulty(x, decision_matrix, max_decision_score)
     
+    def optimality_score(trial_vec: np.ndarray):
+        return np.abs(target_error_prob-prob_func(trial_vec[0], trial_vec[1])) #+(target_perceived_diff-diff_func(trial_vec)) 
+    
+    #better to chose the quadrant where to search (i.e. congruent or incongruent trial)
+    #this is to avoid the solver to get stuck (the points in the axis are not differentiable, gradients are weird)
+    """
+    congruent = bool(random.getrandbits(1))
+    congruent = False if target_error_prob > 0.5 else True
+    if congruent:
+        bounds = [(0.1, nd_bound ), (0, nnd_bound)]
+        x0 = np.array([np.random.uniform(0.05, nd_bound), np.random.uniform(0, nnd_bound)])
+    else:
+        bounds = [(-nd_bound, -0.1 ), (0, nnd_bound)]
+        x0 = np.array([np.random.uniform(-nd_bound, -0.05), np.random.uniform(0, nnd_bound)])
+    """
+    bounds = [(-nd_bound, nd_bound ), (0, nnd_bound)]
+    x0 = np.array([np.random.uniform(-nd_bound, nd_bound), np.random.uniform(0, nnd_bound)])
 
+    x, last_val, d = fmin_l_bfgs_b(optimality_score, x0, approx_grad = True, iprint=0, bounds = bounds, maxiter=2000)
+
+    return x[0], x[1], last_val
 
 
 

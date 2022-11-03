@@ -1,5 +1,5 @@
 from AI.SimpleEvaluator import PlayerEvaluator
-from AI.ai_utils import unit_vector
+from AI.ai_utils import unit_vector, PAD_find_trial
 from typing import Any
 
 from AI.TrialAdapter import TrialAdapter
@@ -27,7 +27,7 @@ class PAD_Evaluator(PlayerEvaluator):
     """
 
 
-    def __init__(self, init_alpha: float, init_sigma: float, init_prob: float = 0.05, init_perceived_diff: float = 0.2):
+    def __init__(self, init_alpha: float, init_sigma: float, init_prob: float = 0.05, init_perceived_diff: float = 0.1):
         self.trial_adapter = TrialAdapter(False, True)
         self.alpha = init_alpha
         self.sigma = init_sigma
@@ -52,14 +52,20 @@ class PAD_Evaluator(PlayerEvaluator):
             This is meant to support the growth of mathematical skills of the child
         """
 
-        
+        nd_variable, nnd_variable, last_value = PAD_find_trial(self.target_error_prob,self.target_perceived_diff, self.transform_mat, self.boundary_vector, self.sigma)
 
+        trial = self.trial_adapter.find_trial(nd_variable, nnd_variable)
 
-
-        return super().get_trial()
+        return trial
     
-    def update_statistics(self) -> None:
-        return super().update_statistics()
+    def update_statistics(self, correct: bool, decision_time: float) -> None:
+        """
+            update the target error probability and the target perceived difficulty according to the response from the last trial
+
+            for now just increase/decrease probability
+        """
+        self.target_error_prob += 0.05 if correct else -0.05
+
 
 if __name__ == "__main__":
     ev = PAD_Evaluator()

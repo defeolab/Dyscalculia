@@ -76,7 +76,7 @@ class SimulatedClient:
 
         
         if plot:
-            plot_trials(self.player, proposed_trials, corrects, times)
+            plot_trials(self.player.boundary_vector, proposed_trials, corrects, times)
         else:
             print(f"Dummy client run, performance: {performance}, running results: {self.player_evaluator.running_results}")
         
