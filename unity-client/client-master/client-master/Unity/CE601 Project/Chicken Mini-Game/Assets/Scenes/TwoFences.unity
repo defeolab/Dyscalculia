@@ -3355,13 +3355,13 @@ MonoBehaviour:
   animalsReady: 0
   trialStarted: 0
   connectionStarted: 0
-  maxTrialTime: 50
+  maxTrialTime: 0
   animalShowTime: 0
   area1Value: 0
   area2Value: 0
   correctCount: 0
   incorrectCount: 0
-  maxTrialsNum: 0
+  maxTrialsNum: 50
   errorImage: {fileID: 1928544760}
   finishImage: {fileID: 1963950028}
   remote: 0
