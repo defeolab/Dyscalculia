@@ -3,6 +3,7 @@ from AI.ai_utils import *
 from AI.TrialAdapter import TrialAdapter
 from AI.ai_plot import plot_trials
 from AI.PAD_Evaluator import PAD_Evaluator
+from dummy_client_handler import SimulatedClient
 
 def to_trial(nd, nnd):
     return [-1,-1,-1,-1,-1,-1,-1,-1,nd,nnd]
@@ -12,7 +13,7 @@ class TestAI(unittest.TestCase):
     def __init__(self):
         self.trial_adapter = TrialAdapter(False, True)
         self.alpha = 60
-        self.sigma = 0.1
+        self.sigma = 1
         self.target_error_prob = 0.1
         self.target_perceived_diff = 0.1
 
@@ -52,10 +53,16 @@ class TestAI(unittest.TestCase):
             corrects.append(True)
 
         plot_trials(self.boundary_vector, trials, corrects, prob_diffs, ann_str=True)
+    
+    def test_player_cycle(self):
+        client = SimulatedClient(0.5, 0.5, alpha = 20, sigma= 0.2)
+
+        client.simulate_player_cycle(10, 5, True)
         
 
 if __name__ == "__main__":
     tc = TestAI()
 
     #tc.test_probability()
-    tc.test_PAD_Evaluator()
+    #tc.test_PAD_Evaluator()
+    tc.test_player_cycle()

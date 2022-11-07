@@ -2,7 +2,10 @@ from time import time
 from typing import Any, Tuple, List, Optional, Dict
 import random
 
+from AI.ai_utils import compute_nd_nnd_coords
+
 from pandas import DataFrame
+import pandas
 
 class PlayerEvaluator:
     """
@@ -22,9 +25,30 @@ class PlayerEvaluator:
 
     def get_stats(self) -> Any:
         """
-            Simple function to return the level of the current player in a printable formate
+            Simple function to return the level of the current player
         """
         pass
+
+    def get_stats_as_str(self) -> str:
+        """
+            Simple function to return the level of the current player in a printable format
+        """
+        pass
+    
+    def plot_stats(self, day: int):
+        """
+            define how to plot the current evaluator's statistics
+        """
+
+    def get_info_as_string(self) -> str:
+        """
+            get more informations regarding the last trial sent as string
+        """
+    
+    def get_info(self) -> List[Any]:
+        """
+            get more informations regarding the last trial sent as string
+        """
 
     def get_trial(self) -> List[Any]:
         """
@@ -51,7 +75,7 @@ class SimpleEvaluator(PlayerEvaluator):
 
         
     """
-    def __init__(self, lookup_table: DataFrame, player_id: int, num_trials: int, history_size:int, alt_mode_weight: float = 0.0, fetched_samples: int = 16, selection_factor: int = 4):
+    def __init__(self, lookup_table: DataFrame, player_id: int, num_trials: int, history_size:int, alt_mode_weight: float = 0.0, fetched_samples: int = 16, selection_factor: int = 4, normalize_vars: bool= True, old_table: bool = False):
         self.lookup_table = lookup_table
         self.player_id = player_id
         self.num_trials = num_trials
@@ -60,10 +84,41 @@ class SimpleEvaluator(PlayerEvaluator):
         self.fetched_samples = fetched_samples
         self.selected_samples = fetched_samples//selection_factor
         self.mode = "filtering"
+        self.normalize_vars = normalize_vars
+
+        if old_table:
+            self.lookup_table = pandas.read_csv("./dataset/legacy/lookup_table.csv")
+
+            #we need to compute nd and nnd for this table
+            nd = []
+            nnd = []
+            
+            for i, r in self.lookup_table.iterrows():
+                #print(f"{r['NumLeft']} - {r['NumRight']}")
+
+                nd_logratio, nnd_logratio = compute_nd_nnd_coords([float(r['NumLeft']), float(r['FieldAreaLeft']),float(r['ItemSurfaceAreaLeft'])],[float(r['NumRight']), float(r['FieldAreaRight']),float(r['ItemSurfaceAreaRight'])])
+                nd.append(nd_logratio)
+                nnd.append(nnd_logratio)
+            
+            self.lookup_table['nd_LogRatio'] = nd
+            self.lookup_table['nnd_LogRatio'] = nnd
+
+        if self.normalize_vars:
+            self.max_nd = self.lookup_table['nd_LogRatio'].abs().max()
+            self.max_nnd = self.lookup_table['nnd_LogRatio'].abs().max()
+        
+
 
     def get_stats(self) -> Any:
-        return self.running_results[self.mode + "_diff"]
+        return self.running_results['filtering_diff'], self.running_results['sharpening_diff']
+    def get_stats_as_str(self) -> Any:
+        return f"{self.running_results['filtering_diff']} - {self.running_results['sharpening_diff']}"
     
+    def plot_stats(self, day: int):
+        def func(plt):
+            plt.title(f"Day {day}, Filtering diff {round(self.running_results['filtering_diff'],2)}, Sharpening diff {round(self.running_results['sharpening_diff'],2)}")
+
+        return func
     def get_trial(self) -> List[Any]:
 
         if self.mode == "filtering" :
@@ -89,12 +144,24 @@ class SimpleEvaluator(PlayerEvaluator):
         
         # generate trial matrices
         matrix = []
-        matrix.append([float(r["NumLeft"]), float(r["NumRight"]), float(r["FieldAreaLeft"]), float(r["FieldAreaRight"]), float(r["ItemSurfaceAreaLeft"]), float(r["ItemSurfaceAreaRight"]),4,8,float(r["nd_LogRatio"]), float(r["nnd_LogRatio"])])
+        if self.normalize_vars:
+            matrix.append([float(r["NumLeft"]), float(r["NumRight"]), float(r["FieldAreaLeft"]), float(r["FieldAreaRight"]), float(r["ItemSurfaceAreaLeft"]), float(r["ItemSurfaceAreaRight"]),4,8,float(r["nd_LogRatio"]/self.max_nd), float(r["nnd_LogRatio"]/self.max_nnd)])
+        else:
+            matrix.append([float(r["NumLeft"]), float(r["NumRight"]), float(r["FieldAreaLeft"]), float(r["FieldAreaRight"]), float(r["ItemSurfaceAreaLeft"]), float(r["ItemSurfaceAreaRight"]),4,8,float(r["nd_LogRatio"]), float(r["nnd_LogRatio"])])
         #print("NUMBER OF TRIALS SENT: " + str(len(matrix)))
 
         #store the two difficulties for this trial (not available after client response)
         self.last_diffs = [r['Diff_coeff_filtering'], r['Difficulty Coefficient']]
         return matrix
+    
+    def get_info_as_string(self) -> str:
+        if self.mode == "filtering":
+            return f"fd {round(self.last_diffs[0],2)}"
+        else:
+            return f"sd {round(self.last_diffs[1], 2)}"
+    
+    def get_info(self) -> List[Any]:
+        return self.last_diffs
 
     def set_trial(self, trial: List[Any]) -> None:
 

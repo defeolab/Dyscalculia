@@ -6,7 +6,7 @@ from scipy import integrate
 from scipy.optimize import fmin_l_bfgs_b
 import random
 
-from typing import Callable, Tuple
+from typing import Callable, Tuple, List
 
 def unit_vector(vector):
     """ Returns the unit vector of the vector.  """
@@ -38,6 +38,15 @@ def get_mock_trials(trials: int):
             ret.append([-1,-1,-1,-1,-1,-1,-1,-1,nd, nnd])
 
     return ret
+
+
+def compute_nd_nnd_coords(trial_left: List[float], trial_right: List[float]) -> Tuple[float, float]:
+    #formula specified by previous thesis writers
+    #NND = (0.577+0.467∗Number)∗(FA/Number) +(0.487+0.473∗Number)∗ISA
+    nnd_right = (0.577+0.467*trial_right[0])*(trial_right[1]/trial_right[0]) + (0.487+0.473*trial_right[0])*trial_right[2]
+    nnd_left = (0.577+0.467*trial_left[0])*(trial_left[1]/trial_left[0]) + (0.487+0.473*trial_left[0])*trial_left[2]
+
+    return np.log10(trial_right[0]/trial_left[0]), np.log10(nnd_right/nnd_left)
 
 def vcol(vec: np.ndarray) -> np.ndarray:
     return vec.reshape((vec.size,1))

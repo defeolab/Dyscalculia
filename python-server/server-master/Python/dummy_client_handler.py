@@ -1,6 +1,6 @@
 from typing import Any, Dict, Tuple
 from AI.PlayerSimulator import PlayerSimulator
-from AI.ai_plot import plot_trials
+from AI.ai_plot import plot_trials, plot_stats
 from AI.ai_utils import get_mock_trials
 import numpy as np
 from distributions import GaussianThreshold, UniformOutput
@@ -79,6 +79,58 @@ class SimulatedClient:
             plot_trials(self.player.boundary_vector, proposed_trials, corrects, times)
         else:
             print(f"Dummy client run, performance: {performance}, running results: {self.player_evaluator.running_results}")
+        
+
+    def simulate_player_cycle(self, days: int, trials_per_day: int, plot_each_day: bool):
+        self.player = PlayerSimulator(self.alpha, self.sigma)
+        self.player_evaluator = SimpleEvaluator(self.lookup_table, 1, trials_per_day, 5, alt_mode_weight=0.0)
+
+        self.player_evaluator.set_running_results(init_running_results())
+
+        performance = []
+
+        proposed_trials = []
+        corrects = []
+        annotations = []
+
+        local_accuracies = []
+
+        cumulative_accuracies = []
+        tot_corrects = 0
+
+        stat1_history = []
+        stat2_history = []
+
+        for day in range(1, days+1):
+            local_corrects = 0
+            for j in range(0, trials_per_day):
+                trial = self.player_evaluator.get_trial()[0]
+                correct, decision_time = self.player.predict(trial)
+                proposed_trials.append(trial)
+                corrects.append(correct)
+                annotations.append(self.player_evaluator.get_info_as_string())
+
+                s1,s2 = self.player_evaluator.get_stats()
+                stat1_history.append(s1)
+                stat2_history.append(s2)
+
+                tot_corrects += 1 if correct else 0
+                local_corrects += 1 if correct else 0 
+
+                self.player_evaluator.update_statistics(correct, decision_time)
+
+            if plot_each_day:
+                plot_trials(self.player.boundary_vector, proposed_trials[-trials_per_day : -1], corrects[-trials_per_day: -1], annotations[-trials_per_day: -1], True, self.player_evaluator.plot_stats(day))
+            
+            local_accuracies.append(local_corrects/trials_per_day)
+            cumulative_accuracies.append(tot_corrects/(day*trials_per_day))
+        
+        
+        print(f"final stats are: {self.player_evaluator.get_stats_as_str()}")
+        print(f"filtering accuracy is {self.player_evaluator.running_results['filtering_acc']}")
+        print(f"sharpening accuracy is {self.player_evaluator.running_results['sharpening_acc']}")
+        plot_stats(local_accuracies, cumulative_accuracies, days)
+        plot_stats(stat1_history, stat2_history, days*trials_per_day)
         
 
     def predict_trial(self, trial: pandas.Series) -> Tuple[int, float]:
