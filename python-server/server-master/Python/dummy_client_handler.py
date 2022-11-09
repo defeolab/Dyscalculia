@@ -130,7 +130,7 @@ class SimulatedClient:
         print(f"filtering accuracy is {self.player_evaluator.running_results['filtering_acc']}")
         print(f"sharpening accuracy is {self.player_evaluator.running_results['sharpening_acc']}")
         plot_stats(local_accuracies, cumulative_accuracies, days)
-        plot_stats(stat1_history, stat2_history, days*trials_per_day)
+        plot_stats(stat1_history, stat2_history, days*trials_per_day, labels=["filt", "sharp"])
         
 
     def predict_trial(self, trial: pandas.Series) -> Tuple[int, float]:

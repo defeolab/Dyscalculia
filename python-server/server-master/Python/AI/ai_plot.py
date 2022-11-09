@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from AI.ai_utils import angle_between, unit_vector
 import numpy as np
 
-def plot_trials(boundary_vector: np.ndarray, trials: List[List[Any]], corrects: List[bool], annotations: List[float], ann_str: bool = False, plot_stats: Callable = None):
+def plot_trials(boundary_vector: np.ndarray, trials: List[List[Any]], corrects: List[bool], annotations: List[float], ann_str: bool = False, plot_stats: Callable = None, plot_dist: bool = False):
 
     fig = plt.figure()
     ax = fig.gca()
@@ -19,8 +19,8 @@ def plot_trials(boundary_vector: np.ndarray, trials: List[List[Any]], corrects: 
     colors = {True: 'green', False: 'red'}
 
     coords = list(map(lambda x: x[8:],trials))
-    
-    
+
+
     for i, coord in enumerate(coords):
         #print(corrects[i])
         ax.scatter(coord[0], coord[1], color = colors[corrects[i]])
@@ -30,6 +30,10 @@ def plot_trials(boundary_vector: np.ndarray, trials: List[List[Any]], corrects: 
             ax.annotate(annotations[i], (coord[0], coord[1]), color= "red")
         else:    
             ax.annotate(str(round(annotations[i],2)), (coord[0], coord[1]), color="red")
+        
+        if plot_dist:
+            proj = [boundary_vector[0] * coord[0], boundary_vector[1]*coord[1]]
+            ax.plot([proj[0], coord[0]], [proj[1], coord[1]], color="red")
         #print(f">>{coord}")
         
     if plot_stats is not None:

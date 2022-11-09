@@ -8,6 +8,9 @@ import random
 
 from typing import Callable, Tuple, List
 
+def to_mock_trial(nd: float, nnd: float):
+    return [-1,-1,-1,-1,-1,-1,-1,-1,nd, nnd]
+
 def unit_vector(vector):
     """ Returns the unit vector of the vector.  """
     return vector / np.linalg.norm(vector)
@@ -93,7 +96,8 @@ def PAD_find_trial(target_error_prob: float, target_perceived_diff: float, decis
     diff_func = lambda x: compute_perceived_difficulty(x, decision_matrix, max_decision_score)
     
     def optimality_score(trial_vec: np.ndarray):
-        return np.abs(target_error_prob-prob_func(trial_vec[0], trial_vec[1])) #+(target_perceived_diff-diff_func(trial_vec)) 
+        return  np.abs(target_error_prob-prob_func(trial_vec[0], trial_vec[1])) #+ \
+                #np.abs(target_perceived_diff-diff_func(trial_vec)) 
     
     #better to chose the quadrant where to search (i.e. congruent or incongruent trial)
     #this is to avoid the solver to get stuck (the points in the axis are not differentiable, gradients are weird)
@@ -110,7 +114,8 @@ def PAD_find_trial(target_error_prob: float, target_perceived_diff: float, decis
     bounds = [(-nd_bound, nd_bound ), (0, nnd_bound)]
     x0 = np.array([np.random.uniform(-nd_bound, nd_bound), np.random.uniform(0, nnd_bound)])
 
-    x, last_val, d = fmin_l_bfgs_b(optimality_score, x0, approx_grad = True, iprint=0, bounds = bounds, maxiter=2000)
+    x, last_val, d = fmin_l_bfgs_b(optimality_score, x0, approx_grad = True, 
+                    iprint=0, bounds = bounds, maxiter=2000)
 
     return x[0], x[1], last_val
 

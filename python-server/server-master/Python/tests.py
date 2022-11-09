@@ -13,7 +13,7 @@ class TestAI(unittest.TestCase):
     def __init__(self):
         self.trial_adapter = TrialAdapter(False, True)
         self.alpha = 60
-        self.sigma = 1
+        self.sigma = 0.5
         self.target_error_prob = 0.1
         self.target_perceived_diff = 0.1
 
@@ -57,12 +57,18 @@ class TestAI(unittest.TestCase):
     def test_player_cycle(self):
         client = SimulatedClient(0.5, 0.5, alpha = 20, sigma= 0.2)
 
-        client.simulate_player_cycle(10, 5, True)
-        
+        client.simulate_player_cycle(10, 5, False)
+    
+    def test_plot_boundary_and_points(self):
+        points = []
+        corrects = []
+        anns = []
+        plot_trials(self.boundary_vector, points, corrects, anns, True)
+
 
 if __name__ == "__main__":
     tc = TestAI()
 
     #tc.test_probability()
-    #tc.test_PAD_Evaluator()
-    tc.test_player_cycle()
+    tc.test_PAD_Evaluator()
+    #tc.test_player_cycle()
