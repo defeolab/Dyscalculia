@@ -72,7 +72,10 @@ class PlayerHandler(Thread) :
         self.both_histories = self.db.fetch_both_histories(self.player_id, self.history_size)
         print(self.running_results)
         print(self.both_histories)
-        suggestion = qserver_ask_for_question_recommendation(self.both_histories[-1][0], -1,-1, self.both_histories[:-1])
+        if len(self.both_histories) >0:
+            suggestion = qserver_ask_for_question_recommendation(self.both_histories[-1][0], -1,-1, self.both_histories[:-1])
+            self.mode = "filtering" if suggestion[0] == "f" else "sharpening"
+
         #assert True == False
         print("Game " + str(self.player_id) + " is running") 
         while self.running :
