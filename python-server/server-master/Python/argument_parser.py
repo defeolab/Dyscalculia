@@ -41,6 +41,7 @@ def parse_arguments(args_list: List[str]) -> Namespace:
     else:
         args.host = '127.0.0.1'
 
+    print(args.host)
     args.port = 65432
 
 

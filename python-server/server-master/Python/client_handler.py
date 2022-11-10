@@ -12,6 +12,7 @@ from trial_result import TrialResult
 from correlated_data_generator import generate_correlated_trials
 from trial_util import convert_trials_to_json, convert_matrix_to_trials
 from transform_matrix import TransformMatrix
+from trial_mode_utils import qserver_ask_for_question_recommendation
 import random
 import socket
 
@@ -68,8 +69,11 @@ class PlayerHandler(Thread) :
         #load them and run the player
 
         self.running_results = self.db.get_player_stats(self.player_id, self.history_size)
+        self.both_histories = self.db.fetch_both_histories(self.player_id, self.history_size)
         print(self.running_results)
-        
+        print(self.both_histories)
+        suggestion = qserver_ask_for_question_recommendation(self.both_histories[-1][0], -1,-1, self.both_histories[:-1])
+        #assert True == False
         print("Game " + str(self.player_id) + " is running") 
         while self.running :
             try:
@@ -145,13 +149,11 @@ class PlayerHandler(Thread) :
                 if self.running_results[self.mode + "_diff"] - step > 0 :
                     self.running_results[self.mode + "_diff"] -= step
 
-            # Change modes 
-            # Currently just alternates on every sent trial
-            # TODO Kudi is working on a better way to do this
-            if self.mode == "filtering" :
-                self.mode = "sharpening"
-            else :
-                self.mode = "filtering"
+
+            suggestion = qserver_ask_for_question_recommendation('f' if self.mode == "filtering" else "s", results_to_add[0].correct, results_to_add[0].decision_time, self.both_histories)
+
+            self.mode = "filtering" if suggestion[0] == "f" else "sharpening"
+            self.both_histories = suggestion[1]
 
             # TODO: update player stats in the database
             print(self.running_results)

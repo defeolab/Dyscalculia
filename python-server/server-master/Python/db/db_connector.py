@@ -145,6 +145,30 @@ class DBConnector:
             sharpening_history.append(line[1])
         
         return list(reversed(filtering_history)), list(reversed(sharpening_history))
+    
+    def fetch_both_histories(self, player_id: int, history_size: int) -> Tuple[List[int], List[int]]:
+        cursor = self.cnx.cursor()
+        fetch_history = (   "SELECT created, correct, decision_time, trial_mode FROM trial_result_new WHERE player_id = %s "
+                            "ORDER BY created DESC "
+                            "LIMIT %s"
+                        )
+        
+        data = (player_id, history_size)
+        cursor.execute(fetch_history, data)
+        history = []
+        for line in cursor:
+            mode = "f" if line[3] == "filtering" else "s"
+            score_weight = 3
+            if line[2] >= 5000:
+                score_weight = 2
+            
+            if line[1] == 0:
+                score_weight = 1
+
+            history.append([mode, score_weight])
+
+        
+        return list(reversed(history))
 
     def update_player_stats(self, player_id: int, new_stats: Dict[str, Any]) -> None :
         cursor = self.cnx.cursor()
