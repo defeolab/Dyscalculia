@@ -11,6 +11,8 @@ import numpy as np
 
 from AI.SimpleEvaluator import SimpleEvaluator
 from transform_matrix import TransformMatrix
+from AI.PDEP_Evaluator import PDEP_Evaluator
+
 
 def init_running_results() -> Dict[str, Any]:
     running_results = {}
@@ -34,17 +36,23 @@ def init_running_results() -> Dict[str, Any]:
     return running_results
 
 class SimulatedClient:
-    def __init__(self, filtering_diff: float, sharpening_difficulty: float, alpha: float = 10.0, sigma: float = 0.05, mock_trials: bool = False):
+    def __init__(self, filtering_diff: float, sharpening_difficulty: float, alpha: float = 10.0, 
+                sigma: float = 0.05, mock_trials: bool = False, norm_feats: bool = True, evaluator: str = "PDEP"):
         self.filtering_diff = filtering_diff
         self.sharpening_diff = sharpening_difficulty
         self.lookup_table = pandas.read_csv("./dataset/lookup_table.csv")
         self.alpha = alpha
         self.sigma = sigma
         self.mock_trials = mock_trials
+        self.norm_feats = norm_feats
+        self.player = PlayerSimulator(self.alpha, self.sigma)
+
+        if evaluator == "simple":
+            self.player_evaluator = SimpleEvaluator(self.lookup_table, 1, 5, alt_mode_weight=0.5)
+        elif evaluator == "PDEP":
+            self.player_evaluator = PDEP_Evaluator(self.alpha, self.sigma, norm_feats=norm_feats)
 
     def run(self, trials: int, plot: bool, history_size: int = 10) -> None:
-        self.player = PlayerSimulator(self.alpha, self.sigma)
-        self.player_evaluator = SimpleEvaluator(self.lookup_table, 1, trials, history_size, alt_mode_weight=0.5)
 
         self.player_evaluator.set_running_results(init_running_results())
         mode = "filtering"
@@ -56,7 +64,7 @@ class SimulatedClient:
         times = []
 
         if self.mock_trials:
-            mock_trials = get_mock_trials(trials)
+            mock_trials = get_mock_trials(trials, self.norm_feats)
             trials = len(mock_trials)
 
         for i in range(0, trials):
@@ -76,15 +84,12 @@ class SimulatedClient:
 
         
         if plot:
-            plot_trials(self.player.boundary_vector, proposed_trials, corrects, times)
+            plot_trials(self.player.boundary_vector, proposed_trials, corrects, times, norm_lim=self.norm_feats)
         else:
             print(f"Dummy client run, performance: {performance}, running results: {self.player_evaluator.running_results}")
         
 
     def simulate_player_cycle(self, days: int, trials_per_day: int, plot_each_day: bool):
-        self.player = PlayerSimulator(self.alpha, self.sigma)
-        self.player_evaluator = SimpleEvaluator(self.lookup_table, 1, trials_per_day, 5, alt_mode_weight=0.0)
-
         self.player_evaluator.set_running_results(init_running_results())
 
         performance = []
@@ -120,7 +125,7 @@ class SimulatedClient:
                 self.player_evaluator.update_statistics(correct, decision_time)
 
             if plot_each_day:
-                plot_trials(self.player.boundary_vector, proposed_trials[-trials_per_day : -1], corrects[-trials_per_day: -1], annotations[-trials_per_day: -1], True, self.player_evaluator.plot_stats(day))
+                plot_trials(self.player.boundary_vector, proposed_trials[-trials_per_day : -1], corrects[-trials_per_day: -1], annotations[-trials_per_day: -1], True, self.player_evaluator.plot_stats(day), norm_lim=self.norm_feats)
             
             local_accuracies.append(local_corrects/trials_per_day)
             cumulative_accuracies.append(tot_corrects/(day*trials_per_day))

@@ -30,9 +30,11 @@ def angle_between(v1, v2):
     rads = np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
     return rads
 
-def get_mock_trials(trials: int):
-    nd_range = np.linspace(-1.5, 1.5, num = int(math.sqrt(trials)))
-    nnd_range = np.linspace(-1.5, 1.5, num = int(math.sqrt(trials)))
+def get_mock_trials(trials: int, norm_feats:bool):
+    bounds = [-0.75, 0.75] if norm_feats else [-1.5, 1.5]
+
+    nd_range = np.linspace(bounds[0], bounds[1], num = int(math.sqrt(trials)))
+    nnd_range = np.linspace(bounds[0], bounds[1], num = int(math.sqrt(trials)))
 
     ret = []
 
@@ -82,15 +84,19 @@ def compute_perceived_difficulty(trial_vec: np.ndarray, decision_matrix: np.ndar
     decision_score = decision_score/max_decision_score
     return 1-decision_score
 
-def PAD_find_trial(target_error_prob: float, target_perceived_diff: float, decision_matrix: np.ndarray, boundary_vector: np.ndarray, sigma: float) -> Tuple[float, float,float]:
+def PAD_find_trial(target_error_prob: float, target_perceived_diff: float, decision_matrix: np.ndarray, boundary_vector: np.ndarray, sigma: float, norm_feats: bool) -> Tuple[float, float,float]:
     
     a = float(boundary_vector[1]/boundary_vector[0])
     ax = lambda x: x*a
 
     integral_bound = 5
     max_decision_score = 2*math.sqrt(2)
-    nd_bound = 2
-    nnd_bound = 2
+    if norm_feats:
+        nd_bound = 1
+        nnd_bound = 1
+    else:
+        nd_bound = 2
+        nnd_bound = 2
 
     prob_func = lambda x, y: compute_error_probability(x,y, sigma, integral_bound, ax)
     diff_func = lambda x: compute_perceived_difficulty(x, decision_matrix, max_decision_score)

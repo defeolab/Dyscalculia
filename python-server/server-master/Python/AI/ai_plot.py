@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from AI.ai_utils import angle_between, unit_vector
 import numpy as np
 
-def plot_trials(boundary_vector: np.ndarray, trials: List[List[Any]], corrects: List[bool], annotations: List[float], ann_str: bool = False, plot_stats: Callable = None, plot_dist: bool = False):
+def plot_trials(boundary_vector: np.ndarray, trials: List[List[Any]], corrects: List[bool], annotations: List[float], ann_str: bool = False, plot_stats: Callable = None, plot_dist: bool = False, norm_lim: bool = True):
 
     fig = plt.figure()
     ax = fig.gca()
@@ -44,8 +44,13 @@ def plot_trials(boundary_vector: np.ndarray, trials: List[List[Any]], corrects: 
     ax.spines['bottom'].set_position('zero')
     ax.spines['top'].set_color('none')
 
-    plt.xlim([-2, 2])
-    plt.ylim([-2,2])
+    if norm_lim:
+        plt.xlim([-1, 1])
+        plt.ylim([-1,1])
+    else:
+        plt.xlim([-2, 2])
+        plt.ylim([-2,2])
+        
     #plt.xlabel("Numerical dimension", loc="left")
     #plt.ylabel("Non numerical dimension", loc="bottom")
     plt.grid(False)

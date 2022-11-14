@@ -2,7 +2,7 @@ import unittest
 from AI.ai_utils import *
 from AI.TrialAdapter import TrialAdapter
 from AI.ai_plot import plot_trials
-from AI.PAD_Evaluator import PAD_Evaluator
+from AI.PDEP_Evaluator import PDEP_Evaluator
 from dummy_client_handler import SimulatedClient
 
 def to_trial(nd, nnd):
@@ -16,6 +16,8 @@ class TestAI(unittest.TestCase):
         self.sigma = 0.5
         self.target_error_prob = 0.1
         self.target_perceived_diff = 0.1
+
+        self.norm_feats = True
 
         self.boundary_vector = unit_vector(np.array([-math.sin(math.radians(self.alpha)), math.cos(math.radians(self.alpha))]))
 
@@ -38,15 +40,15 @@ class TestAI(unittest.TestCase):
         
         plot_trials(self.boundary_vector, trials,corrects, probs)
     
-    def test_PAD_Evaluator(self):
-        eval = PAD_Evaluator(self.alpha, self.sigma, self.target_error_prob, self.target_perceived_diff)
+    def test_PDEP_Evaluator(self):
+        eval = PDEP_Evaluator(self.alpha, self.sigma, self.target_error_prob, self.target_perceived_diff, self.norm_feats)
 
         error_probs = np.linspace(0, 1, num=5)
         trials = []
         prob_diffs = []
         corrects = []
         for p in error_probs:
-            nd,nnd,diff =PAD_find_trial(p, self.target_perceived_diff, self.transform_mat, self.boundary_vector,self.sigma)
+            nd,nnd,diff =PAD_find_trial(p, self.target_perceived_diff, self.transform_mat, self.boundary_vector,self.sigma, self.norm_feats)
             print(f"{p}-{nd}-{nnd}-{diff}")
             trials.append(to_trial(nd,nnd))
             prob_diffs.append(f"{round(p,2)} - {round(diff,2)}")
@@ -70,5 +72,5 @@ if __name__ == "__main__":
     tc = TestAI()
 
     #tc.test_probability()
-    tc.test_PAD_Evaluator()
+    tc.test_PDEP_Evaluator()
     #tc.test_player_cycle()

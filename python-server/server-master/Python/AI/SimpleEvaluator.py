@@ -75,10 +75,9 @@ class SimpleEvaluator(PlayerEvaluator):
 
         
     """
-    def __init__(self, lookup_table: DataFrame, player_id: int, num_trials: int, history_size:int, alt_mode_weight: float = 0.0, fetched_samples: int = 16, selection_factor: int = 4, normalize_vars: bool= True, old_table: bool = False):
+    def __init__(self, lookup_table: DataFrame, player_id: int, history_size:int, alt_mode_weight: float = 0.0, fetched_samples: int = 16, selection_factor: int = 4, normalize_vars: bool= True, old_table: bool = False):
         self.lookup_table = lookup_table
         self.player_id = player_id
-        self.num_trials = num_trials
         self.history_size=history_size
         self.alt_mode_weight = alt_mode_weight
         self.fetched_samples = fetched_samples

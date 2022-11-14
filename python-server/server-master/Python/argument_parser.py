@@ -8,6 +8,8 @@ def parse_arguments(args_list: List[str]) -> Namespace:
     parser = argparse.ArgumentParser(description="Server for the chicken minigame",
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     
+
+    #arguments for normal usage
     parser.add_argument("--use_lan", help="specify that server is being launched from the pc in the lab using LAN connection",
                         action="store_true")
     
@@ -17,6 +19,9 @@ def parse_arguments(args_list: List[str]) -> Namespace:
     parser.add_argument("--disable_shutdown", help="specify if the server has to stay on even if there are no clients connected",
                         action="store_true")
 
+    parser.add_argument("--evaluator", choices=["PDEP", "simple"], default="PDEP", help="the evaluator that should be used")
+
+    #arguments for simulated child
     parser.add_argument("--sim_child", help="specify that you are not expecting a client connection and just want to use the simulated child",
                         action="store_true")
 
@@ -31,10 +36,17 @@ def parse_arguments(args_list: List[str]) -> Namespace:
     parser.add_argument("--sim_mock_trials", help="pick mock trials for the simulation (not fetched from lookup table)", 
                         action= "store_true")
     
+
+    #miscellanea arguments
+    parser.add_argument("--normalized_features", help= "specify that the nd-nnd space is not normalized in the range [-1,1]",
+                        choices=["y","n"], default="y")
+
     args = parser.parse_args(args_list)
 
 
     #process arguments
+    args.normalized_features = True if args.normalized_features == "y" else False
+
     if args.use_lan and args.use_remote: 
         parser.error("you can only specify either lan or remote connection") 
 

@@ -8,9 +8,9 @@ from typing import List, Any
 import numpy as np
 import math
 
-class PAD_Evaluator(PlayerEvaluator):
+class PDEP_Evaluator(PlayerEvaluator):
     """
-        Perceived-Actual-Difficulty Evaluator: 
+        Perceived-Difficulty-Error-Probability Evaluator: 
             This evaluator aims at estimating the ability of the player (in terms of 
             filtering and sharpening parameters) and at proposing trials based on 
             their perceived difficulty and their actual difficulty given the estimated player.
@@ -27,12 +27,13 @@ class PAD_Evaluator(PlayerEvaluator):
     """
 
 
-    def __init__(self, init_alpha: float, init_sigma: float, init_prob: float = 0.05, init_perceived_diff: float = 0.1):
+    def __init__(self, init_alpha: float, init_sigma: float, init_prob: float = 0.05, init_perceived_diff: float = 0.1, norm_feats: bool=True):
         self.trial_adapter = TrialAdapter(False, True)
         self.alpha = init_alpha
         self.sigma = init_sigma
         self.target_error_prob = init_prob
         self.target_perceived_diff = init_perceived_diff
+        self.norm_feats = norm_feats
 
         self.boundary_vector = unit_vector(np.array([-math.sin(math.radians(self.alpha)), math.cos(math.radians(self.alpha))]))
 
@@ -52,9 +53,9 @@ class PAD_Evaluator(PlayerEvaluator):
             This is meant to support the growth of mathematical skills of the child
         """
 
-        nd_variable, nnd_variable, last_value = PAD_find_trial(self.target_error_prob,self.target_perceived_diff, self.transform_mat, self.boundary_vector, self.sigma)
+        nd_variable, nnd_variable, last_value = PAD_find_trial(self.target_error_prob,self.target_perceived_diff, self.transform_mat, self.boundary_vector, self.sigma, self.norm_feats)
 
-        trial = self.trial_adapter.find_trial(nd_variable, nnd_variable)
+        trial = self.trial_adapter.find_trial(nd_variable, nnd_variable, self.norm_feats)
 
         return trial
     
@@ -68,4 +69,4 @@ class PAD_Evaluator(PlayerEvaluator):
 
 
 if __name__ == "__main__":
-    ev = PAD_Evaluator()
+    ev = PDEP_Evaluator(0.1,0.1)
