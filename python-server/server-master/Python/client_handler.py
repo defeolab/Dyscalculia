@@ -66,9 +66,9 @@ class PlayerHandler(Thread) :
         if evaluator == "simple":
             self.player_evaluator = SimpleEvaluator(lookup_table, player_id, self.num_trials, self.history_size)
         else:
-            init_alpha = 60
+            init_alpha = 45
             init_sigma = 0.2
-            self.player_evaluator = PDEP_Evaluator(init_alpha, init_sigma)
+            self.player_evaluator = PDEP_Evaluator(init_alpha, init_sigma, norm_feats=True, mock=False)
 
     def run(self) :
 

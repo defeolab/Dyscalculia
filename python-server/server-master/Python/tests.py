@@ -67,11 +67,28 @@ class TestAI(unittest.TestCase):
 
         client.simulate_player_cycle(4, 5, True)
     
-    def test_plot_boundary_and_points(self):
-        points = []
+    def test_trial_adapter(self):
+        adapter = TrialAdapter(False, norm_feats=False)
+        n = 10
+        nds = np.linspace(-0.95, 0.95, n)
+        nnds = np.linspace(-0.95,0.95, n)
+
+        raw = []
+        adapted = []
         corrects = []
         anns = []
-        plot_trials(self.boundary_vector, points, corrects, anns, True)
+
+        for nd in nds:
+            for nnd in nnds:
+                raw.append(to_mock_trial(nd, nnd))
+                raw.append(adapter.find_trial(nd, nnd)[0])
+                corrects.append(True)
+                corrects.append(False)
+                anns.append("")
+                anns.append("")
+
+        vec = np.array([0,1])
+        plot_trials(vec, raw, corrects, anns, ann_str=True)
 
 
 if __name__ == "__main__":
@@ -82,5 +99,6 @@ if __name__ == "__main__":
     #tc.test_probability()
     #tc.test_PDEP_Evaluator()
     #tc.test_player_cycle_simple()
-    tc.test_player_cycle_PDEP()
+    #tc.test_player_cycle_PDEP()
+    tc.test_trial_adapter()
     print("--- %s seconds ---" % (time.time() - start_time))

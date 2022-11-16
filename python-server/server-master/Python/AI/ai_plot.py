@@ -23,7 +23,9 @@ def plot_trials(boundary_vector: np.ndarray, trials: List[List[Any]], corrects: 
 
     for i, coord in enumerate(coords):
         #print(corrects[i])
-        ax.scatter(coord[0], coord[1], color = colors[corrects[i]])
+        ax.scatter(coord[0], 
+            coord[1], 
+            color = colors[corrects[i]])
         #ax.text(coord[0]-0.1, coord[1]+0.1, str(round(times[i],2)), color = colors[corrects[i]])
 
         if ann_str:
