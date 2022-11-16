@@ -61,6 +61,7 @@ public class TrialsManager : MonoBehaviour
             connectionStarted = true;
             errorImage.SetActive(false);
             errorImage.GetComponent<AudioSource>().Stop();
+            client.AskTrials();
             this.upcomingTrials = client.GetTrials();
 
             //Debug.Log(upcomingTrials.ToString());
@@ -86,6 +87,7 @@ public class TrialsManager : MonoBehaviour
         {
             client.CompleteTrials();
             Debug.Log("FIND NEW TRIAL");
+            client.AskTrials();
             this.upcomingTrials = client.GetTrials();
             Debug.Log(upcomingTrials.ToString());
             this.GetTrial();
@@ -94,11 +96,20 @@ public class TrialsManager : MonoBehaviour
         return currentTrial;
     }
 
+    public void AskNextTrial()
+    {
+        if (correctCount + incorrectCount != 0){
+            client.CompleteTrials();
+            client.AskTrials();
+        }
+        
+    }
+
     public TrialData GetNextTrial()
     {
         if (correctCount + incorrectCount == 6)
         {
-            client.CompleteTrials();
+            //client.CompleteTrials();
             client.Dispose();
             finishImage.SetActive(true);
             finishImage.GetComponent<AudioSource>().Play();
@@ -108,7 +119,7 @@ public class TrialsManager : MonoBehaviour
         {
             if (correctCount + incorrectCount != 0)
             {
-                client.CompleteTrials();
+                //client.CompleteTrials();
                 this.upcomingTrials = client.GetTrials();
             }
         
