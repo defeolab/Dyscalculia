@@ -1,6 +1,7 @@
 from pandas import read_csv
 import math
 from typing import List, Any
+from AI.ai_utils import to_mock_trial
 
 class TrialAdapter:
     """
@@ -10,10 +11,11 @@ class TrialAdapter:
     """
 
 
-    def __init__(self, mock: bool, use_table: bool = True):
+    def __init__(self, mock: bool, use_table: bool = True, norm_feats: bool = True):
         self.mock = mock
         self.lookup_table = read_csv("./dataset/lookup_table.csv")
         self.use_table = use_table
+        self.norm_feats = norm_feats
 
     def find_trial(self, target_nd_coord: float, target_nnd_coord: float) -> List[Any]:
         
@@ -26,8 +28,8 @@ class TrialAdapter:
         matrix = []
         matrix.append([float(r["NumLeft"]), float(r["NumRight"]), float(r["FieldAreaLeft"]), float(r["FieldAreaRight"]), float(r["ItemSurfaceAreaLeft"]), float(r["ItemSurfaceAreaRight"]),4,8,float(r["nd_LogRatio"]), float(r["nnd_LogRatio"])])
         
-
-        return matrix
+        print(matrix)
+        return matrix if self.mock else [to_mock_trial(target_nd_coord, target_nnd_coord)]
 
 
 

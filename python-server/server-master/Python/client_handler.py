@@ -2,6 +2,7 @@ import json
 import random
 import math
 from AI.SimpleEvaluator import SimpleEvaluator
+from AI.PDEP_Evaluator import PDEP_Evaluator
 import settings_manager
 
 import time
@@ -50,7 +51,7 @@ def calculate_next_correlation(average_decision_time, correct_answer_ratio):
         return 0.00
 
 class PlayerHandler(Thread) :
-    def __init__(self, lookup_table, client, db, player_id):
+    def __init__(self, lookup_table, client, db, player_id, evaluator):
         super().__init__()
         self.client = client 
         self.db = db
@@ -61,7 +62,13 @@ class PlayerHandler(Thread) :
         self.mode = "filtering" # 0 for sharpening | 1 for filtering
         self.num_trials = 1 # number of trials sent to the client at a time
         self.history_size = 5 
-        self.player_evaluator = SimpleEvaluator(lookup_table, player_id, self.num_trials, self.history_size)
+
+        if evaluator == "simple":
+            self.player_evaluator = SimpleEvaluator(lookup_table, player_id, self.num_trials, self.history_size)
+        else:
+            init_alpha = 60
+            init_sigma = 0.2
+            self.player_evaluator = PDEP_Evaluator(init_alpha, init_sigma)
 
     def run(self) :
 

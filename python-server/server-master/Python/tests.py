@@ -4,6 +4,7 @@ from AI.TrialAdapter import TrialAdapter
 from AI.ai_plot import plot_trials
 from AI.PDEP_Evaluator import PDEP_Evaluator
 from dummy_client_handler import SimulatedClient
+import time
 
 def to_trial(nd, nnd):
     return [-1,-1,-1,-1,-1,-1,-1,-1,nd,nnd]
@@ -56,10 +57,15 @@ class TestAI(unittest.TestCase):
 
         plot_trials(self.boundary_vector, trials, corrects, prob_diffs, ann_str=True)
     
-    def test_player_cycle(self):
-        client = SimulatedClient(0.5, 0.5, alpha = 20, sigma= 0.2)
+    def test_player_cycle_simple(self):
+        client = SimulatedClient(0.5, 0.5, alpha = 20, sigma= 0.2, evaluator="simple", norm_feats=True)
 
-        client.simulate_player_cycle(10, 5, False)
+        client.simulate_player_cycle(10, 5, True)
+
+    def test_player_cycle_PDEP(self):
+        client = SimulatedClient(0.5, 0.5, alpha = 30, sigma= 0.2, evaluator="PDEP", norm_feats=True)
+
+        client.simulate_player_cycle(4, 5, True)
     
     def test_plot_boundary_and_points(self):
         points = []
@@ -71,6 +77,10 @@ class TestAI(unittest.TestCase):
 if __name__ == "__main__":
     tc = TestAI()
 
+    start_time = time.time()
+
     #tc.test_probability()
-    tc.test_PDEP_Evaluator()
-    #tc.test_player_cycle()
+    #tc.test_PDEP_Evaluator()
+    #tc.test_player_cycle_simple()
+    tc.test_player_cycle_PDEP()
+    print("--- %s seconds ---" % (time.time() - start_time))

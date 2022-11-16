@@ -6,7 +6,7 @@ import select
 
 class GameServer:
 
-    def __init__(self, server_socket, host, port, db, disable_shutdown) -> None:
+    def __init__(self, server_socket, host, port, db, disable_shutdown, evaluator) -> None:
         self.server_socket = server_socket
         self.host = host 
         self.port = port
@@ -14,6 +14,7 @@ class GameServer:
         self.players = []
         self.running = True
         self.disable_shutdown=disable_shutdown
+        self.evaluator = evaluator
         
         # lookup table is shared in the server to avoid multiple opens
         self.lookup_table = pandas.read_csv("./dataset/lookup_table.csv")
@@ -43,7 +44,7 @@ class GameServer:
                 print("Player " + str(player_id) + " has joined")
 
                 # Starting a thread to handle the player
-                player_thread = PlayerHandler(self.lookup_table, client, self.db, player_id)
+                player_thread = PlayerHandler(self.lookup_table, client, self.db, player_id, self.evaluator)
                 player_thread.start()
                 self.players.append(player_thread)
                 print("Number of players: " + str(len(self.players)))

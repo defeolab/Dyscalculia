@@ -1,5 +1,5 @@
 from AI.SimpleEvaluator import PlayerEvaluator
-from AI.ai_utils import unit_vector, PAD_find_trial
+from AI.ai_utils import unit_vector, PDEP_find_trial
 from typing import Any
 
 from AI.TrialAdapter import TrialAdapter
@@ -27,8 +27,8 @@ class PDEP_Evaluator(PlayerEvaluator):
     """
 
 
-    def __init__(self, init_alpha: float, init_sigma: float, init_prob: float = 0.05, init_perceived_diff: float = 0.1, norm_feats: bool=True):
-        self.trial_adapter = TrialAdapter(False, True)
+    def __init__(self, init_alpha: float, init_sigma: float, init_prob: float = 0.30, init_perceived_diff: float = 0.1, norm_feats: bool=True, update_step: int=5, mock: bool = True):
+        self.trial_adapter = TrialAdapter(mock,True, norm_feats)
         self.alpha = init_alpha
         self.sigma = init_sigma
         self.target_error_prob = init_prob
@@ -40,9 +40,19 @@ class PDEP_Evaluator(PlayerEvaluator):
         #basis in the decision boundary space
         self.transform_mat =np.linalg.inv(np.array([[self.boundary_vector[0], self.boundary_vector[1]], [self.boundary_vector[1], -self.boundary_vector[0]]]))
 
-    
+        #variables used during update phase
+        self.iteration = 0
+        self.update_step = update_step
+        self.history = np.array(([False for i in range(0, update_step)])) 
+
     def get_stats(self) -> Any:
+        return self.target_error_prob#, self.target_perceived_diff
+
+    def get_stats_as_str(self) -> str:
         return f"alpha: {self.alpha}, sigma: {self.sigma}"
+    
+    def get_info_as_string(self) -> str:
+        return f"{round(self.target_error_prob,2)} - {round(self.last_value,2)}"
     
     def get_trial(self) -> List[Any]:
         """
@@ -53,9 +63,9 @@ class PDEP_Evaluator(PlayerEvaluator):
             This is meant to support the growth of mathematical skills of the child
         """
 
-        nd_variable, nnd_variable, last_value = PAD_find_trial(self.target_error_prob,self.target_perceived_diff, self.transform_mat, self.boundary_vector, self.sigma, self.norm_feats)
+        nd_variable, nnd_variable, self.last_value = PDEP_find_trial(self.target_error_prob,self.target_perceived_diff, self.transform_mat, self.boundary_vector, self.sigma, self.norm_feats)
 
-        trial = self.trial_adapter.find_trial(nd_variable, nnd_variable, self.norm_feats)
+        trial = self.trial_adapter.find_trial(nd_variable, nnd_variable)
 
         return trial
     
@@ -65,7 +75,22 @@ class PDEP_Evaluator(PlayerEvaluator):
 
             for now just increase/decrease probability
         """
-        self.target_error_prob += 0.05 if correct else -0.05
+
+        self.iteration+=1
+        self.history[self.iteration%self.update_step] = correct
+
+        if self.iteration%self.update_step == 0:
+            #after a set number of trials, check the accuracy
+            avg = np.average(self.history)
+            print(f"avg was {avg}")
+
+            #if accuracy was lower than expected, lower target error prob
+            self.target_error_prob += 0.05 if avg>self.target_error_prob else -0.05
+
+            #eliminate the 0.5 error probability as its perceived difficulty is too high (trials exactly on decision boundary)
+            if np.abs(self.target_error_prob-0.5) <0.02:
+                print("wut")
+                self.target_error_prob = 0.55 if avg> 0.5 else 0.45
 
 
 if __name__ == "__main__":
