@@ -46,10 +46,19 @@ class PDEP_Evaluator(PlayerEvaluator):
         self.history = np.array(([False for i in range(0, update_step)])) 
 
     def get_stats(self) -> Any:
-        return self.target_error_prob#, self.target_perceived_diff
+        return self.target_error_prob, self.target_perceived_diff
+    
+    def get_main_stat(self) -> Any:
+        return self.target_error_prob
 
     def get_stats_as_str(self) -> str:
         return f"alpha: {self.alpha}, sigma: {self.sigma}"
+
+    def plot_stats(self, day: int):
+        def func(plt):
+            plt.title(f"Day {day}, error prob {round(self.target_error_prob,2)}")
+
+        return func
     
     def get_info_as_string(self) -> str:
         return f"{round(self.target_error_prob,2)} - {round(self.last_value,2)}"

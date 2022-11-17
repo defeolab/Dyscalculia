@@ -29,6 +29,11 @@ class PlayerEvaluator:
         """
         pass
 
+    def get_main_stat(self) -> Any:
+        """
+            Simple function to return the main current statistic (i.e. filtering or sharpening, or error prob for PDEP) 
+        """
+
     def get_stats_as_str(self) -> str:
         """
             Simple function to return the level of the current player in a printable format
@@ -110,6 +115,13 @@ class SimpleEvaluator(PlayerEvaluator):
 
     def get_stats(self) -> Any:
         return self.running_results['filtering_diff'], self.running_results['sharpening_diff']
+    
+    def get_main_stat(self) -> Any:
+        if self.mode == "filtering":
+            return self.running_results['filtering_diff']
+        else:
+            self.running_results['sharpening_diff']
+            
     def get_stats_as_str(self) -> Any:
         return f"{self.running_results['filtering_diff']} - {self.running_results['sharpening_diff']}"
     

@@ -13,8 +13,8 @@ class TestAI(unittest.TestCase):
 
     def __init__(self):
         self.trial_adapter = TrialAdapter(False, True)
-        self.alpha = 60
-        self.sigma = 0.5
+        self.alpha = 30
+        self.sigma = 0.2
         self.target_error_prob = 0.1
         self.target_perceived_diff = 0.1
 
@@ -49,13 +49,13 @@ class TestAI(unittest.TestCase):
         prob_diffs = []
         corrects = []
         for p in error_probs:
-            nd,nnd,diff =PAD_find_trial(p, self.target_perceived_diff, self.transform_mat, self.boundary_vector,self.sigma, self.norm_feats)
+            nd,nnd,diff =PDEP_find_trial(p, self.target_perceived_diff, self.transform_mat, self.boundary_vector,self.sigma, self.norm_feats)
             print(f"{p}-{nd}-{nnd}-{diff}")
             trials.append(to_trial(nd,nnd))
             prob_diffs.append(f"{round(p,2)} - {round(diff,2)}")
             corrects.append(True)
 
-        plot_trials(self.boundary_vector, trials, corrects, prob_diffs, ann_str=True)
+        plot_trials(self.boundary_vector, trials, corrects, prob_diffs, ann_str=True, sharp_std=self.sigma)
     
     def test_player_cycle_simple(self):
         client = SimulatedClient(0.5, 0.5, alpha = 20, sigma= 0.2, evaluator="simple", norm_feats=True)
@@ -65,7 +65,7 @@ class TestAI(unittest.TestCase):
     def test_player_cycle_PDEP(self):
         client = SimulatedClient(0.5, 0.5, alpha = 30, sigma= 0.2, evaluator="PDEP", norm_feats=True)
 
-        client.simulate_player_cycle(4, 5, True)
+        client.simulate_player_cycle(4, 10, False, False)
     
     def test_trial_adapter(self):
         adapter = TrialAdapter(False, norm_feats=False)
@@ -99,6 +99,6 @@ if __name__ == "__main__":
     #tc.test_probability()
     #tc.test_PDEP_Evaluator()
     #tc.test_player_cycle_simple()
-    #tc.test_player_cycle_PDEP()
-    tc.test_trial_adapter()
+    tc.test_player_cycle_PDEP()
+    #tc.test_trial_adapter()
     print("--- %s seconds ---" % (time.time() - start_time))

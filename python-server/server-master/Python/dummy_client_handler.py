@@ -89,7 +89,7 @@ class SimulatedClient:
             print(f"Dummy client run, performance: {performance}, running results: {self.player_evaluator.running_results}")
         
 
-    def simulate_player_cycle(self, days: int, trials_per_day: int, plot_each_day: bool):
+    def simulate_player_cycle(self, days: int, trials_per_day: int, plot_each_day: bool, update_stats: bool):
         self.player_evaluator.set_running_results(init_running_results())
 
         performance = []
@@ -122,10 +122,12 @@ class SimulatedClient:
                 tot_corrects += 1 if correct else 0
                 local_corrects += 1 if correct else 0 
 
-                self.player_evaluator.update_statistics(correct, decision_time)
+                if update_stats:
+                    self.player_evaluator.update_statistics(correct, decision_time)
 
             if plot_each_day:
-                plot_trials(self.player.boundary_vector, proposed_trials[-trials_per_day : -1], corrects[-trials_per_day: -1], annotations[-trials_per_day: -1], True, self.player_evaluator.plot_stats(day), norm_lim=self.norm_feats)
+                plot_trials(self.player.boundary_vector, proposed_trials[-trials_per_day : -1], corrects[-trials_per_day: -1], annotations[-trials_per_day: -1], 
+                            True, self.player_evaluator.plot_stats(day), norm_lim=self.norm_feats, sharp_std=self.player.sigma)
             
             local_accuracies.append(local_corrects/trials_per_day)
             cumulative_accuracies.append(tot_corrects/(day*trials_per_day))

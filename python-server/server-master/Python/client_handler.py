@@ -128,7 +128,7 @@ class PlayerHandler(Thread) :
             results_to_add = []
             correct = 0
             for result in results["results"] :
-                results_to_add.append(TrialResult(mode = self.mode, difficulty = self.player_evaluator.get_stats(), decision_time=result["DecisionTime"], correct=result["Correct"], raw_trial_data=result["TrialData"]))
+                results_to_add.append(TrialResult(mode = self.mode, difficulty = self.player_evaluator.get_main_stat(), decision_time=result["DecisionTime"], correct=result["Correct"], raw_trial_data=result["TrialData"]))
                 correct += int(result["Correct"])
 
             # updating player stats

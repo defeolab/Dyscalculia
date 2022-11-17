@@ -7,7 +7,9 @@ import matplotlib.pyplot as plt
 from AI.ai_utils import angle_between, unit_vector
 import numpy as np
 
-def plot_trials(boundary_vector: np.ndarray, trials: List[List[Any]], corrects: List[bool], annotations: List[float], ann_str: bool = False, plot_stats: Callable = None, plot_dist: bool = False, norm_lim: bool = True):
+def plot_trials(boundary_vector: np.ndarray, trials: List[List[Any]], corrects: List[bool], 
+                annotations: List[float], ann_str: bool = False, plot_stats: Callable = None, 
+                plot_dist: bool = False, norm_lim: bool = True, sharp_std: float = None):
 
     fig = plt.figure()
     ax = fig.gca()
@@ -28,6 +30,11 @@ def plot_trials(boundary_vector: np.ndarray, trials: List[List[Any]], corrects: 
             color = colors[corrects[i]])
         #ax.text(coord[0]-0.1, coord[1]+0.1, str(round(times[i],2)), color = colors[corrects[i]])
 
+        if sharp_std is not None:
+            circle = plt.Circle((coord[0], coord[1]), radius = sharp_std, alpha = 0.2)
+            ax.add_patch(circle)
+            #ax.scatter(coord[0], coord[1], color = "blue", alpha=0.1, marker="o", s=sharp_std*1000)
+
         if ann_str:
             ax.annotate(annotations[i], (coord[0], coord[1]), color= "red")
         else:    
@@ -41,6 +48,8 @@ def plot_trials(boundary_vector: np.ndarray, trials: List[List[Any]], corrects: 
     if plot_stats is not None:
         plot_stats(plt)
 
+    
+    ax.axis("equal")
     ax.spines['left'].set_position('zero')
     ax.spines['right'].set_color('none')
     ax.spines['bottom'].set_position('zero')
