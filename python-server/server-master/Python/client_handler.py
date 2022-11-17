@@ -14,6 +14,7 @@ from trial_result import TrialResult
 from correlated_data_generator import generate_correlated_trials
 from trial_util import convert_trials_to_json, convert_matrix_to_trials
 from transform_matrix import TransformMatrix
+from trial_mode_utils import qserver_ask_for_question_recommendation
 import random
 import socket
 
@@ -63,8 +64,9 @@ class PlayerHandler(Thread) :
         self.num_trials = 1 # number of trials sent to the client at a time
         self.history_size = 5 
 
+        self.evaluator_type = evaluator
         if evaluator == "simple":
-            self.player_evaluator = SimpleEvaluator(lookup_table, player_id, self.num_trials, self.history_size)
+            self.player_evaluator = SimpleEvaluator(lookup_table, player_id, self.history_size)
         else:
             init_alpha = 45
             init_sigma = 0.2
@@ -75,9 +77,10 @@ class PlayerHandler(Thread) :
         #At this point there must be data about this player's statistics
         #load them and run the player
 
-        running_results = self.db.get_player_stats(self.player_id, self.history_size)
-        print(running_results)
-        self.player_evaluator.set_running_results(running_results)
+        #fetch stats from db
+        self.player_evaluator.db_set_running_results(self.db, self.player_id)
+
+        #assert True == False
         print("Game " + str(self.player_id) + " is running") 
         while self.running :
             try:
@@ -128,22 +131,16 @@ class PlayerHandler(Thread) :
             results_to_add = []
             correct = 0
             for result in results["results"] :
-                results_to_add.append(TrialResult(mode = self.mode, difficulty = self.player_evaluator.get_main_stat(), decision_time=result["DecisionTime"], correct=result["Correct"], raw_trial_data=result["TrialData"]))
+                results_to_add.append(TrialResult(mode = self.player_evaluator.mode, difficulty = self.player_evaluator.get_main_stat(), decision_time=result["DecisionTime"], correct=result["Correct"], raw_trial_data=result["TrialData"]))
                 correct += int(result["Correct"])
 
             # updating player stats
             self.player_evaluator.update_statistics(correct, result["DecisionTime"])
             #print(self.running_results[self.mode + "_history"])
-            
-            # Change modes 
-            # Currently just alternates on every sent trial
-            # TODO Kudi is working on a better way to do this
-            
 
-            # TODO: update player stats in the database
-            print(self.player_evaluator.running_results)
-            self.db.add_results(self.player_id, results_to_add)
-            self.db.update_player_stats(self.player_id, self.player_evaluator.running_results)
+            # update player stats in the database
+            #print(self.player_evaluator.running_results)
+            self.player_evaluator.db_update(self.db, self.player_id, results_to_add)
 
             return "SUCCESS" + "\n"
 

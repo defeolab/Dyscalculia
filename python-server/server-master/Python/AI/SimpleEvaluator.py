@@ -1,6 +1,10 @@
 from time import time
 from typing import Any, Tuple, List, Optional, Dict
 import random
+from db.db_connector import DBConnector
+from trial_result import TrialResult
+
+from trial_mode_utils import qserver_ask_for_question_recommendation
 
 from AI.ai_utils import compute_nd_nnd_coords
 
@@ -17,11 +21,11 @@ class PlayerEvaluator:
     def __init__(self) -> None:
         pass
     
-    def set_running_results(self, running_results: Dict[str, Any]) -> None:
+    def set_running_results(self, running_results: List[Any]) -> None:
         """
-            Function for understanding the current level/history of the player after it has been fetched from the db
+            initialize stats to be used when they're available even without db
         """
-        self.running_results = running_results 
+        self.running_results = running_results
 
     def get_stats(self) -> Any:
         """
@@ -73,6 +77,18 @@ class PlayerEvaluator:
         """
         pass
 
+    def db_update(self, db: DBConnector, player_id: int, results_to_add: List[TrialResult]):
+        """
+            function to be called for proper update of the db
+        """
+        pass
+    
+    def db_set_running_results(self, db: DBConnector, player_id: int) -> None:
+        """
+            Function for understanding the current level/history of the player by fetching it from the db
+        """
+        pass
+
     
 class SimpleEvaluator(PlayerEvaluator):
     """
@@ -110,8 +126,27 @@ class SimpleEvaluator(PlayerEvaluator):
         if self.normalize_vars:
             self.max_nd = self.lookup_table['nd_LogRatio'].abs().max()
             self.max_nnd = self.lookup_table['nnd_LogRatio'].abs().max()
-        
+    
+    def set_running_results(self, running_results: List[Any]) -> None:
+        self.both_histories = []
+        return super().set_running_results(running_results)
 
+    def db_set_running_results(self, db: DBConnector, player_id: int) -> None:
+        self.running_results = db.get_player_stats(player_id, self.history_size)
+
+        self.both_histories = db.fetch_both_histories(player_id, self.history_size)
+        print(f">>>>>>>>>>>>>>>>>>>>>>>>>>{self.running_results}")
+        print(f">>>>>>>>>>>>>>>>>>>>>>>>init {self.both_histories}")
+        print(f">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>{self.history_size}")
+        if len(self.both_histories) >0:
+            suggestion = qserver_ask_for_question_recommendation(self.both_histories[-1][0], -1,-1, self.both_histories[:-1])
+            self.mode = "filtering" if suggestion[0] == "f" else "sharpening"
+
+    def db_update(self, db: DBConnector, player_id:int, results_to_add: List[TrialResult]):
+        #results_to_add[0].difficulty = self.running_results['filtering_diff'] if self.mode == 'filtering' else self.running_results['sharpening_diff']
+        #results_to_add[0].mode = self.mode
+        db.add_results(self.player_id, results_to_add)
+        db.update_player_stats(self.player_id, self.running_results)
 
     def get_stats(self) -> Any:
         return self.running_results['filtering_diff'], self.running_results['sharpening_diff']
@@ -120,7 +155,7 @@ class SimpleEvaluator(PlayerEvaluator):
         if self.mode == "filtering":
             return self.running_results['filtering_diff']
         else:
-            self.running_results['sharpening_diff']
+            return self.running_results['sharpening_diff']
             
     def get_stats_as_str(self) -> Any:
         return f"{self.running_results['filtering_diff']} - {self.running_results['sharpening_diff']}"
@@ -190,14 +225,11 @@ class SimpleEvaluator(PlayerEvaluator):
         if len(self.running_results[self.mode + "_history"]) > self.history_size : self.running_results[self.mode + "_history"].pop(0)
 
         steps = self._old_step(correct, decision_time, self.mode)
-        
-        if self.mode == "filtering" :
-            self.mode = "sharpening"
-        else :
-            self.mode = "filtering"
-        #print(f"{steps}, {self.running_results['filtering_diff']}, {self.running_results['sharpening_diff']}")
-        #print(f"ld: {self.last_diffs}")
-        #assert False == True
+
+        suggestion = qserver_ask_for_question_recommendation('f' if self.mode == "filtering" else "s", correct, decision_time, self.both_histories)
+        print(f">>>>>>>>>>>>{suggestion}")
+        self.mode = "filtering" if suggestion[0] == "f" else "sharpening"
+        self.both_histories = suggestion[1]
 
     def _old_step(self, correct: int, decision_time:float, mode:str) -> Tuple[float, float]:
         if len(self.running_results[self.mode + "_history"]) > self.history_size : self.running_results[self.mode + "_history"].pop(0)
@@ -216,7 +248,7 @@ class SimpleEvaluator(PlayerEvaluator):
             return step, 0.0
         else:
             return 0.0, step
-                    
+
     def _get_step(self, correct: int, decision_time:float, mode: str) -> Tuple[float, float]:
         
         #base step (represents maximum possible increment)

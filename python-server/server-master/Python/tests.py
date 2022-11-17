@@ -99,6 +99,6 @@ if __name__ == "__main__":
     #tc.test_probability()
     #tc.test_PDEP_Evaluator()
     #tc.test_player_cycle_simple()
-    tc.test_player_cycle_PDEP()
+    #tc.test_player_cycle_PDEP()
     #tc.test_trial_adapter()
     print("--- %s seconds ---" % (time.time() - start_time))
