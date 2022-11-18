@@ -65,7 +65,9 @@ class TestAI(unittest.TestCase):
     def test_player_cycle_PDEP(self):
         client = SimulatedClient(0.5, 0.5, alpha = 30, sigma= 0.2, evaluator="PDEP", norm_feats=True)
 
-        client.simulate_player_cycle(4, 10, False, False)
+        client.player_evaluator.target_error_prob = 0.30
+        #client.player_evaluator.target_perceived_diff = 0.5
+        client.simulate_player_cycle(10, 6, False, False)
     
     def test_trial_adapter(self):
         adapter = TrialAdapter(False, norm_feats=False)
@@ -99,6 +101,6 @@ if __name__ == "__main__":
     #tc.test_probability()
     #tc.test_PDEP_Evaluator()
     #tc.test_player_cycle_simple()
-    #tc.test_player_cycle_PDEP()
+    tc.test_player_cycle_PDEP()
     #tc.test_trial_adapter()
     print("--- %s seconds ---" % (time.time() - start_time))

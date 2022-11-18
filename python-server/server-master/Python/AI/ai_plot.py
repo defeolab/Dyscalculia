@@ -79,6 +79,6 @@ def plot_stats(local_accuracies: List[float], cumulative_accuracies: List[float]
 
     ax.legend()
 
-    plt.ylim([0,1])
+    plt.ylim([-0.1,1.1])
     plt.show()
 

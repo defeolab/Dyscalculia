@@ -35,6 +35,8 @@ class PDEP_Evaluator(PlayerEvaluator):
         self.target_perceived_diff = init_perceived_diff
         self.norm_feats = norm_feats
 
+        self.mode = "support"
+
         self.boundary_vector = unit_vector(np.array([-math.sin(math.radians(self.alpha)), math.cos(math.radians(self.alpha))]))
 
         #basis in the decision boundary space
@@ -61,7 +63,7 @@ class PDEP_Evaluator(PlayerEvaluator):
         return func
     
     def get_info_as_string(self) -> str:
-        return f"{round(self.target_error_prob,2)} - {round(self.last_value,2)}"
+        return f"lv - {round(self.last_value,2)}"
     
     def get_trial(self) -> List[Any]:
         """
