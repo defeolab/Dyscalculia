@@ -27,8 +27,8 @@ class PDEP_Evaluator(PlayerEvaluator):
     """
 
 
-    def __init__(self, init_alpha: float, init_sigma: float, init_prob: float = 0.30, init_perceived_diff: float = 0.1, norm_feats: bool=True, update_step: int=5, mock: bool = True):
-        self.trial_adapter = TrialAdapter(mock,True, norm_feats)
+    def __init__(self, init_alpha: float, init_sigma: float, init_prob: float = 0.10, init_perceived_diff: float = 0.1, norm_feats: bool=True, update_step: int=5, mock: bool = True, kids_ds: bool = False):
+        self.trial_adapter = TrialAdapter(mock,True, norm_feats, kids_ds)
         self.alpha = init_alpha
         self.sigma = init_sigma
         self.target_error_prob = init_prob

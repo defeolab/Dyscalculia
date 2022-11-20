@@ -11,11 +11,16 @@ class TrialAdapter:
     """
 
 
-    def __init__(self, mock: bool, use_table: bool = True, norm_feats: bool = True):
+    def __init__(self, mock: bool, use_table: bool = True, norm_feats: bool = True, kids_ds: bool = False):
         self.mock = mock
-        self.lookup_table = read_csv("./dataset/lookup_table.csv")
         self.use_table = use_table
         self.norm_feats = norm_feats
+
+        if kids_ds:
+            print(f">>>>>>>using kids_ds")
+            self.lookup_table = read_csv("./dataset/lookup_table_kids.csv")
+        else:
+            self.lookup_table = read_csv("./dataset/lookup_table.csv")
 
         if norm_feats:
             #normalize the lookup table

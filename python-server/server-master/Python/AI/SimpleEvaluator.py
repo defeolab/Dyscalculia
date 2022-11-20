@@ -96,7 +96,7 @@ class SimpleEvaluator(PlayerEvaluator):
 
         
     """
-    def __init__(self, lookup_table: DataFrame, player_id: int, history_size:int, alt_mode_weight: float = 0.0, fetched_samples: int = 16, selection_factor: int = 4, normalize_vars: bool= True, old_table: bool = False):
+    def __init__(self, lookup_table: DataFrame, player_id: int, history_size:int, alt_mode_weight: float = 0.0, fetched_samples: int = 16, selection_factor: int = 4, normalize_vars: bool= True, old_table: bool = False, kids_ds: bool = False):
         self.lookup_table = lookup_table
         self.player_id = player_id
         self.history_size=history_size
@@ -122,6 +122,9 @@ class SimpleEvaluator(PlayerEvaluator):
             
             self.lookup_table['nd_LogRatio'] = nd
             self.lookup_table['nnd_LogRatio'] = nnd
+        
+        if kids_ds:
+            self.lookup_table = pandas.read_csv("./dataset/lookup_table_kids.csv")
 
         if self.normalize_vars:
             self.max_nd = self.lookup_table['nd_LogRatio'].abs().max()

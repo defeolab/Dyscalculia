@@ -52,7 +52,7 @@ def calculate_next_correlation(average_decision_time, correct_answer_ratio):
         return 0.00
 
 class PlayerHandler(Thread) :
-    def __init__(self, lookup_table, client, db, player_id, evaluator):
+    def __init__(self, lookup_table, client, db, player_id, evaluator, kids_ds):
         super().__init__()
         self.client = client 
         self.db = db
@@ -66,11 +66,11 @@ class PlayerHandler(Thread) :
 
         self.evaluator_type = evaluator
         if evaluator == "simple":
-            self.player_evaluator = SimpleEvaluator(lookup_table, player_id, self.history_size)
+            self.player_evaluator = SimpleEvaluator(lookup_table, player_id, self.history_size, kids_ds=kids_ds)
         else:
             init_alpha = 45
             init_sigma = 0.2
-            self.player_evaluator = PDEP_Evaluator(init_alpha, init_sigma, norm_feats=True, mock=False)
+            self.player_evaluator = PDEP_Evaluator(init_alpha, init_sigma, norm_feats=True, mock=False, kids_ds=kids_ds)
 
     def run(self) :
 
