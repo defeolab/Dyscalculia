@@ -6,7 +6,7 @@ import select
 
 class GameServer:
 
-    def __init__(self, server_socket, host, port, db, disable_shutdown, always_new_player) -> None:
+    def __init__(self, server_socket, host, port, db, disable_shutdown, always_new_player, kids_ds) -> None:
         self.server_socket = server_socket
         self.host = host 
         self.port = port
@@ -17,7 +17,10 @@ class GameServer:
         self.always_new_player = always_new_player
         
         # lookup table is shared in the server to avoid multiple opens
-        self.lookup_table = pandas.read_csv("./dataset/lookup_table.csv")
+        if kids_ds:
+            self.lookup_table = pandas.read_csv("./dataset/lookup_table_kids.csv")
+        else:
+            self.lookup_table = pandas.read_csv("./dataset/lookup_table.csv")
 
     def run(self):
 

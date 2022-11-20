@@ -23,6 +23,9 @@ def parse_arguments(args_list: List[str]) -> Namespace:
     parser.add_argument("--usability_test", help="set this parameter to automatically set the environment for the usability test",
                         action="store_true")
 
+    parser.add_argument("--kids_dataset", help="use the reduced lookup table with more balanced values for kids",
+                        action="store_true")
+
     args = parser.parse_args(args_list)
 
     if args.use_lan and args.use_remote: 
@@ -33,6 +36,7 @@ def parse_arguments(args_list: List[str]) -> Namespace:
         args.use_lan = True
         args.always_new_player = True
         args.disable_shutdown = True
+        args.kids_dataset = True
 
     if args.use_remote:
         args.host = '192.168.1.30'
