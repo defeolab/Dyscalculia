@@ -1,10 +1,14 @@
 import unittest
 from AI.ai_utils import *
 from AI.TrialAdapter import TrialAdapter
-from AI.ai_plot import plot_trials
+from AI.ai_plot import plot_trials, FigSaver, plot_player_cycle3D
 from AI.PDEP_Evaluator import PDEP_Evaluator
 from dummy_client_handler import SimulatedClient
+from AI.PlayerSimulator import PlayerSimulator
 import time
+import os
+
+BASE_PATH_FOR_PICS = "C:\\Users\\fblan\\Desktop\\thesis_pics"
 
 def to_trial(nd, nnd):
     return [-1,-1,-1,-1,-1,-1,-1,-1,nd,nnd]
@@ -60,7 +64,8 @@ class TestAI(unittest.TestCase):
     def test_player_cycle_simple(self):
         client = SimulatedClient(0.5, 0.5, alpha = 20, sigma= 0.2, evaluator="simple", norm_feats=True)
 
-        client.simulate_player_cycle(10, 5, True)
+        figsaver = FigSaver(BASE_PATH_FOR_PICS, "test", interval=1)
+        client.simulate_player_cycle(10, 5, True,False,figsaver=figsaver )
 
     def test_player_cycle_PDEP(self):
         client = SimulatedClient(0.5, 0.5, alpha = 30, sigma= 0.2, evaluator="PDEP", norm_feats=True)
@@ -92,6 +97,30 @@ class TestAI(unittest.TestCase):
         vec = np.array([0,1])
         plot_trials(vec, raw, corrects, anns, ann_str=True)
 
+    def test_3D_plot(self):
+        player = PlayerSimulator(45, 0.01)
+        days = 60
+        tpd = 2
+        trials = []
+        corrects = []
+        
+        bvsig = []
+        for i in range(0, days):
+            for j in range(0, tpd):
+                trial = to_mock_trial(np.random.normal(scale=0.5),np.random.normal(scale=0.5))
+                trials.append(trial)
+                corrects.append(player.predict(trial)[0])
+            bvsig.append(player.random_improvement())
+
+
+        bvs = list(map(lambda x: x[0],bvsig))
+        sigmas = list(map(lambda x: x[1],bvsig))
+        #trials = [to_mock_trial(np.random.normal(scale=0.5),np.random.normal(scale=0.5)) for i in range(0, days) for j in range(0, tpd)]
+        #trials = [to_mock_trial(0.5,0.5) for i in range(0, days) for j in range(0, tpd)]
+        
+        #corrects = [np.random.choice([False, True]) for i in range(0, days) for j in range(0, tpd)]
+        
+        plot_player_cycle3D(bvs,sigmas, trials, corrects, tpd)
 
 if __name__ == "__main__":
     tc = TestAI()
@@ -101,6 +130,7 @@ if __name__ == "__main__":
     #tc.test_probability()
     #tc.test_PDEP_Evaluator()
     #tc.test_player_cycle_simple()
-    tc.test_player_cycle_PDEP()
+    #tc.test_player_cycle_PDEP()
     #tc.test_trial_adapter()
+    tc.test_3D_plot()
     print("--- %s seconds ---" % (time.time() - start_time))

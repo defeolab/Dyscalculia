@@ -9,6 +9,9 @@ import pygad
 
 from typing import Callable, Tuple, List
 
+import warnings
+warnings.filterwarnings("ignore", message="The integral is probably divergent, or slowly convergent.")
+
 #constants for genetic algorithm
 N_GENERATIONS = 5                   #iterations of the algorithm
 N_PARENTS_MATING = 4                #number of parents selected for mating

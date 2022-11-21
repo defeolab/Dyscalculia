@@ -6,10 +6,44 @@ from typing import List, Tuple, Any, Callable
 import matplotlib.pyplot as plt
 from AI.ai_utils import angle_between, unit_vector
 import numpy as np
+import os
+from datetime import date
+from mpl_toolkits import mplot3d
+
+class FigSaver:
+    def __init__(self, base_root: str,exp_name: str, add_date:bool=False, interval: int=5) -> None:
+        self.root = os.path.join(base_root, exp_name)
+        if add_date:
+            today = date.today()
+            self.root = os.path.join(self.root, today.strftime("%Y-%m-%d"))
+
+        if os.path.exists(self.root) == False:
+            os.mkdir(self.root)
+        self.interval = interval
+        self.i = 0
+
+    def save_day(self):
+        if self.i % self.interval == 0:
+            figpath = os.path.join(self.root, f"{self.i}.png")
+            plt.savefig(figpath, format= "png")
+            plt.close()
+        self.i+=1
+
+    def save_summary_stats(self, name: str):
+        figpath = os.path.join(self.root, f"{name}.png")
+        plt.savefig(figpath, format= "png")
+        plt.close()
+
 
 def plot_trials(boundary_vector: np.ndarray, trials: List[List[Any]], corrects: List[bool], 
                 annotations: List[float], ann_str: bool = False, plot_stats: Callable = None, 
-                plot_dist: bool = False, norm_lim: bool = True, sharp_std: float = None):
+                plot_dist: bool = False, norm_lim: bool = True, sharp_std: float = None, figsaver: FigSaver = None):
+
+    if figsaver is not None:
+        #just a speedup, avoid plotting if you're not going to show or save the figure
+        if figsaver.i % figsaver.interval != 0:
+            figsaver.i +=1
+            return
 
     fig = plt.figure()
     ax = fig.gca()
@@ -66,9 +100,12 @@ def plot_trials(boundary_vector: np.ndarray, trials: List[List[Any]], corrects: 
     #plt.ylabel("Non numerical dimension", loc="bottom")
     plt.grid(False)
 
-    plt.show()
+    if figsaver is None:
+        plt.show()
+    else:
+        figsaver.save_day()
 
-def plot_stats(local_accuracies: List[float], cumulative_accuracies: List[float], days: int, labels: List[str] = ['local_accuracy', 'cumulative_accuracy']):
+def plot_stats(local_accuracies: List[float], cumulative_accuracies: List[float], days: int, labels: List[str] = ['local_accuracy', 'cumulative_accuracy'], figsaver: FigSaver = None):
     fig = plt.figure()
     ax = fig.gca()
 
@@ -80,5 +117,77 @@ def plot_stats(local_accuracies: List[float], cumulative_accuracies: List[float]
     ax.legend()
 
     plt.ylim([-0.1,1.1])
-    plt.show()
+    plt.grid(True)
+    if figsaver is None:
+        plt.show()
+    else:
+        figsaver.save_summary_stats(f"{labels[0]}-{labels[1]}")
 
+def separate_by_day(vec: List[Any], trials_per_day: int):
+    i=0
+    ret = []
+    for e in vec:
+        to_add = []
+        for j in range(0, trials_per_day):
+            to_add.append(e)
+        ret.append(to_add)
+    return ret
+
+def plot_player_cycle3D(boundary_vectors: List[np.ndarray], sigmas: List[float], trials: List[List[Any]], corrects: List[bool],
+                        trials_per_day:int, norm_lim: bool = True, figsaver: FigSaver = None, plot_eval_stats: Callable = None):
+    n_days = len(boundary_vectors)
+    corrects = np.array(corrects)
+    incorrects = corrects == False
+
+    fig = plt.figure()
+    ax = plt.axes(projection='3d')
+
+    #plot trials
+    zline = np.array([d for d in range(0, n_days) for t in range(0,trials_per_day)])
+    xline = np.array(list(map(lambda x: x[8],trials)))
+    yline = np.array(list(map(lambda x: x[9],trials)))
+
+    #corrects
+    zline_c = zline[corrects]
+    xline_c = xline[corrects]
+    yline_c = yline[corrects] 
+    ax.scatter3D(xline_c, yline_c, zline_c, color="green")
+    #incorrects
+    zline_i = zline[incorrects]
+    xline_i = xline[incorrects]
+    yline_i = yline[incorrects] 
+    ax.scatter3D(xline_i, yline_i, zline_i, color="red")
+    
+
+    #plot optimal boundary
+    ys = np.linspace(-1, 1, 10)
+    zs = np.linspace(-1, n_days, 10)
+
+    Y, Z = np.meshgrid(ys, zs)
+    X = np.array([0 for i in range(0,10)])
+
+    ax.plot_surface(X, Y, Z, color= "gray", alpha = 0.5)
+
+    #plot X plane
+    xs = np.linspace(-1, 1, 10)
+    zs = np.linspace(-1, n_days, 10)
+
+    X, Z = np.meshgrid(xs, zs)
+    Y = np.array([0 for i in range(0,10)])
+
+    ax.plot_surface(X, Y, Z, color= "gray", alpha = 0.5)
+
+    #plot child evolution
+    for i, bv in enumerate(boundary_vectors):
+        zline = [i, i]
+        xline = [-bv[0],bv[0]]
+        yline = [-bv[1],bv[1]]
+        ax.plot3D(xline, yline, zline, color= "orange", alpha = 0.8)
+    
+    if norm_lim:
+        plt.xlim([-1, 1])
+        plt.ylim([-1,1])
+    else:
+        plt.xlim([-2, 2])
+        plt.ylim([-2,2])
+    plt.show()

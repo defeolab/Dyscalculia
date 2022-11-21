@@ -128,8 +128,8 @@ def qserver_ask_for_question_recommendation(question_type,
         #this value is used just as initialization of the mode at the very first trial
         question_score = db_question_score
     
-    print('question_answer_status is : ' + str(question_answer_status))
-    print('question_score is : ' + str(question_score))
+    #print('question_answer_status is : ' + str(question_answer_status))
+    #print('question_score is : ' + str(question_score))
 
 
     

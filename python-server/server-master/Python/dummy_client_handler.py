@@ -1,18 +1,19 @@
 from typing import Any, Dict, Tuple
 from AI.PlayerSimulator import PlayerSimulator
-from AI.ai_plot import plot_trials, plot_stats
+from AI.ai_plot import plot_trials, plot_stats, FigSaver, plot_player_cycle3D
 from AI.ai_utils import get_mock_trials
 import numpy as np
 from distributions import GaussianThreshold, UniformOutput
 import math
 import pandas
 import numpy as np
-
+import time
 
 from AI.SimpleEvaluator import SimpleEvaluator
 from transform_matrix import TransformMatrix
 from AI.PDEP_Evaluator import PDEP_Evaluator
 
+from datetime import datetime
 
 def init_running_results() -> Dict[str, Any]:
     running_results = {}
@@ -48,13 +49,14 @@ class SimulatedClient:
         self.player = PlayerSimulator(self.alpha, self.sigma)
 
         if evaluator == "simple":
-            self.player_evaluator = SimpleEvaluator(self.lookup_table, 1, 5, alt_mode_weight=0.5, kids_ds=kids_ds)
+            self.player_evaluator = SimpleEvaluator(self.lookup_table, 1, 5, alt_mode_weight=0.5, kids_ds=kids_ds,)
+            self.player_evaluator.set_running_results(init_running_results())
         elif evaluator == "PDEP":
             self.player_evaluator = PDEP_Evaluator(self.alpha, self.sigma, norm_feats=norm_feats,kids_ds=kids_ds)
 
     def run(self, trials: int, plot: bool, history_size: int = 10) -> None:
 
-        self.player_evaluator.set_running_results(init_running_results())
+        
         mode = "filtering"
 
         performance = []
@@ -89,8 +91,7 @@ class SimulatedClient:
             print(f"Dummy client run, performance: {performance}, running results: {self.player_evaluator.running_results}")
         
 
-    def simulate_player_cycle(self, days: int, trials_per_day: int, plot_each_day: bool, update_stats: bool):
-        self.player_evaluator.set_running_results(init_running_results())
+    def simulate_player_cycle(self, days: int, trials_per_day: int, plot_each_day: bool, update_evaluator_stats: bool,update_child:bool, figsaver: FigSaver = None):
 
         performance = []
 
@@ -105,6 +106,11 @@ class SimulatedClient:
 
         stat1_history = []
         stat2_history = []
+
+        sim_boundary_vectors = []
+        sim_sigmas = []
+
+        print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} starting run with starting parameters: {self.alpha}-{self.sigma}")
 
         for day in range(1, days+1):
             local_corrects = 0
@@ -122,22 +128,25 @@ class SimulatedClient:
                 tot_corrects += 1 if correct else 0
                 local_corrects += 1 if correct else 0 
 
-                if update_stats:
+                if update_evaluator_stats:
                     self.player_evaluator.update_statistics(correct, decision_time)
 
-            if plot_each_day:
-                plot_trials(self.player.boundary_vector, proposed_trials[-trials_per_day : -1], corrects[-trials_per_day: -1], annotations[-trials_per_day: -1], 
-                            True, self.player_evaluator.plot_stats(day), norm_lim=self.norm_feats, sharp_std=self.player.sigma)
+            if update_child:
+                bv, sig = self.player.random_improvement()
+                sim_boundary_vectors.append(bv)
+                sim_sigmas.append(sig)
+
+            if plot_each_day or figsaver is not None:
+                plot_trials(self.player.boundary_vector, proposed_trials[-trials_per_day :], corrects[-trials_per_day:], annotations[-trials_per_day:], 
+                            True, self.player_evaluator.plot_stats(day), norm_lim=self.norm_feats, sharp_std=self.player.sigma, figsaver=figsaver)
             
             local_accuracies.append(local_corrects/trials_per_day)
             cumulative_accuracies.append(tot_corrects/(day*trials_per_day))
         
-        
-        print(f"final stats are: {self.player_evaluator.get_stats_as_str()}")
-        print(f"filtering accuracy is {self.player_evaluator.running_results['filtering_acc']}")
-        print(f"sharpening accuracy is {self.player_evaluator.running_results['sharpening_acc']}")
-        plot_stats(local_accuracies, cumulative_accuracies, days)
-        plot_stats(stat1_history, stat2_history, days*trials_per_day, labels=["filt", "sharp"])
+        print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} finished run with starting parameters: {self.alpha}-{self.sigma}")
+        print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} final evaluator stats are: {self.player_evaluator.get_stats_as_str()}")
+        plot_stats(local_accuracies, cumulative_accuracies, days, figsaver=figsaver)
+        plot_stats(stat1_history, stat2_history, days*trials_per_day, labels=["filt", "sharp"], figsaver=figsaver)
         
 
     def predict_trial(self, trial: pandas.Series) -> Tuple[int, float]:

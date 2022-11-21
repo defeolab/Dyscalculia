@@ -48,7 +48,10 @@ class PlayerEvaluator:
         """
             define how to plot the current evaluator's statistics
         """
-
+    def plot_stats3D(self, days:int, stats_snapshots: List[Any]):
+        """
+            receive the snapshots of the estimated statistics over time and plot their growth
+        """
     def get_info_as_string(self) -> str:
         """
             get more informations regarding the last trial sent as string
@@ -96,7 +99,9 @@ class SimpleEvaluator(PlayerEvaluator):
 
         
     """
-    def __init__(self, lookup_table: DataFrame, player_id: int, history_size:int, alt_mode_weight: float = 0.0, fetched_samples: int = 16, selection_factor: int = 4, normalize_vars: bool= True, old_table: bool = False, kids_ds: bool = False):
+    def __init__(   self, lookup_table: DataFrame, player_id: int, history_size:int, alt_mode_weight: float = 0.0,
+                    fetched_samples: int = 16, selection_factor: int = 4, normalize_vars: bool= True, 
+                    old_table: bool = False, kids_ds: bool = False, always_update_step: bool = True):
         self.lookup_table = lookup_table
         self.player_id = player_id
         self.history_size=history_size
@@ -105,6 +110,7 @@ class SimpleEvaluator(PlayerEvaluator):
         self.selected_samples = fetched_samples//selection_factor
         self.mode = "filtering"
         self.normalize_vars = normalize_vars
+        self.always_update_step = always_update_step
 
         if old_table:
             self.lookup_table = pandas.read_csv("./dataset/legacy/lookup_table.csv")
@@ -138,9 +144,7 @@ class SimpleEvaluator(PlayerEvaluator):
         self.running_results = db.get_player_stats(player_id, self.history_size)
 
         self.both_histories = db.fetch_both_histories(player_id, self.history_size)
-        print(f">>>>>>>>>>>>>>>>>>>>>>>>>>{self.running_results}")
-        print(f">>>>>>>>>>>>>>>>>>>>>>>>init {self.both_histories}")
-        print(f">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>{self.history_size}")
+        
         if len(self.both_histories) >0:
             suggestion = qserver_ask_for_question_recommendation(self.both_histories[-1][0], -1,-1, self.both_histories[:-1])
             self.mode = "filtering" if suggestion[0] == "f" else "sharpening"
@@ -230,15 +234,22 @@ class SimpleEvaluator(PlayerEvaluator):
         steps = self._old_step(correct, decision_time, self.mode)
 
         suggestion = qserver_ask_for_question_recommendation('f' if self.mode == "filtering" else "s", correct, decision_time, self.both_histories)
-        print(f">>>>>>>>>>>>{suggestion}")
+
         self.mode = "filtering" if suggestion[0] == "f" else "sharpening"
         self.both_histories = suggestion[1]
+        self.both_histories = self.both_histories[-4:]
 
     def _old_step(self, correct: int, decision_time:float, mode:str) -> Tuple[float, float]:
         if len(self.running_results[self.mode + "_history"]) > self.history_size : self.running_results[self.mode + "_history"].pop(0)
             #print(self.running_results[self.mode + "_history"])
 
         step = 0.05 # increments difficulty 5% at a time
+        if self.always_update_step:
+            #Francesco's change, the rest of the code creates problems in the update of statistics
+            step = -step if correct == False else step
+            self.running_results[self.mode + "_diff"] += step
+            return
+
         if self.running_results[self.mode + "_acc"] >= 0.8 :
             if self.running_results[self.mode + "_diff"] + step < 1 :
                 self.running_results[self.mode + "_diff"] += step
@@ -247,10 +258,7 @@ class SimpleEvaluator(PlayerEvaluator):
             if self.running_results[self.mode + "_diff"] - step > 0 :
                 self.running_results[self.mode + "_diff"] -= step
         
-        if self.mode == "filtering":
-            return step, 0.0
-        else:
-            return 0.0, step
+        return 0.0, 0.0
 
     def _get_step(self, correct: int, decision_time:float, mode: str) -> Tuple[float, float]:
         
