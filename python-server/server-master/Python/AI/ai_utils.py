@@ -47,6 +47,20 @@ def angle_between(v1, v2):
     rads = np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
     return rads
 
+def return_plottable_list( list, corrects=None):
+        nl =  []
+        for r in list:
+            nl.append(to_mock_trial(r[0], r[1]))
+        if corrects is None:
+            c = [True for i in range(0, len(nl))]
+        else:
+            c=[]
+            for b in corrects:
+                c.append(b)
+        a = ["" for i in range(0, len(nl))]
+
+        return nl, c, a
+
 def get_mock_trials(trials: int, norm_feats:bool):
     bounds = [-0.75, 0.75] if norm_feats else [-1.5, 1.5]
 

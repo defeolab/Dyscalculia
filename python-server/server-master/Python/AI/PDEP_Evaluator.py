@@ -27,7 +27,8 @@ class PDEP_Evaluator(PlayerEvaluator):
     """
 
 
-    def __init__(self, init_alpha: float, init_sigma: float, init_prob: float = 0.10, init_perceived_diff: float = 0.1, norm_feats: bool=True, update_step: int=5, mock: bool = True, kids_ds: bool = False):
+    def __init__(   self, init_alpha: float, init_sigma: float, init_prob: float = 0.10, init_perceived_diff: float = 0.1, norm_feats: bool=True, 
+                    update_step: int=5, mock: bool = False, kids_ds: bool = False):
         self.trial_adapter = TrialAdapter(mock,True, norm_feats, kids_ds)
         self.alpha = init_alpha
         self.sigma = init_sigma
@@ -45,7 +46,8 @@ class PDEP_Evaluator(PlayerEvaluator):
         #variables used during update phase
         self.iteration = 0
         self.update_step = update_step
-        self.history = np.array(([False for i in range(0, update_step)])) 
+        self.history = np.array(([False for i in range(0, update_step)]))
+        self.trials = []
 
     def get_stats(self) -> Any:
         return self.target_error_prob, self.target_perceived_diff
@@ -102,6 +104,22 @@ class PDEP_Evaluator(PlayerEvaluator):
             if np.abs(self.target_error_prob-0.5) <0.02:
                 print("wut")
                 self.target_error_prob = 0.55 if avg> 0.5 else 0.45
+    
+    def save_trial(self, save_file: str, trial: List[float], correct: bool, decision_time: float, commit: bool = False) -> None:
+        """
+            method to be called in order to store the computed trials in a file for future testing use
+        """
+        if commit:
+            a = np.array(self.trials, dtype=np.float32)
+            np.save(save_file, a)
+        else:
+            nd = trial[8]
+            nnd = trial[9]
+            sc = 1.0 if correct else 0.0
+            t=np.array([nd,nnd, sc, decision_time])
+            self.trials.append(t)
+
+        
 
 
 if __name__ == "__main__":

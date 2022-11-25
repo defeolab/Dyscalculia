@@ -20,7 +20,7 @@ class PlayerSimulator:
         self.improve_alpha_std = 1
         self.improve_sigma_std = 0.1
 
-    def predict(self, trial: List[Any]) -> Tuple[bool, float]:
+    def predict(self, trial: List[Any]) -> Tuple[bool, Tuple[float, bool]]:
         #print(trial)
         nd_coord = trial[8]
         nnd_coord = trial[9]
@@ -46,7 +46,7 @@ class PlayerSimulator:
 
         response_time = self.get_response_time(decision_score)
 
-        return bool(looks_right == is_right), response_time
+        return bool(looks_right == is_right), (response_time, looks_right)
 
 
     def get_response_time(self, decision_score: float) -> float:

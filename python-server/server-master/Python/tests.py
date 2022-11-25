@@ -5,10 +5,16 @@ from AI.ai_plot import plot_trials, FigSaver, plot_player_cycle3D
 from AI.PDEP_Evaluator import PDEP_Evaluator
 from dummy_client_handler import SimulatedClient
 from AI.PlayerSimulator import PlayerSimulator
+from AI.AS_Estimate import ASD_Estimator
 import time
 import os
 
+import winsound
+
+
 BASE_PATH_FOR_PICS = "C:\\Users\\fblan\\Desktop\\thesis_pics"
+
+BASE_PATH_FOR_SAVING_TRIALS = "C:\\Users\\fblan\\Dyscalculia\\python-server\\server-master\\Python\\AI\\precomputed_data"
 
 def to_trial(nd, nnd):
     return [-1,-1,-1,-1,-1,-1,-1,-1,nd,nnd]
@@ -75,7 +81,7 @@ class TestAI(unittest.TestCase):
         client.simulate_player_cycle(10, 6, False, False)
     
     def test_trial_adapter(self):
-        adapter = TrialAdapter(False, norm_feats=False)
+        adapter = TrialAdapter(False, norm_feats=True, kids_ds=True)
         n = 10
         nds = np.linspace(-0.95, 0.95, n)
         nnds = np.linspace(-0.95,0.95, n)
@@ -95,7 +101,7 @@ class TestAI(unittest.TestCase):
                 anns.append("")
 
         vec = np.array([0,1])
-        plot_trials(vec, raw, corrects, anns, ann_str=True)
+        plot_trials(vec, raw, corrects, anns, ann_str=True, norm_lim=True)
 
     def test_3D_plot(self):
         player = PlayerSimulator(45, 0.01)
@@ -121,6 +127,75 @@ class TestAI(unittest.TestCase):
         #corrects = [np.random.choice([False, True]) for i in range(0, days) for j in range(0, tpd)]
         
         plot_player_cycle3D(bvs,sigmas, trials, corrects, tpd)
+    
+    def test_precompute(self):
+        save_file = os.path.join(BASE_PATH_FOR_SAVING_TRIALS, "PDEP")
+        save_file = os.path.join(save_file, "precompute_t30")
+        save_file = os.path.join(save_file, "alpha_45_sigma_10.npy")
+
+        ev = PDEP_Evaluator(0,0)
+
+        t1 = to_mock_trial(0.1,0.1)
+        t2 = to_mock_trial(0.2,0.2)
+        t3 = to_mock_trial(0.3,0.3)
+
+
+        #np.save(save_file, np.array(t1))
+        #ev.save_trial(save_file, t1,True, 0.1)
+        #ev.save_trial(save_file, t2,True, 0.1)
+        #ev.save_trial(save_file, t3,True, 0.1, True)
+
+        
+        array = np.load(save_file)
+        print(array)
+        
+    
+    def test_AS(self):
+        n=50
+        n_part = 18
+        e = ASD_Estimator(n)# denoiser_type="no_denoising")
+        target_s = 10
+
+        filename = f"alpha_45_sigma_{target_s}.npy"
+
+        save_file1 = os.path.join(BASE_PATH_FOR_SAVING_TRIALS, "PDEP")
+        save_file1 = os.path.join(save_file1, "precompute_t30")
+        save_file1 = os.path.join(save_file1, filename)
+        l1 = np.load(save_file1)
+
+        save_file2 = os.path.join(BASE_PATH_FOR_SAVING_TRIALS, "PDEP")
+        save_file2 = os.path.join(save_file2, "precompute_t10")
+        save_file2 = os.path.join(save_file2, filename)
+        l2 = np.load(save_file2)
+
+        save_file3 = os.path.join(BASE_PATH_FOR_SAVING_TRIALS, "PDEP")
+        save_file3 = os.path.join(save_file3, "precompute_t80")
+        save_file3 = os.path.join(save_file3, filename)
+        l3 = np.load(save_file3)
+        
+        l1_part = l1[0:n_part, :]
+        l2_part = l2[0:n_part, :]
+        l3_part = l3[0:n_part, :]
+        
+        l1= np.concatenate((l1_part, l2_part, l3_part)) 
+
+        looks_right = l1[0:n, 2] == 1
+        looks_right = looks_right == (l1[0:n, 0] > 0)
+        trials = l1[0:n, 0:2]
+
+        t, c, a = return_plottable_list(trials, looks_right)
+        plot_trials([-1,1], t, c, a, ann_str=True)
+
+        e.trials = trials 
+        e.predictions = looks_right
+
+        alpha, sigma = e.produce_estimate()
+
+        print(alpha)
+
+
+    
+        
 
 if __name__ == "__main__":
     tc = TestAI()
@@ -132,5 +207,12 @@ if __name__ == "__main__":
     #tc.test_player_cycle_simple()
     #tc.test_player_cycle_PDEP()
     #tc.test_trial_adapter()
-    tc.test_3D_plot()
+    #tc.test_3D_plot()
+    #tc.test_precompute()
+    tc.test_AS()
+
+
+    duration = 1000  # milliseconds
+    freq = 440  # Hz
+    #winsound.Beep(freq, duration)
     print("--- %s seconds ---" % (time.time() - start_time))

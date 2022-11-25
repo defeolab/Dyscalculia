@@ -37,8 +37,9 @@ def init_running_results() -> Dict[str, Any]:
     return running_results
 
 class SimulatedClient:
-    def __init__(self, filtering_diff: float, sharpening_difficulty: float, alpha: float = 10.0, 
-                sigma: float = 0.05, mock_trials: bool = False, norm_feats: bool = True, evaluator: str = "PDEP", kids_ds: bool=False):
+    def __init__(   self, filtering_diff: float, sharpening_difficulty: float, alpha: float = 10.0, 
+                    sigma: float = 0.05, mock_trials: bool = False, norm_feats: bool = True, evaluator: str = "PDEP", 
+                    kids_ds: bool=False, save_file: str = None):
         self.filtering_diff = filtering_diff
         self.sharpening_diff = sharpening_difficulty
         self.lookup_table = pandas.read_csv("./dataset/lookup_table.csv")
@@ -47,6 +48,7 @@ class SimulatedClient:
         self.mock_trials = mock_trials
         self.norm_feats = norm_feats
         self.player = PlayerSimulator(self.alpha, self.sigma)
+        self.save_file = save_file
 
         if evaluator == "simple":
             self.player_evaluator = SimpleEvaluator(self.lookup_table, 1, 5, alt_mode_weight=0.5, kids_ds=kids_ds,)
@@ -91,7 +93,8 @@ class SimulatedClient:
             print(f"Dummy client run, performance: {performance}, running results: {self.player_evaluator.running_results}")
         
 
-    def simulate_player_cycle(self, days: int, trials_per_day: int, plot_each_day: bool, update_evaluator_stats: bool,update_child:bool, figsaver: FigSaver = None):
+    def simulate_player_cycle(  self, days: int, trials_per_day: int, plot_each_day: bool, update_evaluator_stats: bool,
+                                update_child:bool, figsaver: FigSaver = None):
 
         performance = []
 
@@ -116,7 +119,7 @@ class SimulatedClient:
             local_corrects = 0
             for j in range(0, trials_per_day):
                 trial = self.player_evaluator.get_trial()[0]
-                correct, decision_time = self.player.predict(trial)
+                correct, (decision_time, _) = self.player.predict(trial)
                 proposed_trials.append(trial)
                 corrects.append(correct)
                 annotations.append(self.player_evaluator.get_info_as_string())
@@ -130,6 +133,12 @@ class SimulatedClient:
 
                 if update_evaluator_stats:
                     self.player_evaluator.update_statistics(correct, decision_time)
+                
+                if self.save_file is not None:
+                    self.player_evaluator.save_trial(self.save_file, trial, correct, decision_time)
+            
+            if self.save_file is not None:
+                self.player_evaluator.save_trial(self.save_file, [], False, -1, commit= True)
 
             if update_child:
                 bv, sig = self.player.random_improvement()

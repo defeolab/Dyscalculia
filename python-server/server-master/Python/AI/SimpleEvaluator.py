@@ -3,7 +3,7 @@ from typing import Any, Tuple, List, Optional, Dict
 import random
 from db.db_connector import DBConnector
 from trial_result import TrialResult
-
+import numpy as np
 from trial_mode_utils import qserver_ask_for_question_recommendation
 
 from AI.ai_utils import compute_nd_nnd_coords
@@ -71,6 +71,12 @@ class PlayerEvaluator:
     def set_trial(self, trial: List[Any]) -> None:
         """
             Function that has to be called to force the use of a custom trial instead of letting the evaluator decide the next trial through get_trial
+        """
+        pass
+
+    def save_trial(self, save_file: str, trial: List[float], correct: bool, decision_time: float, commit: float = False) -> None:
+        """
+            method to be called in order to store the computed trials in a file for future testing use
         """
         pass
 
@@ -248,6 +254,7 @@ class SimpleEvaluator(PlayerEvaluator):
             #Francesco's change, the rest of the code creates problems in the update of statistics
             step = -step if correct == False else step
             self.running_results[self.mode + "_diff"] += step
+            self.running_results[self.mode + "_diff"] = np.clip(self.running_results[self.mode + "_diff"], 0.05, 0.95)
             return
 
         if self.running_results[self.mode + "_acc"] >= 0.8 :

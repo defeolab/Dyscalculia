@@ -6,12 +6,16 @@ from AI.PDEP_Evaluator import PDEP_Evaluator
 from dummy_client_handler import SimulatedClient
 import time
 import os
+import winsound
 
 BASE_PATH_FOR_PICS = "C:\\Users\\fblan\\Desktop\\thesis_pics"
+BASE_PATH_FOR_SAVING_TRIALS = "C:\\Users\\fblan\\Dyscalculia\\python-server\\server-master\\Python\\AI\\precomputed_data"
 
 class SimulationsRunner(unittest.TestCase):
     def __init__(   self, days:int, trials_per_day:int, fig_interval: int, evaluator: str, kids_ds: bool, 
-                    update_evaluator_stats:bool, update_child: bool, suite_name: str, target_prob: float, target_diff: Tuple[float,float], mode:str):
+                    update_evaluator_stats:bool, update_child: bool, suite_name: str, target_prob: float, 
+                    target_diff: Tuple[float,float], mode:str, save_trials: bool, save_plots: bool,
+                    alphas: List[float], sigmas: List[float], mock: bool):
         
         self.days = days
         self.trials_per_day = trials_per_day
@@ -24,56 +28,86 @@ class SimulationsRunner(unittest.TestCase):
         self.target_prob = target_prob
         self.target_diff = target_diff
         self.mode = mode
+        self.save_trials = save_trials
+        self.save_plots = save_plots
+        self.alphas = alphas
+        self.sigmas = sigmas
+        self.mock = mock
 
         self.base_root = os.path.join(BASE_PATH_FOR_PICS, self.evaluator)
         self.base_root = os.path.join(self.base_root, suite_name)
         if os.path.exists(self.base_root) == False:
             os.mkdir(self.base_root)
+
+        self.save_root = os.path.join(BASE_PATH_FOR_SAVING_TRIALS, self.evaluator)
+        self.save_root = os.path.join(self.save_root, suite_name)
+        if os.path.exists(self.save_root) == False:
+            os.mkdir(self.save_root)
+        
     
     def simulation_suite(self):
-        alphas = [10, 30, 60]
-        sigmas = [0.10, 0.20, 0.4]
 
-        for alpha in alphas:
-            for sigma in sigmas:
-
-                handler = SimulatedClient(0.5,0.5, alpha=alpha, sigma=sigma, evaluator=self.evaluator, kids_ds=self.kids_ds)
+        for alpha in self.alphas:
+            for sigma in self.sigmas:
+                exp_name = f"alpha_{alpha}_sigma_{int(sigma*100)}"
+                save_file = os.path.join(self.save_root, exp_name) if self.save_trials else None
+                handler = SimulatedClient(0.5,0.5, alpha=alpha, sigma=sigma, evaluator=self.evaluator, kids_ds=kids_ds, save_file=save_file)
+                
+                
                 if self.evaluator == "PDEP":
                     handler.player_evaluator.target_error_prob = self.target_prob
+                    handler.player_evaluator.trial_adapter.mock = self.mock
                 else:
                     handler.player_evaluator.running_results['filtering_diff'] = self.target_diff[0]
                     handler.player_evaluator.running_results['sharpening_diff'] = self.target_diff[1]
                     handler.player_evaluator.mode = mode
-
-                exp_name = f"alpha_{alpha}_sigma_{int(sigma*100)}"
-                figsaver = FigSaver(self.base_root, exp_name, interval=self.interval)
+                    handler.player_evaluator.always_update_step = True
+                figsaver = FigSaver(self.base_root, exp_name, interval=self.interval) if self.save_plots else None
                 handler.simulate_player_cycle(self.days, self.trials_per_day, False, self.update_evaluator_stats,self.update_child, figsaver=figsaver)
 
 
 if __name__ == "__main__":
 
+    alphas = [
+        [10, 30, 60],
+        [45]
+        ]
+    sigmas = [
+        [0.10, 0.20, 0.4],
+        [0.1, 0.2, 0.3, 0.4, 0.5]
+        ]
+
     probs = [0.10, 0.30, 0.80]
-    diffs = [(0.1,0.1), (0.4, 0.4), (0.8, 0.8)]
+    diffs = [(0.1,0.1), (0.4, 0.4), (0.8, 0.8), (0.95,0.95)]
     modes = ["filtering", "sharpening"]
 
     days = 60
     trials_per_day = 6
     interval = 15
-    evaluator = "simple"
+    evaluator = "PDEP"
     kids_ds = False
     add_date = False
     update_evaluator_stats = False
     update_child = False
-    target_prob = probs[1]
-    target_diff = diffs[1]
+    target_prob = probs[2]
+    target_diff = diffs[0]
     mode = modes[0]
+    save_trials = True
+    save_plots = True
+    alpha_i = 1
+    sigma_i = 1
+    mock = True
 
-    suite_name = "no_update_f40"
+    suite_name = "precompute_t80"
 
-    sr = SimulationsRunner(days, trials_per_day, interval, evaluator, kids_ds, update_evaluator_stats, update_child, suite_name, target_prob, target_diff, mode)
+    sr = SimulationsRunner( days, trials_per_day, interval, evaluator, kids_ds, update_evaluator_stats, update_child, suite_name, 
+                            target_prob, target_diff, mode, save_trials, save_plots, alphas[alpha_i], sigmas[sigma_i], mock)
 
     start_time = time.time()
 
     sr.simulation_suite()
 
+    duration = 1000  # milliseconds
+    freq = 440  # Hz
+    winsound.Beep(freq, duration)
     print("--- %s seconds ---" % (time.time() - start_time))
