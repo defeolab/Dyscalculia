@@ -8,7 +8,7 @@ from AI.ai_utils import *
 import math
 from AI.ai_plot import plot_trials
 
-DEBUG = True
+DEBUG = False
 
 def mirror_trials_list(trials: List[np.ndarray], predictions: List[bool]) -> Tuple[List[np.ndarray], List[bool]]:
     n_t = []
@@ -22,18 +22,74 @@ def mirror_trials_list(trials: List[np.ndarray], predictions: List[bool]) -> Tup
     
     return np.array(n_t), np.array(n_p)
 
+
+def compute_sharpening_std(c_trials: np.ndarray, c_predictions: np.ndarray, w_trials: np.ndarray, w_predictions: np.ndarray, norm: np.ndarray) -> float:
+    n = c_trials.shape[0] + w_trials.shape[0]
+
+    transform_mat=np.linalg.inv(np.array([[norm[0], norm[1]], [norm[1], -norm[0]]]))
+
+    dists = np.dot(transform_mat, w_trials.T)[1, :]
+    sigma = 2*math.sqrt( (1/(n-1)) * np.sum(2*dists**2) )
+    return sigma
+
+
+
+
+def no_denoising_clean_trials(trials: np.ndarray, predictions: np.ndarray, iterations: int) -> Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray],  np.ndarray]:
+    c_trials = trials
+    c_predictions = predictions
+    c_indexes =np.array([i for i in range(0, predictions.shape[0])])
+    
+    w_trials = []
+    w_predictions = []
+    w_indexes = []
+    model = None
+    for i in range(0, iterations):
+        model = LinearSVC(dual=False)
+        model.fit(c_trials, c_predictions)
+
+        lw_indexes = model.predict(c_trials) != c_predictions
+        if np.any(lw_indexes) == False:
+            break
+        
+        w_indexes.append(c_indexes[lw_indexes])
+
+        c_trials = c_trials[lw_indexes == False]
+        c_predictions = c_predictions[lw_indexes == False]
+        c_indexes = c_indexes[lw_indexes == False]
+
+    for lw in w_indexes:
+        for i in lw:
+            w_trials.append(trials[i])
+            w_predictions.append(predictions[i])
+
+    w_trials = np.array(w_trials)
+    w_predictions = np.array(w_predictions)
+    norm = unit_vector(np.array([-model.coef_[0][1], model.coef_[0][0]]))
+    
+    if DEBUG:
+        t,c,a = return_plottable_list(c_trials, c_predictions)
+        plot_trials(norm, t, c, a, ann_str=True)
+
+        t,c,a = return_plottable_list(w_trials, w_predictions)
+        plot_trials(norm, t, c, a, ann_str=True)  
+    
+    
+    
+
+    return (c_trials, c_predictions), (w_trials, w_predictions), norm
+
+
 def produce_estimate_no_denoising(trials: np.ndarray, predictions: np.ndarray)-> Tuple[float, float]:
-    model = LinearSVC()
 
     e_trials, e_predictions = mirror_trials_list(trials, predictions)
+    
+    (c_trials, c_predictions), (w_trials, w_predictions), norm = no_denoising_clean_trials(e_trials, e_predictions, 5)
 
-    model.fit(e_trials, e_predictions)
+    alpha =  math.degrees(np.dot(norm, np.array([0,1])))
+    sigma = compute_sharpening_std(c_trials, c_predictions, w_trials, w_predictions, norm)
 
-    norm = unit_vector(np.array([-model.coef_[0][1], model.coef_[0][0]]))
-
-    angle =  math.degrees(np.dot(norm, np.array([0,1])))
-
-    return angle, 0.1
+    return alpha, sigma
 
 
 

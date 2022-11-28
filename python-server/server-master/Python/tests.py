@@ -151,9 +151,9 @@ class TestAI(unittest.TestCase):
         
     
     def test_AS(self):
-        n=50
-        n_part = 18
-        e = ASD_Estimator(n)# denoiser_type="no_denoising")
+        n=90
+        n_part = 30
+        e = ASD_Estimator(n, denoiser_type="no_denoising")
         target_s = 10
 
         filename = f"alpha_45_sigma_{target_s}.npy"
@@ -184,14 +184,14 @@ class TestAI(unittest.TestCase):
         trials = l1[0:n, 0:2]
 
         t, c, a = return_plottable_list(trials, looks_right)
-        plot_trials([-1,1], t, c, a, ann_str=True)
+        #plot_trials([-1,1], t, c, a, ann_str=True)
 
         e.trials = trials 
         e.predictions = looks_right
 
         alpha, sigma = e.produce_estimate()
 
-        print(alpha)
+        print(f"{alpha}  --  {sigma}")
 
 
     
