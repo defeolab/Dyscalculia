@@ -8,6 +8,7 @@ from AI.PlayerSimulator import PlayerSimulator
 from AI.AS_Estimate import ASD_Estimator
 import time
 import os
+import functools
 
 import winsound
 
@@ -153,8 +154,8 @@ class TestAI(unittest.TestCase):
     def test_AS(self):
         n=90
         n_part = 30
-        e = ASD_Estimator(n, denoiser_type="no_denoising")
-        target_s = 10
+        e = ASD_Estimator(n)
+        target_s = 50
 
         filename = f"alpha_45_sigma_{target_s}.npy"
 
@@ -193,7 +194,89 @@ class TestAI(unittest.TestCase):
 
         print(f"{alpha}  --  {sigma}")
 
+    def test_AS_extensively(self):
+        n=90
 
+        n_part = 30
+        e = ASD_Estimator(n, denoiser_type="simple_denoising")
+        target_s = 50
+
+        filename = f"alpha_45_sigma_{target_s}.npy"
+
+        save_file1 = os.path.join(BASE_PATH_FOR_SAVING_TRIALS, "PDEP")
+        save_file1 = os.path.join(save_file1, "precompute_t30")
+        save_file1 = os.path.join(save_file1, filename)
+        l1 = np.load(save_file1)
+
+        save_file2 = os.path.join(BASE_PATH_FOR_SAVING_TRIALS, "PDEP")
+        save_file2 = os.path.join(save_file2, "precompute_t10")
+        save_file2 = os.path.join(save_file2, filename)
+        l2 = np.load(save_file2)
+
+        save_file3 = os.path.join(BASE_PATH_FOR_SAVING_TRIALS, "PDEP")
+        save_file3 = os.path.join(save_file3, "precompute_t80")
+        save_file3 = os.path.join(save_file3, filename)
+        l3 = np.load(save_file3)
+
+        l1_part = l1[0:n_part, :]
+        l2_part = l2[0:n_part, :]
+        l3_part = l3[0:n_part, :]
+        
+        l1= np.concatenate((l1_part, l2_part, l3_part)) 
+
+        alphas = [10, 30, 45, 60, 80]
+        sigmas = [0.1,0.2,0.4,0.5]
+
+        p_alphas = []
+        p_sigmas = []
+
+        errors_alphas = []
+        errors_sigmas = []
+
+        debug = False
+
+        for alpha in alphas:
+            for sigma in sigmas:
+                sim = PlayerSimulator(alpha, sigma)
+                preds = []
+                for t in l1:
+                    _, (__, pred) = sim.predict(to_mock_trial(t[0], t[1])) 
+                    preds.append(pred)
+                
+                preds = np.array(preds)
+
+                e.trials = l1[:, 0:2]
+                e.predictions = preds
+                p_alpha, p_sigma, p_norm = e.produce_estimate()
+                p_alphas.append(p_alpha)
+                p_sigmas.append(p_sigma)
+
+                errors_alphas.append(alpha - p_alpha)
+                errors_sigmas.append(sigma - p_sigma)
+
+                
+                print(f"doing alpha {alpha}, sigma {sigma}")
+                print(f"predicted were {p_alpha} - {p_sigma}")
+                if debug:
+                    t, c, a = return_plottable_list(l1, preds)
+                    plot_trials(sim.boundary_vector, t, c, a, ann_str=True, sharp_std=sim.sigma, estimated_boundary=p_norm, estimated_std=p_sigma)
+        
+        avg_error_alpha = functools.reduce(lambda a,b: np.abs(a) + np.abs(b), errors_alphas)
+        avg_error_sigma = functools.reduce(lambda a,b: np.abs(a) + np.abs(b), errors_sigmas)
+        
+        avg_error_alpha = avg_error_alpha/len(errors_alphas)
+        avg_error_sigma = avg_error_sigma/len(errors_sigmas)
+
+
+        print(errors_alphas)
+        print("-------")
+        print(errors_sigmas)
+        print("-------")
+        print(f"{avg_error_alpha} - - - {avg_error_sigma}")
+
+        
+    def test_misc(self):
+        print(math.degrees(angle_between(np.array([0,1]), np.array([-1,1]))))
     
         
 
@@ -210,7 +293,8 @@ if __name__ == "__main__":
     #tc.test_3D_plot()
     #tc.test_precompute()
     tc.test_AS()
-
+    #tc.test_AS_extensively()
+    #tc.test_misc()
 
     duration = 1000  # milliseconds
     freq = 440  # Hz

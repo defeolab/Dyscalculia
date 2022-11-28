@@ -42,8 +42,8 @@ class ASD_Estimator:
         if self.denoiser_type == "OneClassSVM":
             return produce_estimate_denoising_OCSVM(trials, predictions)
 
-        elif self.denoiser_type == "no_denoising":
-            return produce_estimate_no_denoising(trials, predictions)
+        elif self.denoiser_type == "simple_denoising":
+            return produce_estimate_simple_denoising(trials, predictions)
             
 
 

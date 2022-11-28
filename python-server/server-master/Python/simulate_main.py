@@ -65,7 +65,7 @@ class SimulationsRunner(unittest.TestCase):
                 figsaver = FigSaver(self.base_root, exp_name, interval=self.interval) if self.save_plots else None
                 handler.simulate_player_cycle(self.days, self.trials_per_day, False, self.update_evaluator_stats,self.update_child, figsaver=figsaver)
 
-
+    
 if __name__ == "__main__":
 
     alphas = [

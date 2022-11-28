@@ -37,7 +37,8 @@ class FigSaver:
 
 def plot_trials(boundary_vector: np.ndarray, trials: List[List[Any]], corrects: List[bool], 
                 annotations: List[float], ann_str: bool = False, plot_stats: Callable = None, 
-                plot_dist: bool = False, norm_lim: bool = True, sharp_std: float = None, figsaver: FigSaver = None):
+                plot_dist: bool = False, norm_lim: bool = True, sharp_std: float = None, figsaver: FigSaver = None,
+                estimated_boundary: np.ndarray = None, estimated_std: np.ndarray = None):
 
     if figsaver is not None:
         #just a speedup, avoid plotting if you're not going to show or save the figure
@@ -51,6 +52,8 @@ def plot_trials(boundary_vector: np.ndarray, trials: List[List[Any]], corrects: 
     vec= 5*boundary_vector
     
     ax.plot([vec[0], -vec[0]], [vec[1], -vec[1]])
+    if estimated_boundary is not None:
+        ax.plot([estimated_boundary[0], -estimated_boundary[0]], [estimated_boundary[1], -estimated_boundary[1]], color= 'orange')
 
     colors = {True: 'green', False: 'red'}
 
@@ -68,6 +71,11 @@ def plot_trials(boundary_vector: np.ndarray, trials: List[List[Any]], corrects: 
             circle = plt.Circle((coord[0], coord[1]), radius = sharp_std, alpha = 0.2)
             ax.add_patch(circle)
             #ax.scatter(coord[0], coord[1], color = "blue", alpha=0.1, marker="o", s=sharp_std*1000)
+        if estimated_std is not None:
+            circle = plt.Circle((coord[0], coord[1]), radius = estimated_std, alpha = 0.2, color= 'orange')
+            ax.add_patch(circle)
+            #ax.scatter(coord[0], coord[1], color = "blue", alpha=0.1, marker="o", s=sharp_std*1000)
+
 
         if ann_str:
             ax.annotate(annotations[i], (coord[0], coord[1]), color= "red")
@@ -190,4 +198,13 @@ def plot_player_cycle3D(boundary_vectors: List[np.ndarray], sigmas: List[float],
     else:
         plt.xlim([-2, 2])
         plt.ylim([-2,2])
+    plt.show()
+
+
+def plot_histograms(data: List[np.ndarray]):
+    colors = ["red", "green", "blue","orange" , "gray", "orange"]
+
+    for i,d in enumerate(data):
+        plt.hist(d, color = colors[i], alpha = 0.6, histtype="bar", bins=50)
+
     plt.show()

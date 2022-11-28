@@ -6,9 +6,10 @@ from typing import Tuple, List
 from AI.AS_functionals import *
 from AI.ai_utils import *
 import math
-from AI.ai_plot import plot_trials
+from AI.ai_plot import plot_trials, plot_histograms
 
-DEBUG = False
+DEBUG_D = True
+DEBUG_S = False
 
 def mirror_trials_list(trials: List[np.ndarray], predictions: List[bool]) -> Tuple[List[np.ndarray], List[bool]]:
     n_t = []
@@ -30,12 +31,18 @@ def compute_sharpening_std(c_trials: np.ndarray, c_predictions: np.ndarray, w_tr
 
     dists = np.dot(transform_mat, w_trials.T)[1, :]
     sigma = 2*math.sqrt( (1/(n-1)) * np.sum(2*dists**2) )
+
+    if DEBUG_S:
+        cdists = np.dot(transform_mat, c_trials.T)[1,:]
+        plot_histograms([cdists, dists])
+
+
     return sigma
 
 
 
 
-def no_denoising_clean_trials(trials: np.ndarray, predictions: np.ndarray, iterations: int) -> Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray],  np.ndarray]:
+def simple_denoising_clean_trials(trials: np.ndarray, predictions: np.ndarray, iterations: int) -> Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray],  np.ndarray]:
     c_trials = trials
     c_predictions = predictions
     c_indexes =np.array([i for i in range(0, predictions.shape[0])])
@@ -65,9 +72,11 @@ def no_denoising_clean_trials(trials: np.ndarray, predictions: np.ndarray, itera
 
     w_trials = np.array(w_trials)
     w_predictions = np.array(w_predictions)
+    model = LinearSVC(dual=False)
+    model.fit(c_trials, c_predictions)
     norm = unit_vector(np.array([-model.coef_[0][1], model.coef_[0][0]]))
     
-    if DEBUG:
+    if DEBUG_D:
         t,c,a = return_plottable_list(c_trials, c_predictions)
         plot_trials(norm, t, c, a, ann_str=True)
 
@@ -80,16 +89,16 @@ def no_denoising_clean_trials(trials: np.ndarray, predictions: np.ndarray, itera
     return (c_trials, c_predictions), (w_trials, w_predictions), norm
 
 
-def produce_estimate_no_denoising(trials: np.ndarray, predictions: np.ndarray)-> Tuple[float, float]:
+def produce_estimate_simple_denoising(trials: np.ndarray, predictions: np.ndarray)-> Tuple[float, float]:
 
     e_trials, e_predictions = mirror_trials_list(trials, predictions)
     
-    (c_trials, c_predictions), (w_trials, w_predictions), norm = no_denoising_clean_trials(e_trials, e_predictions, 5)
+    (c_trials, c_predictions), (w_trials, w_predictions), norm = simple_denoising_clean_trials(e_trials, e_predictions, 5)
 
-    alpha =  math.degrees(np.dot(norm, np.array([0,1])))
+    alpha =  math.degrees(angle_between(np.array([0,1]), norm))
     sigma = compute_sharpening_std(c_trials, c_predictions, w_trials, w_predictions, norm)
 
-    return alpha, sigma
+    return alpha, sigma, norm
 
 
 
@@ -121,7 +130,7 @@ def denoise_data_OCSVM(trials: np.ndarray, predictions: np.ndarray) -> Tuple[Tup
 
     
 
-    if DEBUG:
+    if DEBUG_D:
         t,c,a = return_plottable_list(ret_t_safe, ret_p_safe)
         plot_trials([-1,1], t, c, a, ann_str=True)
 
@@ -148,7 +157,7 @@ def produce_estimate_denoising_OCSVM(trials: np.ndarray, predictions: np.ndarray
 
     norm = unit_vector(np.array([-model.coef_[0][1], model.coef_[0][0]]))
 
-    angle =  math.degrees(np.dot(norm, np.array([0,1])))
+    angle =  math.degrees(angle_between(norm, np.array([0,1])))
 
     return angle, 0.1
 
