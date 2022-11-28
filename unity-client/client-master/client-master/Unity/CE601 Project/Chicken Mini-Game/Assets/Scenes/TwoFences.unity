@@ -3527,6 +3527,7 @@ MonoBehaviour:
   fences: {fileID: 6705098946168679719}
   colliderArea1: {fileID: 1062008870}
   colliderArea2: {fileID: 1882120304}
+  left_area: 0
 --- !u!1 &498975295
 GameObject:
   m_ObjectHideFlags: 0

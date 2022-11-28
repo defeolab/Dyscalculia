@@ -35,6 +35,7 @@ public class DragManager : MonoBehaviour
         if (active && (mouse.x < Screen.width / 2 || touch.x < Screen.width / 2))
         {
             //Debug.Log("Mouse is on left side of screen.");
+            findDrag2 = false;
 
             if (draggedArea2 != null)
             {
@@ -83,6 +84,7 @@ public class DragManager : MonoBehaviour
         if (active && (mouse.x > Screen.width / 2 || touch.x > Screen.width / 2))
         {
             //Debug.Log("Mouse is on right side of screen.");
+            findDrag1 = false;
 
             if (draggedArea1 != null)
             {
@@ -238,7 +240,6 @@ public class DragManager : MonoBehaviour
                     draggedArea1.GetComponent<Animator>().SetBool("eat", true);
                 }
             }
-
         }
         else if (a == 2)
         {
