@@ -28,7 +28,10 @@ class ASD_Estimator:
     def get_trial(self) -> Tuple[float, float]:
         pass
 
-    def set_prediction(self, predicted_right: bool) -> None:
+    def append_trial(self, trial: List[float]) -> None:
+        self.trials.append(trial)
+
+    def append_prediction(self, predicted_right: bool) -> None:
         self.predictions.append(predicted_right)
 
     def produce_estimate(self) -> Tuple[float, float]:

@@ -14,6 +14,7 @@ import winsound
 
 
 BASE_PATH_FOR_PICS = "C:\\Users\\fblan\\Desktop\\thesis_pics"
+BASE_PATH_FOR_CASUAL_PICS = "C:\\Users\\fblan\\Desktop\\thesis pics\\221130"
 
 BASE_PATH_FOR_SAVING_TRIALS = "C:\\Users\\fblan\\Dyscalculia\\python-server\\server-master\\Python\\AI\\precomputed_data"
 
@@ -233,7 +234,7 @@ class TestAI(unittest.TestCase):
         errors_alphas = []
         errors_sigmas = []
 
-        debug = False
+        debug = True
 
         for alpha in alphas:
             for sigma in sigmas:
@@ -258,8 +259,10 @@ class TestAI(unittest.TestCase):
                 print(f"doing alpha {alpha}, sigma {sigma}")
                 print(f"predicted were {p_alpha} - {p_sigma}")
                 if debug:
-                    t, c, a = return_plottable_list(l1, preds)
-                    plot_trials(sim.boundary_vector, t, c, a, ann_str=True, sharp_std=sim.sigma, estimated_boundary=p_norm, estimated_std=p_sigma)
+                    figsaver = FigSaver(BASE_PATH_FOR_CASUAL_PICS, f"", interval=1,figname=f"a{int(alpha)}_s{int(sigma*100)}" )
+                    m = 10
+                    t, c, a = return_plottable_list(l1[0:m, :], preds[0:m])
+                    plot_trials(sim.boundary_vector, t, c, a, ann_str=True, sharp_std=sim.sigma, estimated_boundary=p_norm, estimated_std=p_sigma, figsaver=figsaver)
         
         avg_error_alpha = functools.reduce(lambda a,b: np.abs(a) + np.abs(b), errors_alphas)
         avg_error_sigma = functools.reduce(lambda a,b: np.abs(a) + np.abs(b), errors_sigmas)
@@ -292,8 +295,8 @@ if __name__ == "__main__":
     #tc.test_trial_adapter()
     #tc.test_3D_plot()
     #tc.test_precompute()
-    tc.test_AS()
-    #tc.test_AS_extensively()
+    #tc.test_AS()
+    tc.test_AS_extensively()
     #tc.test_misc()
 
     duration = 1000  # milliseconds

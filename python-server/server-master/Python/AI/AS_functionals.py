@@ -8,7 +8,7 @@ from AI.ai_utils import *
 import math
 from AI.ai_plot import plot_trials, plot_histograms
 
-DEBUG_D = True
+DEBUG_D = False
 DEBUG_S = False
 
 def mirror_trials_list(trials: List[np.ndarray], predictions: List[bool]) -> Tuple[List[np.ndarray], List[bool]]:
@@ -29,9 +29,11 @@ def compute_sharpening_std(c_trials: np.ndarray, c_predictions: np.ndarray, w_tr
 
     transform_mat=np.linalg.inv(np.array([[norm[0], norm[1]], [norm[1], -norm[0]]]))
 
-    dists = np.dot(transform_mat, w_trials.T)[1, :]
-    sigma = 2*math.sqrt( (1/(n-1)) * np.sum(2*dists**2) )
-
+    if w_trials.shape[0] != 0:
+        dists = np.dot(transform_mat, w_trials.T)[1, :]
+        sigma = 2*math.sqrt( (1/(n-1)) * np.sum(2*dists**2) )
+    else:
+        sigma = 0.05
     if DEBUG_S:
         cdists = np.dot(transform_mat, c_trials.T)[1,:]
         plot_histograms([cdists, dists])

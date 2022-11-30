@@ -11,20 +11,23 @@ from datetime import date
 from mpl_toolkits import mplot3d
 
 class FigSaver:
-    def __init__(self, base_root: str,exp_name: str, add_date:bool=False, interval: int=5) -> None:
-        self.root = os.path.join(base_root, exp_name)
+    def __init__(self, base_root: str,exp_name: str, add_date:bool=False, interval: int=5, figname: str = None) -> None:
+        self.root = os.path.join(base_root, exp_name) if figname is None else base_root
+        self.figname = figname
         if add_date:
             today = date.today()
             self.root = os.path.join(self.root, today.strftime("%Y-%m-%d"))
 
-        if os.path.exists(self.root) == False:
+        if os.path.exists(self.root) == False and figname is None:
             os.mkdir(self.root)
         self.interval = interval
         self.i = 0
 
     def save_day(self):
+        #print("AAAA")
         if self.i % self.interval == 0:
-            figpath = os.path.join(self.root, f"{self.i}.png")
+            figpath = os.path.join(self.root, f"{self.i}.png") if self.figname is None else os.path.join(self.root, f"{self.figname}.png") 
+            #print(figpath)
             plt.savefig(figpath, format= "png")
             plt.close()
         self.i+=1
@@ -53,7 +56,8 @@ def plot_trials(boundary_vector: np.ndarray, trials: List[List[Any]], corrects: 
     
     ax.plot([vec[0], -vec[0]], [vec[1], -vec[1]])
     if estimated_boundary is not None:
-        ax.plot([estimated_boundary[0], -estimated_boundary[0]], [estimated_boundary[1], -estimated_boundary[1]], color= 'orange')
+        eb = estimated_boundary*5
+        ax.plot([eb[0], -eb[0]], [eb[1], -eb[1]], color= 'orange')
 
     colors = {True: 'green', False: 'red'}
 

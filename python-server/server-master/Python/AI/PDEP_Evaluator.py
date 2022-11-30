@@ -1,6 +1,7 @@
 from AI.SimpleEvaluator import PlayerEvaluator
 from AI.ai_utils import unit_vector, PDEP_find_trial
 from typing import Any
+from AI.AS_Estimate import ASD_Estimator
 
 from AI.TrialAdapter import TrialAdapter
 from typing import List, Any
@@ -28,7 +29,7 @@ class PDEP_Evaluator(PlayerEvaluator):
 
 
     def __init__(   self, init_alpha: float, init_sigma: float, init_prob: float = 0.10, init_perceived_diff: float = 0.1, norm_feats: bool=True, 
-                    update_step: int=5, mock: bool = False, kids_ds: bool = False):
+                    update_step: int=5, mock: bool = False, kids_ds: bool = False, estimate_step: int = 90):
         self.trial_adapter = TrialAdapter(mock,True, norm_feats, kids_ds)
         self.alpha = init_alpha
         self.sigma = init_sigma
@@ -48,6 +49,8 @@ class PDEP_Evaluator(PlayerEvaluator):
         self.update_step = update_step
         self.history = np.array(([False for i in range(0, update_step)]))
         self.trials = []
+        self.estimate_step = estimate_step
+        self.estimator = ASD_Estimator(max_trials_to_consider=90, denoiser_type="simple_denoising")
 
     def get_stats(self) -> Any:
         return self.target_error_prob, self.target_perceived_diff
@@ -79,6 +82,7 @@ class PDEP_Evaluator(PlayerEvaluator):
         nd_variable, nnd_variable, self.last_value = PDEP_find_trial(self.target_error_prob,self.target_perceived_diff, self.transform_mat, self.boundary_vector, self.sigma, self.norm_feats)
 
         trial = self.trial_adapter.find_trial(nd_variable, nnd_variable)
+        self.estimator.append_trial(trial)
 
         return trial
     
@@ -92,6 +96,11 @@ class PDEP_Evaluator(PlayerEvaluator):
         self.iteration+=1
         self.history[self.iteration%self.update_step] = correct
 
+        #set the prediction in the estimator
+        nd = self.estimator.trials[-1][8]
+        prediction = True if (nd>0) == correct else False
+        self.estimator.append_prediction(prediction)
+
         if self.iteration%self.update_step == 0:
             #after a set number of trials, check the accuracy
             avg = np.average(self.history)
@@ -104,6 +113,13 @@ class PDEP_Evaluator(PlayerEvaluator):
             if np.abs(self.target_error_prob-0.5) <0.02:
                 print("wut")
                 self.target_error_prob = 0.55 if avg> 0.5 else 0.45
+            
+        if self.iteration%self.estimate_step ==0:
+            self.alpha, self.sigma, self.boundary_vector = self.estimator.produce_estimate()
+            self.transform_mat =np.linalg.inv(np.array([[self.boundary_vector[0], self.boundary_vector[1]], [self.boundary_vector[1], -self.boundary_vector[0]]]))
+
+        
+
     
     def save_trial(self, save_file: str, trial: List[float], correct: bool, decision_time: float, commit: bool = False) -> None:
         """
