@@ -15,7 +15,7 @@ class SimulationsRunner(unittest.TestCase):
     def __init__(   self, days:int, trials_per_day:int, fig_interval: int, evaluator: str, kids_ds: bool, 
                     update_evaluator_stats:bool, update_child: bool, suite_name: str, target_prob: float, 
                     target_diff: Tuple[float,float], mode:str, save_trials: bool, save_plots: bool,
-                    alphas: List[float], sigmas: List[float], mock: bool):
+                    alphas: List[float], sigmas: List[float], mock: bool, estimate_step: int):
         
         self.days = days
         self.trials_per_day = trials_per_day
@@ -33,15 +33,16 @@ class SimulationsRunner(unittest.TestCase):
         self.alphas = alphas
         self.sigmas = sigmas
         self.mock = mock
+        self.estimate_step = estimate_step
 
         self.base_root = os.path.join(BASE_PATH_FOR_PICS, self.evaluator)
         self.base_root = os.path.join(self.base_root, suite_name)
-        if os.path.exists(self.base_root) == False:
+        if os.path.exists(self.base_root) == False and self.save_plots:
             os.mkdir(self.base_root)
 
         self.save_root = os.path.join(BASE_PATH_FOR_SAVING_TRIALS, self.evaluator)
         self.save_root = os.path.join(self.save_root, suite_name)
-        if os.path.exists(self.save_root) == False:
+        if os.path.exists(self.save_root) == False and self.save_trials:
             os.mkdir(self.save_root)
         
     
@@ -57,6 +58,7 @@ class SimulationsRunner(unittest.TestCase):
                 if self.evaluator == "PDEP":
                     handler.player_evaluator.target_error_prob = self.target_prob
                     handler.player_evaluator.trial_adapter.mock = self.mock
+                    handler.player_evaluator.estimate_step = self.estimate_step
                 else:
                     handler.player_evaluator.running_results['filtering_diff'] = self.target_diff[0]
                     handler.player_evaluator.running_results['sharpening_diff'] = self.target_diff[1]
@@ -74,34 +76,36 @@ if __name__ == "__main__":
         ]
     sigmas = [
         [0.10, 0.20, 0.4],
-        [0.1, 0.2, 0.3, 0.4, 0.5]
+        [0.1, 0.2, 0.3, 0.4, 0.5],
+        [0.1]
         ]
 
     probs = [0.10, 0.30, 0.80]
     diffs = [(0.1,0.1), (0.4, 0.4), (0.8, 0.8), (0.95,0.95)]
     modes = ["filtering", "sharpening"]
 
-    days = 60
-    trials_per_day = 6
-    interval = 15
+    days = 5
+    trials_per_day = 3
+    interval = 1
     evaluator = "PDEP"
     kids_ds = False
     add_date = False
-    update_evaluator_stats = False
+    update_evaluator_stats = True
     update_child = False
     target_prob = probs[2]
     target_diff = diffs[0]
     mode = modes[0]
-    save_trials = True
+    save_trials = False
     save_plots = True
     alpha_i = 1
-    sigma_i = 1
+    sigma_i = 2
     mock = True
+    estimate_step = 1
 
-    suite_name = "precompute_t80"
+    suite_name = "ASD_base"
 
     sr = SimulationsRunner( days, trials_per_day, interval, evaluator, kids_ds, update_evaluator_stats, update_child, suite_name, 
-                            target_prob, target_diff, mode, save_trials, save_plots, alphas[alpha_i], sigmas[sigma_i], mock)
+                            target_prob, target_diff, mode, save_trials, save_plots, alphas[alpha_i], sigmas[sigma_i], mock, estimate_step)
 
     start_time = time.time()
 

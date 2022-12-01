@@ -43,11 +43,11 @@ class ASD_Estimator:
 
 
         if self.denoiser_type == "OneClassSVM":
-            return produce_estimate_denoising_OCSVM(trials, predictions)
+            return produce_estimate_denoising_OCSVM(trials, predictions), "support"
 
         elif self.denoiser_type == "simple_denoising":
-            return produce_estimate_simple_denoising(trials, predictions)
+            return produce_estimate_simple_denoising(trials, predictions), "support"
             
 
 
-        return 45.0, 0.1        
+        return 45.0, 0.1, unit_vector(np.array([-1,1])), "support"        

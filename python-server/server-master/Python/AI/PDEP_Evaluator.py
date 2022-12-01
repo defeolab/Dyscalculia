@@ -1,5 +1,6 @@
 from AI.SimpleEvaluator import PlayerEvaluator
-from AI.ai_utils import unit_vector, PDEP_find_trial
+from AI.ai_utils import unit_vector
+from AI.PDEP_functionals import PDEP_find_trial
 from typing import Any
 from AI.AS_Estimate import ASD_Estimator
 
@@ -29,13 +30,14 @@ class PDEP_Evaluator(PlayerEvaluator):
 
 
     def __init__(   self, init_alpha: float, init_sigma: float, init_prob: float = 0.10, init_perceived_diff: float = 0.1, norm_feats: bool=True, 
-                    update_step: int=5, mock: bool = False, kids_ds: bool = False, estimate_step: int = 90):
+                    update_step: int=5, mock: bool = False, kids_ds: bool = False, estimate_step: int = 90, estimation_min_trials: int = 10):
         self.trial_adapter = TrialAdapter(mock,True, norm_feats, kids_ds)
         self.alpha = init_alpha
         self.sigma = init_sigma
         self.target_error_prob = init_prob
         self.target_perceived_diff = init_perceived_diff
         self.norm_feats = norm_feats
+        self.estimation_min_trials = estimation_min_trials
 
         self.mode = "support"
 
@@ -82,7 +84,7 @@ class PDEP_Evaluator(PlayerEvaluator):
         nd_variable, nnd_variable, self.last_value = PDEP_find_trial(self.target_error_prob,self.target_perceived_diff, self.transform_mat, self.boundary_vector, self.sigma, self.norm_feats)
 
         trial = self.trial_adapter.find_trial(nd_variable, nnd_variable)
-        self.estimator.append_trial(trial)
+        self.estimator.append_trial([trial[0][8], trial[0][9]])
 
         return trial
     
@@ -97,14 +99,15 @@ class PDEP_Evaluator(PlayerEvaluator):
         self.history[self.iteration%self.update_step] = correct
 
         #set the prediction in the estimator
-        nd = self.estimator.trials[-1][8]
+        #print(self.estimator.trials)
+        nd = self.estimator.trials[-1][0]
         prediction = True if (nd>0) == correct else False
         self.estimator.append_prediction(prediction)
 
-        if self.iteration%self.update_step == 0:
+        if self.iteration%self.update_step == 0 and self.mode == "support":
             #after a set number of trials, check the accuracy
             avg = np.average(self.history)
-            print(f"avg was {avg}")
+            #print(f"avg was {avg}")
 
             #if accuracy was lower than expected, lower target error prob
             self.target_error_prob += 0.05 if avg>self.target_error_prob else -0.05
@@ -114,8 +117,10 @@ class PDEP_Evaluator(PlayerEvaluator):
                 print("wut")
                 self.target_error_prob = 0.55 if avg> 0.5 else 0.45
             
-        if self.iteration%self.estimate_step ==0:
-            self.alpha, self.sigma, self.boundary_vector = self.estimator.produce_estimate()
+        if (self.iteration%self.estimate_step ==0 or self.mode == "estimate") and self.iteration > self.estimation_min_trials:
+            self.iteration -= 1
+            self.mode = "estimate"
+            (self.alpha, self.sigma, self.boundary_vector), self.mode = self.estimator.produce_estimate()
             self.transform_mat =np.linalg.inv(np.array([[self.boundary_vector[0], self.boundary_vector[1]], [self.boundary_vector[1], -self.boundary_vector[0]]]))
 
         

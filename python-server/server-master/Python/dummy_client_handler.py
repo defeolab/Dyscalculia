@@ -49,6 +49,7 @@ class SimulatedClient:
         self.norm_feats = norm_feats
         self.player = PlayerSimulator(self.alpha, self.sigma)
         self.save_file = save_file
+        self.evaluator = evaluator
 
         if evaluator == "simple":
             self.player_evaluator = SimpleEvaluator(self.lookup_table, 1, 5, alt_mode_weight=0.5, kids_ds=kids_ds,)
@@ -146,8 +147,13 @@ class SimulatedClient:
                 sim_sigmas.append(sig)
 
             if plot_each_day or figsaver is not None:
+                
+                boundary = self.player_evaluator.boundary_vector if self.evaluator == "PDEP" else None
+                sigma = self.player_evaluator.sigma if self.evaluator == "PDEP" else None
+
                 plot_trials(self.player.boundary_vector, proposed_trials[-trials_per_day :], corrects[-trials_per_day:], annotations[-trials_per_day:], 
-                            True, self.player_evaluator.plot_stats(day), norm_lim=self.norm_feats, sharp_std=self.player.sigma, figsaver=figsaver)
+                            True, self.player_evaluator.plot_stats(day), norm_lim=self.norm_feats, sharp_std=self.player.sigma, figsaver=figsaver,
+                            estimated_boundary=boundary, estimated_std=sigma)
             
             local_accuracies.append(local_corrects/trials_per_day)
             cumulative_accuracies.append(tot_corrects/(day*trials_per_day))

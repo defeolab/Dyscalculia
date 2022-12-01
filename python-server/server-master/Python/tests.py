@@ -6,6 +6,7 @@ from AI.PDEP_Evaluator import PDEP_Evaluator
 from dummy_client_handler import SimulatedClient
 from AI.PlayerSimulator import PlayerSimulator
 from AI.AS_Estimate import ASD_Estimator
+from AI.PDEP_functionals import PDEP_find_trial
 import time
 import os
 import functools
@@ -289,14 +290,14 @@ if __name__ == "__main__":
     start_time = time.time()
 
     #tc.test_probability()
-    #tc.test_PDEP_Evaluator()
+    tc.test_PDEP_Evaluator()
     #tc.test_player_cycle_simple()
     #tc.test_player_cycle_PDEP()
     #tc.test_trial_adapter()
     #tc.test_3D_plot()
     #tc.test_precompute()
     #tc.test_AS()
-    tc.test_AS_extensively()
+    #tc.test_AS_extensively()
     #tc.test_misc()
 
     duration = 1000  # milliseconds
