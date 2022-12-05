@@ -7,9 +7,12 @@ from AI.AS_functionals import *
 from AI.ai_utils import *
 import math
 from AI.ai_plot import plot_trials, plot_histograms
+import scipy as sp
 
 DEBUG_D = False
 DEBUG_S = False
+
+STD_COMPUTATION = "ll" #can be "ll" for loglilkelihood, "basic" for fetched formula 
 
 def mirror_trials_list(trials: List[np.ndarray], predictions: List[bool]) -> Tuple[List[np.ndarray], List[bool]]:
     n_t = []
@@ -24,7 +27,7 @@ def mirror_trials_list(trials: List[np.ndarray], predictions: List[bool]) -> Tup
     return np.array(n_t), np.array(n_p)
 
 
-def compute_sharpening_std(c_trials: np.ndarray, c_predictions: np.ndarray, w_trials: np.ndarray, w_predictions: np.ndarray, norm: np.ndarray) -> float:
+def compute_sharpening_std_basic(c_trials: np.ndarray, c_predictions: np.ndarray, w_trials: np.ndarray, w_predictions: np.ndarray, norm: np.ndarray) -> float:
     n = c_trials.shape[0] + w_trials.shape[0]
 
     transform_mat=np.linalg.inv(np.array([[norm[0], norm[1]], [norm[1], -norm[0]]]))
@@ -41,6 +44,51 @@ def compute_sharpening_std(c_trials: np.ndarray, c_predictions: np.ndarray, w_tr
 
     return sigma
 
+def compute_log_likelihood(c_dists:np.ndarray, w_dists: np.ndarray, sigma:float) -> float:
+    def custom_erf(x: np.ndarray) -> np.ndarray:
+        return 0.5*sp.special.erf(x/(math.sqrt(2)*sigma)) - 0.5*sp.special.erf(-x/(math.sqrt(2)*sigma))
+        #return 0.5 + 0.5*sp.special.erf(x/math.sqrt(2)*sigma)
+
+    def correct_trial_likelihood(x: np.ndarray) -> np.ndarray:
+        v = custom_erf(x)
+        return np.clip(v + (1-v)/2, 0.0001, 0.9999)
+    
+    def wrong_trial_likelihood(x: np.ndarray) -> np.ndarray:
+        v= 1-custom_erf(x)
+        return np.clip(v/2, 0.0001, 0.9999)
+
+    corrects_ll = np.log(correct_trial_likelihood(np.abs(c_dists))).sum() if c_dists.shape[0]>0 else 0.0
+    wrongs_ll = np.log(wrong_trial_likelihood(np.abs(w_dists))).sum() if w_dists.shape[0]>0 else 0.0
+
+    #print(f"-----{sigma}-----")
+    #print(corrects_ll)
+    #print(wrongs_ll)
+    
+    return corrects_ll + wrongs_ll
+    
+
+
+def compute_sharpening_std_loglikelihood(c_trials: np.ndarray, c_predictions: np.ndarray, w_trials: np.ndarray, w_predictions: np.ndarray, norm: np.ndarray):
+    n = c_trials.shape[0] + w_trials.shape[0]
+
+    transform_mat=np.linalg.inv(np.array([[norm[0], norm[1]], [norm[1], -norm[0]]]))
+    c_dists = np.dot(transform_mat, c_trials.T)[1, :] if c_trials.shape[0] >0 else np.array([])
+    w_dists = np.dot(transform_mat, w_trials.T)[1, :] if w_trials.shape[0] >0 else np.array([])
+
+
+    n_sigmas = 20
+    considered_sigmas = np.linspace(0.05, 0.5, n_sigmas)
+    lls = np.ones(n_sigmas)
+
+    for i,s in enumerate(considered_sigmas):
+        ll = compute_log_likelihood(c_dists, w_dists, s)
+        lls[i] = ll
+    
+    best_ll_i = np.argmax(lls)
+    #print(lls)
+    return considered_sigmas[best_ll_i]
+
+        
 
 
 
@@ -77,6 +125,11 @@ def simple_denoising_clean_trials(trials: np.ndarray, predictions: np.ndarray, i
     model = LinearSVC(dual=False)
     model.fit(c_trials, c_predictions)
     norm = unit_vector(np.array([-model.coef_[0][1], model.coef_[0][0]]))
+
+    if abs(norm[0]) + abs(norm[1]) == abs(norm[0] + norm[1]):
+        norm[0] = -0.1
+        norm[1] = 0.9
+        norm = unit_vector(norm)
     
     if DEBUG_D:
         t,c,a = return_plottable_list(c_trials, c_predictions)
@@ -98,7 +151,14 @@ def produce_estimate_simple_denoising(trials: np.ndarray, predictions: np.ndarra
     (c_trials, c_predictions), (w_trials, w_predictions), norm = simple_denoising_clean_trials(e_trials, e_predictions, 5)
 
     alpha =  math.degrees(angle_between(np.array([0,1]), norm))
-    sigma = compute_sharpening_std(c_trials, c_predictions, w_trials, w_predictions, norm)
+
+    if STD_COMPUTATION == "basic":
+        sigma = compute_sharpening_std_basic(c_trials, c_predictions, w_trials, w_predictions, norm)
+    elif STD_COMPUTATION == "ll":
+        sigma = compute_sharpening_std_loglikelihood(c_trials, c_predictions, w_trials, w_predictions, norm)
+    else:
+        assert True == False, f"no sharpening computation selected"
+
 
     return alpha, sigma, norm
 

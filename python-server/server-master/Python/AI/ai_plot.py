@@ -117,7 +117,9 @@ def plot_trials(boundary_vector: np.ndarray, trials: List[List[Any]], corrects: 
     else:
         figsaver.save_day()
 
-def plot_stats(local_accuracies: List[float], cumulative_accuracies: List[float], days: int, labels: List[str] = ['local_accuracy', 'cumulative_accuracy'], figsaver: FigSaver = None):
+def plot_stats( local_accuracies: List[float], cumulative_accuracies: List[float], days: int, 
+                labels: List[str] = ['local_accuracy', 'cumulative_accuracy'], figsaver: FigSaver = None,
+                lim_bounds: List[float] = [-0.1, 1.1]):
     fig = plt.figure()
     ax = fig.gca()
 
@@ -128,7 +130,7 @@ def plot_stats(local_accuracies: List[float], cumulative_accuracies: List[float]
 
     ax.legend()
 
-    plt.ylim([-0.1,1.1])
+    plt.ylim(lim_bounds)
     plt.grid(True)
     if figsaver is None:
         plt.show()

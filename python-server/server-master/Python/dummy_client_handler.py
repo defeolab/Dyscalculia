@@ -108,8 +108,15 @@ class SimulatedClient:
         cumulative_accuracies = []
         tot_corrects = 0
 
-        stat1_history = []
-        stat2_history = []
+        t1_stat1_history = []
+        t1_stat2_history = []
+
+        t2_stat1_history = []
+        t2_stat2_history = []
+
+        sim_alpha_history = []
+        sim_sigma_history = []
+        
 
         sim_boundary_vectors = []
         sim_sigmas = []
@@ -125,9 +132,16 @@ class SimulatedClient:
                 corrects.append(correct)
                 annotations.append(self.player_evaluator.get_info_as_string())
 
-                s1,s2 = self.player_evaluator.get_stats()
-                stat1_history.append(s1)
-                stat2_history.append(s2)
+                s1,s2 = self.player_evaluator.get_stats(0)
+                t1_stat1_history.append(s1)
+                t1_stat2_history.append(s2)
+
+                s1,s2 = self.player_evaluator.get_stats(1)
+                t2_stat1_history.append(s1)
+                t2_stat2_history.append(s2)
+
+                sim_alpha_history.append(self.player.alpha)
+                sim_sigma_history.append(self.player.sigma)
 
                 tot_corrects += 1 if correct else 0
                 local_corrects += 1 if correct else 0 
@@ -161,7 +175,14 @@ class SimulatedClient:
         print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} finished run with starting parameters: {self.alpha}-{self.sigma}")
         print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} final evaluator stats are: {self.player_evaluator.get_stats_as_str()}")
         plot_stats(local_accuracies, cumulative_accuracies, days, figsaver=figsaver)
-        plot_stats(stat1_history, stat2_history, days*trials_per_day, labels=["filt", "sharp"], figsaver=figsaver)
+        label1 = self.player_evaluator.get_labels_for_stats(0)
+        alpha_labels = [f"estimated {label1[0]}", f"actual {label1[0]}"]
+        sigma_labels = [f"estimated {label1[1]}", f"actual {label1[1]}"]
+        
+        plot_stats(t1_stat1_history, sim_alpha_history, days*trials_per_day, labels=alpha_labels, figsaver=figsaver, lim_bounds=[-5, 95])
+        plot_stats(t1_stat2_history, sim_sigma_history, days*trials_per_day, labels=sigma_labels, figsaver=figsaver)
+        
+        plot_stats(t2_stat1_history, t2_stat2_history, days*trials_per_day, labels=self.player_evaluator.get_labels_for_stats(1), figsaver=figsaver)
         
 
     def predict_trial(self, trial: pandas.Series) -> Tuple[int, float]:

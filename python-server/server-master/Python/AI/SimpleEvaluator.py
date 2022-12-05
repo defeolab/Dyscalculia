@@ -27,11 +27,17 @@ class PlayerEvaluator:
         """
         self.running_results = running_results
 
-    def get_stats(self) -> Any:
+    def get_stats(self, type: int) -> Any:
         """
-            Simple function to return the level of the current player
+            Simple function to return the level of the current player (if evaluator contains several stats, differentiate with type)
         """
         pass
+
+    def get_labels_for_stats(self, type: int) -> Any:
+        """
+            returns the labels of the statistics (differentiate with type)
+        """
+        return "stat1", "stat2"
 
     def get_main_stat(self) -> Any:
         """
@@ -161,7 +167,7 @@ class SimpleEvaluator(PlayerEvaluator):
         db.add_results(self.player_id, results_to_add)
         db.update_player_stats(self.player_id, self.running_results)
 
-    def get_stats(self) -> Any:
+    def get_stats(self, type: int) -> Any:
         return self.running_results['filtering_diff'], self.running_results['sharpening_diff']
     
     def get_main_stat(self) -> Any:

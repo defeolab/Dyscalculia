@@ -15,7 +15,8 @@ class SimulationsRunner(unittest.TestCase):
     def __init__(   self, days:int, trials_per_day:int, fig_interval: int, evaluator: str, kids_ds: bool, 
                     update_evaluator_stats:bool, update_child: bool, suite_name: str, target_prob: float, 
                     target_diff: Tuple[float,float], mode:str, save_trials: bool, save_plots: bool,
-                    alphas: List[float], sigmas: List[float], mock: bool, estimate_step: int):
+                    alphas: List[float], sigmas: List[float], mock: bool, estimate_step: int, child_alpha_std: float,
+                    child_sigma_std: float, child_improve_step: int ):
         
         self.days = days
         self.trials_per_day = trials_per_day
@@ -34,6 +35,9 @@ class SimulationsRunner(unittest.TestCase):
         self.sigmas = sigmas
         self.mock = mock
         self.estimate_step = estimate_step
+        self.child_alpha_std = child_alpha_std
+        self.child_sigma_std = child_sigma_std
+        self.child_improve_step = child_improve_step
 
         self.base_root = os.path.join(BASE_PATH_FOR_PICS, self.evaluator)
         self.base_root = os.path.join(self.base_root, suite_name)
@@ -54,6 +58,9 @@ class SimulationsRunner(unittest.TestCase):
                 save_file = os.path.join(self.save_root, exp_name) if self.save_trials else None
                 handler = SimulatedClient(0.5,0.5, alpha=alpha, sigma=sigma, evaluator=self.evaluator, kids_ds=kids_ds, save_file=save_file)
                 
+                handler.player.improve_alpha_std = self.child_alpha_std
+                handler.player.improve_sigma_std = self.child_sigma_std
+                handler.player.improve_interval = self.child_improve_step
                 
                 if self.evaluator == "PDEP":
                     handler.player_evaluator.target_error_prob = self.target_prob
@@ -77,35 +84,43 @@ if __name__ == "__main__":
     sigmas = [
         [0.10, 0.20, 0.4],
         [0.1, 0.2, 0.3, 0.4, 0.5],
-        [0.1]
+        [0.5],
+        [0.2]
         ]
 
     probs = [0.10, 0.30, 0.80]
     diffs = [(0.1,0.1), (0.4, 0.4), (0.8, 0.8), (0.95,0.95)]
     modes = ["filtering", "sharpening"]
 
-    days = 5
-    trials_per_day = 3
-    interval = 1
+    days = 60
+    trials_per_day = 6
+    interval = 5
+
     evaluator = "PDEP"
     kids_ds = False
     add_date = False
     update_evaluator_stats = True
+
     update_child = False
+    child_alpha_std = 0.5
+    child_sigma_std = 0.05
+    child_improve_step = 1
+
     target_prob = probs[2]
     target_diff = diffs[0]
     mode = modes[0]
     save_trials = False
     save_plots = True
     alpha_i = 1
-    sigma_i = 2
+    sigma_i = 3
     mock = True
-    estimate_step = 1
+    estimate_step = 6
 
-    suite_name = "ASD_base"
+    suite_name = "ASDll_test"
 
     sr = SimulationsRunner( days, trials_per_day, interval, evaluator, kids_ds, update_evaluator_stats, update_child, suite_name, 
-                            target_prob, target_diff, mode, save_trials, save_plots, alphas[alpha_i], sigmas[sigma_i], mock, estimate_step)
+                            target_prob, target_diff, mode, save_trials, save_plots, alphas[alpha_i], sigmas[sigma_i], mock, estimate_step,
+                            child_alpha_std, child_sigma_std, child_improve_step)
 
     start_time = time.time()
 

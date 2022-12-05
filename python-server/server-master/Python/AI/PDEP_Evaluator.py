@@ -30,7 +30,7 @@ class PDEP_Evaluator(PlayerEvaluator):
 
 
     def __init__(   self, init_alpha: float, init_sigma: float, init_prob: float = 0.10, init_perceived_diff: float = 0.1, norm_feats: bool=True, 
-                    update_step: int=5, mock: bool = False, kids_ds: bool = False, estimate_step: int = 90, estimation_min_trials: int = 10):
+                    update_step: int=5, mock: bool = False, kids_ds: bool = False, estimate_step: int = 90, estimation_min_trials: int = 30):
         self.trial_adapter = TrialAdapter(mock,True, norm_feats, kids_ds)
         self.alpha = init_alpha
         self.sigma = init_sigma
@@ -50,12 +50,26 @@ class PDEP_Evaluator(PlayerEvaluator):
         self.iteration = 0
         self.update_step = update_step
         self.history = np.array(([False for i in range(0, update_step)]))
+
+        self.memory = 6
+        self.prob_choice_iteration = 0
+        self.prob_history = np.array([3 for i in range(0, self.memory)])
+        self.target_probs = np.array([0.1, 0.2, 0.3, 0.4, 0.6, 0.7, 0.8, 0.9])
         self.trials = []
         self.estimate_step = estimate_step
         self.estimator = ASD_Estimator(max_trials_to_consider=90, denoiser_type="simple_denoising")
 
-    def get_stats(self) -> Any:
-        return self.target_error_prob, self.target_perceived_diff
+    def get_stats(self, type: int) -> Any:
+        if type == 0:
+            return self.alpha, self.sigma
+        elif type == 1:
+            return self.target_error_prob, self.target_perceived_diff
+    
+    def get_labels_for_stats(self, type: int) -> Any:
+        if type == 0:
+            return ["alpha", "sigma"]
+        elif type == 1:
+            return ["target error probability", "target perceived difficulty"]
     
     def get_main_stat(self) -> Any:
         return self.target_error_prob
@@ -94,7 +108,6 @@ class PDEP_Evaluator(PlayerEvaluator):
 
             for now just increase/decrease probability
         """
-
         self.iteration+=1
         self.history[self.iteration%self.update_step] = correct
 
@@ -105,6 +118,27 @@ class PDEP_Evaluator(PlayerEvaluator):
         self.estimator.append_prediction(prediction)
 
         if self.iteration%self.update_step == 0 and self.mode == "support":
+            #TODO: fix bug where after 40+ days of simulation this leads always to the same target error prob
+            self.prob_choice_iteration+=1
+            #choose a balanced target error probability based on previously selected ones
+            unused_probs_i = []
+            for i in range(self.target_probs.shape[0]):
+                if i not in self.prob_history:
+                    unused_probs_i.append(i)
+            unused_probs_i = np.array(unused_probs_i)
+            next_prob_i = np.random.choice(unused_probs_i)
+
+            self.prob_history[self.prob_choice_iteration%self.memory] = next_prob_i
+            self.target_error_prob = self.target_probs[next_prob_i]
+
+            #print("-----")
+            #print(self.target_probs)
+            #print(unused_probs_i)
+            #print(next_prob_i)
+            #print(self.target_error_prob)
+            #print("-----")
+
+            """
             #after a set number of trials, check the accuracy
             avg = np.average(self.history)
             #print(f"avg was {avg}")
@@ -116,9 +150,9 @@ class PDEP_Evaluator(PlayerEvaluator):
             if np.abs(self.target_error_prob-0.5) <0.02:
                 print("wut")
                 self.target_error_prob = 0.55 if avg> 0.5 else 0.45
+            """
             
         if (self.iteration%self.estimate_step ==0 or self.mode == "estimate") and self.iteration > self.estimation_min_trials:
-            self.iteration -= 1
             self.mode = "estimate"
             (self.alpha, self.sigma, self.boundary_vector), self.mode = self.estimator.produce_estimate()
             self.transform_mat =np.linalg.inv(np.array([[self.boundary_vector[0], self.boundary_vector[1]], [self.boundary_vector[1], -self.boundary_vector[0]]]))

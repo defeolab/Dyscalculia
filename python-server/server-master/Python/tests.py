@@ -7,15 +7,17 @@ from dummy_client_handler import SimulatedClient
 from AI.PlayerSimulator import PlayerSimulator
 from AI.AS_Estimate import ASD_Estimator
 from AI.PDEP_functionals import PDEP_find_trial
+from AI.AS_functionals import *
 import time
 import os
 import functools
+import scipy as sp
 
 import winsound
 
 
 BASE_PATH_FOR_PICS = "C:\\Users\\fblan\\Desktop\\thesis_pics"
-BASE_PATH_FOR_CASUAL_PICS = "C:\\Users\\fblan\\Desktop\\thesis pics\\221130"
+BASE_PATH_FOR_CASUAL_PICS = "C:\\Users\\fblan\\Desktop\\thesis pics\\221205"
 
 BASE_PATH_FOR_SAVING_TRIALS = "C:\\Users\\fblan\\Dyscalculia\\python-server\\server-master\\Python\\AI\\precomputed_data"
 
@@ -156,8 +158,8 @@ class TestAI(unittest.TestCase):
     def test_AS(self):
         n=90
         n_part = 30
-        e = ASD_Estimator(n)
-        target_s = 50
+        e = ASD_Estimator(n, "simple_denoising")
+        target_s = 10
 
         filename = f"alpha_45_sigma_{target_s}.npy"
 
@@ -187,21 +189,20 @@ class TestAI(unittest.TestCase):
         trials = l1[0:n, 0:2]
 
         t, c, a = return_plottable_list(trials, looks_right)
-        #plot_trials([-1,1], t, c, a, ann_str=True)
+        plot_trials([-1,1], t, c, a, ann_str=True)
 
         e.trials = trials 
         e.predictions = looks_right
 
-        alpha, sigma = e.produce_estimate()
+        print(e.produce_estimate())
 
-        print(f"{alpha}  --  {sigma}")
 
     def test_AS_extensively(self):
         n=90
 
         n_part = 30
         e = ASD_Estimator(n, denoiser_type="simple_denoising")
-        target_s = 50
+        target_s = 20
 
         filename = f"alpha_45_sigma_{target_s}.npy"
 
@@ -249,7 +250,7 @@ class TestAI(unittest.TestCase):
 
                 e.trials = l1[:, 0:2]
                 e.predictions = preds
-                p_alpha, p_sigma, p_norm = e.produce_estimate()
+                (p_alpha, p_sigma, p_norm), _ = e.produce_estimate()
                 p_alphas.append(p_alpha)
                 p_sigmas.append(p_sigma)
 
@@ -278,9 +279,68 @@ class TestAI(unittest.TestCase):
         print("-------")
         print(f"{avg_error_alpha} - - - {avg_error_sigma}")
 
-        
+    def test_PDEP_update(self):
+        e = PDEP_Evaluator(45, 0.5, update_step=1)
+
+        e.estimator.trials.append([-1, 1])
+
+        for i in range(0, 1000):
+            e.update_statistics(True, 0.0)        
+
+    def test_std_loglikelihood(self):
+        ct = np.array([[1,1]])
+        cp = np.array([True])
+        wt = np.array([[0.1,0.1]])
+        wp = np.array([False])
+
+        norm = unit_vector([-1,1])
+        compute_sharpening_std_loglikelihood(ct, cp, wt, wp, norm)
+
     def test_misc(self):
-        print(math.degrees(angle_between(np.array([0,1]), np.array([-1,1]))))
+        sigma = 0.8
+        nd_variable = -0.3
+        nnd_variable = 0.5
+        integral_bound = 2
+        boundary_vector = unit_vector([-1,0.1])
+
+        transform_mat=np.linalg.inv(np.array([[boundary_vector[0], boundary_vector[1]], [boundary_vector[1], -boundary_vector[0]]]))
+
+        dist = np.dot(transform_mat, vcol(np.array([nd_variable,nnd_variable])))[1, :]
+
+        a = float(boundary_vector[1]/boundary_vector[0])
+        ax = lambda x: x*a
+
+        def custom_erf(x: np.ndarray) -> np.ndarray:
+            return 0.5*sp.special.erf(x/(math.sqrt(2)*sigma)) - 0.5*sp.special.erf(-x/(math.sqrt(2)*sigma))
+            #return 0.5 + 0.5*sp.special.erf(x/math.sqrt(2)*sigma)
+
+        def correct_trial_likelihood(x: np.ndarray) -> np.ndarray:
+            v = custom_erf(x)
+            return np.clip(v + (1-v)/2, 0.0001, 0.9999)
+    
+        def wrong_trial_likelihood(x: np.ndarray) -> np.ndarray:
+            v= 1-custom_erf(x)
+            return np.clip(v/2, 0.0001, 0.9999)
+
+        gauss_func = lambda y,x : math.exp(-0.5*(1/(sigma**2))*(((x-nd_variable)**2)+((y-nnd_variable)**2)))
+
+        total_area, _ = integrate.dblquad(gauss_func, -integral_bound,integral_bound,-integral_bound,integral_bound)
+
+        if nd_variable < 0:
+            error_area, _ =  integrate.dblquad(gauss_func, -integral_bound, integral_bound, ax, integral_bound)
+        else:
+            error_area, _ =  integrate.dblquad(gauss_func, -integral_bound, integral_bound,-integral_bound, ax)
+        
+        p2d = error_area/total_area
+
+        p1d = correct_trial_likelihood(dist)
+
+        print(p2d)
+        print(p1d)
+        
+        
+
+
     
         
 
@@ -290,7 +350,7 @@ if __name__ == "__main__":
     start_time = time.time()
 
     #tc.test_probability()
-    tc.test_PDEP_Evaluator()
+    #tc.test_PDEP_Evaluator()
     #tc.test_player_cycle_simple()
     #tc.test_player_cycle_PDEP()
     #tc.test_trial_adapter()
@@ -298,8 +358,10 @@ if __name__ == "__main__":
     #tc.test_precompute()
     #tc.test_AS()
     #tc.test_AS_extensively()
-    #tc.test_misc()
-
+    tc.test_misc()
+    #tc.test_PDEP_update()
+    #tc.test_std_loglikelihood()
+    
     duration = 1000  # milliseconds
     freq = 440  # Hz
     #winsound.Beep(freq, duration)
