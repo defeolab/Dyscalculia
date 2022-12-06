@@ -16,7 +16,7 @@ warnings.filterwarnings("ignore", message="The integral is probably divergent, o
 
 
 #constants for genetic algorithm
-N_GENERATIONS = 5                   #iterations of the algorithm
+N_GENERATIONS = 10                   #iterations of the algorithm
 N_PARENTS_MATING = 4                #number of parents selected for mating
 SOL_PER_POP = 6                     #number of individuals in surviving population
 N_GENES = 2                         #length of the genome (2: nd and nnd)
@@ -27,24 +27,37 @@ CROSSOVER_TYPE = "single_point"
 MUTATION_TYPE = "random"
 MUTATION_PERCENT_GENES = 10
 
+#paramteres for error probability computation
+PROBABILITY_COMPUTATION_TYPE = "1d" #"1d" for the one dimensional approximation, "2d" for the two dimensional integral approximation
 
 
-def compute_error_probability(nd_variable: float, nnd_variable: float, sigma: float, integral_bound:float, ax: Callable):
+def compute_error_probability_2d(trial_vec: np.ndarray, sigma: float, integral_bound:float, ax: Callable):
     """
         this function computes the approximated probability that the player defined by the decision_matrix (filtering) 
         and the sigma_coefficient (sharpening) predicts the trial defined by nd and nnd variables incorrectly
     """
 
-    gauss_func = lambda y,x : math.exp(-0.5*(1/(sigma**2))*(((x-nd_variable)**2)+((y-nnd_variable)**2)))
+    gauss_func = lambda y,x : math.exp(-0.5*(1/(sigma**2))*(((x-trial_vec[0])**2)+((y-trial_vec[1])**2)))
 
     total_area, _ = integrate.dblquad(gauss_func, -integral_bound,integral_bound,-integral_bound,integral_bound)
 
-    if nd_variable < 0:
+    if trial_vec[0] < 0:
         error_area, _ =  integrate.dblquad(gauss_func, -integral_bound, integral_bound, ax, integral_bound)
     else:
         error_area, _ =  integrate.dblquad(gauss_func, -integral_bound, integral_bound,-integral_bound, ax)
 
     return error_area/total_area
+
+def compute_error_probability_1d(trial_vec:np.ndarray, sigma: float, transform_mat: np.ndarray):
+    dist = np.dot(transform_mat, vcol(trial_vec))[1, 0]
+
+    if (trial_vec[0] > 0 and dist > 0) or (trial_vec[0]<0 and dist <0):
+        return  (1-custom_erf(np.abs(dist), sigma))/2
+    else:
+        val = custom_erf(np.abs(dist), sigma)
+        return val + (1-val)/2
+    
+
 
 def compute_perceived_difficulty(trial_vec: np.ndarray, decision_matrix: np.ndarray, max_decision_score: float):
         
@@ -71,11 +84,15 @@ def PDEP_find_trial(target_error_prob: float, target_perceived_diff: float, deci
         nd_bound = 2
         nnd_bound = 2
 
-    prob_func = lambda x, y: compute_error_probability(x,y, sigma, integral_bound, ax)
+    if PROBABILITY_COMPUTATION_TYPE == "2d":
+        prob_func = lambda x: compute_error_probability_2d(x, sigma, integral_bound, ax)
+    else:
+        prob_func = lambda x: compute_error_probability_1d(x,sigma,decision_matrix)
+
     diff_func = lambda x: compute_perceived_difficulty(x, decision_matrix, max_decision_score)
     
     def fitness_score(trial_vec: np.ndarray):
-        return  np.abs(target_error_prob-prob_func(trial_vec[0], trial_vec[1])) + \
+        return  np.abs(target_error_prob-prob_func(trial_vec)) + \
                 0.2*np.abs(target_perceived_diff-diff_func(trial_vec)) 
     
     def ga_fitness(trial_vec: np.ndarray, trial_idx: int):

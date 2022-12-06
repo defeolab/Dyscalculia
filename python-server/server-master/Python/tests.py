@@ -6,18 +6,19 @@ from AI.PDEP_Evaluator import PDEP_Evaluator
 from dummy_client_handler import SimulatedClient
 from AI.PlayerSimulator import PlayerSimulator
 from AI.AS_Estimate import ASD_Estimator
-from AI.PDEP_functionals import PDEP_find_trial
+from AI.PDEP_functionals import PDEP_find_trial, compute_error_probability_2d
 from AI.AS_functionals import *
 import time
 import os
 import functools
 import scipy as sp
 
+
 import winsound
 
 
 BASE_PATH_FOR_PICS = "C:\\Users\\fblan\\Desktop\\thesis_pics"
-BASE_PATH_FOR_CASUAL_PICS = "C:\\Users\\fblan\\Desktop\\thesis pics\\221205"
+BASE_PATH_FOR_CASUAL_PICS = "C:\\Users\\fblan\\Desktop\\thesis pics\\test"
 
 BASE_PATH_FOR_SAVING_TRIALS = "C:\\Users\\fblan\\Dyscalculia\\python-server\\server-master\\Python\\AI\\precomputed_data"
 
@@ -29,7 +30,7 @@ class TestAI(unittest.TestCase):
     def __init__(self):
         self.trial_adapter = TrialAdapter(False, True)
         self.alpha = 30
-        self.sigma = 0.2
+        self.sigma = 1
         self.target_error_prob = 0.1
         self.target_perceived_diff = 0.1
 
@@ -46,11 +47,11 @@ class TestAI(unittest.TestCase):
         self.integral_bound = 5
 
     def test_probability(self):
-        trials = get_mock_trials(32)
+        trials = get_mock_trials(32, True)
         probs = []
         corrects = []
         for t in trials:
-            prob = compute_error_probability(t[8], t[9], self.sigma, self.integral_bound,self.ax)
+            prob = compute_error_probability_2d(t, self.sigma, self.integral_bound,self.ax)
             probs.append(prob)
             corrects.append(True)
         
@@ -70,7 +71,7 @@ class TestAI(unittest.TestCase):
             prob_diffs.append(f"{round(p,2)} - {round(diff,2)}")
             corrects.append(True)
 
-        plot_trials(self.boundary_vector, trials, corrects, prob_diffs, ann_str=True, sharp_std=self.sigma)
+        #plot_trials(self.boundary_vector, trials, corrects, prob_diffs, ann_str=True, sharp_std=self.sigma)
     
     def test_player_cycle_simple(self):
         client = SimulatedClient(0.5, 0.5, alpha = 20, sigma= 0.2, evaluator="simple", norm_feats=True)
@@ -109,29 +110,35 @@ class TestAI(unittest.TestCase):
         plot_trials(vec, raw, corrects, anns, ann_str=True, norm_lim=True)
 
     def test_3D_plot(self):
-        player = PlayerSimulator(45, 0.01)
+        player = PlayerSimulator(45, 0.5)
         days = 60
-        tpd = 2
+        tpd = 10
         trials = []
         corrects = []
-        
+
+        e_bvsig = []
         bvsig = []
         for i in range(0, days):
             for j in range(0, tpd):
                 trial = to_mock_trial(np.random.normal(scale=0.5),np.random.normal(scale=0.5))
                 trials.append(trial)
                 corrects.append(player.predict(trial)[0])
+            
+            e_bvsig.append((player.boundary_vector, player.sigma))
             bvsig.append(player.random_improvement())
 
 
         bvs = list(map(lambda x: x[0],bvsig))
         sigmas = list(map(lambda x: x[1],bvsig))
+
+        e_bvs = list(map(lambda x: x[0],e_bvsig))
+        e_sigmas = list(map(lambda x: x[1],e_bvsig))
         #trials = [to_mock_trial(np.random.normal(scale=0.5),np.random.normal(scale=0.5)) for i in range(0, days) for j in range(0, tpd)]
         #trials = [to_mock_trial(0.5,0.5) for i in range(0, days) for j in range(0, tpd)]
         
         #corrects = [np.random.choice([False, True]) for i in range(0, days) for j in range(0, tpd)]
-        
-        plot_player_cycle3D(bvs,sigmas, trials, corrects, tpd)
+        figsaver = FigSaver(BASE_PATH_FOR_CASUAL_PICS, f"", interval=1,figname=f"player_cycle_3D" )
+        plot_player_cycle3D(bvs, e_bvs, sigmas, e_sigmas, trials, corrects, tpd, figsaver=figsaver)
     
     def test_precompute(self):
         save_file = os.path.join(BASE_PATH_FOR_SAVING_TRIALS, "PDEP")
@@ -299,8 +306,8 @@ class TestAI(unittest.TestCase):
     def test_misc(self):
         sigma = 0.8
         nd_variable = -0.3
-        nnd_variable = 0.5
-        integral_bound = 2
+        nnd_variable = 0.9
+        integral_bound = 5
         boundary_vector = unit_vector([-1,0.1])
 
         transform_mat=np.linalg.inv(np.array([[boundary_vector[0], boundary_vector[1]], [boundary_vector[1], -boundary_vector[0]]]))
@@ -354,11 +361,11 @@ if __name__ == "__main__":
     #tc.test_player_cycle_simple()
     #tc.test_player_cycle_PDEP()
     #tc.test_trial_adapter()
-    #tc.test_3D_plot()
+    tc.test_3D_plot()
     #tc.test_precompute()
     #tc.test_AS()
     #tc.test_AS_extensively()
-    tc.test_misc()
+    #tc.test_misc()
     #tc.test_PDEP_update()
     #tc.test_std_loglikelihood()
     

@@ -11,6 +11,7 @@ import scipy as sp
 
 DEBUG_D = False
 DEBUG_S = False
+DEBUG_PC = False
 
 STD_COMPUTATION = "ll" #can be "ll" for loglilkelihood, "basic" for fetched formula 
 
@@ -88,11 +89,12 @@ def compute_sharpening_std_loglikelihood(c_trials: np.ndarray, c_predictions: np
     #print(lls)
     return considered_sigmas[best_ll_i]
 
-        
+def find_expected_optimal_C(prev_sigma: float) -> float:
+    #TODO
+    #return np.clip(0.5/prev_sigma, 1, 100)
+    return 100
 
-
-
-def simple_denoising_clean_trials(trials: np.ndarray, predictions: np.ndarray, iterations: int) -> Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray],  np.ndarray]:
+def simple_denoising_clean_trials(trials: np.ndarray, predictions: np.ndarray, iterations: int, prev_sigma: float) -> Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray],  np.ndarray]:
     c_trials = trials
     c_predictions = predictions
     c_indexes =np.array([i for i in range(0, predictions.shape[0])])
@@ -101,8 +103,9 @@ def simple_denoising_clean_trials(trials: np.ndarray, predictions: np.ndarray, i
     w_predictions = []
     w_indexes = []
     model = None
+    C = find_expected_optimal_C(prev_sigma)
     for i in range(0, iterations):
-        model = LinearSVC(dual=False)
+        model = LinearSVC(dual=False, C= C)
         model.fit(c_trials, c_predictions)
 
         lw_indexes = model.predict(c_trials) != c_predictions
@@ -138,26 +141,60 @@ def simple_denoising_clean_trials(trials: np.ndarray, predictions: np.ndarray, i
         t,c,a = return_plottable_list(w_trials, w_predictions)
         plot_trials(norm, t, c, a, ann_str=True)  
     
-    
-    
 
     return (c_trials, c_predictions), (w_trials, w_predictions), norm
 
+def simple_denoising_fixed_boundary(trials: np.ndarray, predictions: np.ndarray, norm: np.ndarray) -> Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
+    transform_mat=np.linalg.inv(np.array([[norm[0], norm[1]], [norm[1], -norm[0]]]))
+    dists = np.dot(transform_mat, trials.T)[1, :]
 
-def produce_estimate_simple_denoising(trials: np.ndarray, predictions: np.ndarray)-> Tuple[float, float]:
+    denoising_pred = (dists > 0) == predictions
 
+    c_trials = trials[denoising_pred]
+    c_preds = predictions[denoising_pred]
+
+    w_trials = trials[denoising_pred == False]
+    w_preds = predictions[denoising_pred == False]
+
+    return (c_trials, c_preds), (w_trials, w_preds)
+
+def produce_estimate_simple_denoising(trials: np.ndarray, predictions: np.ndarray, prev_norm: np.ndarray, prev_sigma: float)-> Tuple[float, float]:
+        
     e_trials, e_predictions = mirror_trials_list(trials, predictions)
     
-    (c_trials, c_predictions), (w_trials, w_predictions), norm = simple_denoising_clean_trials(e_trials, e_predictions, 5)
+    if np.all(predictions) or np.all(predictions == False):
+        #the recent trials contain only predictions for either left or right, data is not good enough to estimate boundary
+        #Last detected boundary is reproposed instead
+
+        norm = prev_norm
+        (c_trials, c_predictions), (w_trials, w_predictions) = simple_denoising_fixed_boundary(e_trials, e_predictions, norm)
+    else:
+        (c_trials, c_predictions), (w_trials, w_predictions), norm = simple_denoising_clean_trials(e_trials, e_predictions, 5, prev_sigma)
 
     alpha =  math.degrees(angle_between(np.array([0,1]), norm))
 
-    if STD_COMPUTATION == "basic":
+    if w_trials.shape[0] == 0:
+        #the recent trials and the predicted boundary did not detect any mispredicted sample due to sharpening
+        #to be safe, the last detected sigma is reproposed
+        sigma = prev_sigma 
+    elif STD_COMPUTATION == "basic":
         sigma = compute_sharpening_std_basic(c_trials, c_predictions, w_trials, w_predictions, norm)
     elif STD_COMPUTATION == "ll":
         sigma = compute_sharpening_std_loglikelihood(c_trials, c_predictions, w_trials, w_predictions, norm)
     else:
         assert True == False, f"no sharpening computation selected"
+
+
+    if DEBUG_PC and (alpha > 70 or alpha <25 or np.abs(sigma - prev_sigma) > 0.3):
+        t,c,a = return_plottable_list(trials, predictions)
+        plot_trials(prev_norm, t, c, a, ann_str=True, estimated_boundary=norm, sharp_std=prev_sigma, estimated_std=sigma)
+
+        t,c,a = return_plottable_list(c_trials, c_predictions)
+        plot_trials(norm, t, c, a, ann_str=True)
+
+        t,c,a = return_plottable_list(w_trials, w_predictions)
+        plot_trials(norm, t, c, a, ann_str=True)
+
 
 
     return alpha, sigma, norm

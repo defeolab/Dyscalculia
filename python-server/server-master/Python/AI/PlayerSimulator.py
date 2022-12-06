@@ -18,7 +18,7 @@ class PlayerSimulator:
         self.improve_interval = 5
         self.days_played = 0
         self.improve_alpha_std = 1
-        self.improve_sigma_std = 0.1
+        self.improve_sigma_std = 0.01
 
     def predict(self, trial: List[Any]) -> Tuple[bool, Tuple[float, bool]]:
         #print(trial)
@@ -78,16 +78,19 @@ class PlayerSimulator:
             of days a random improvement is applied to the alpha and sigma coefficients
         """
         self.days_played+=1
-
-        if self.days_played % self.improve_interval:
+        
+        if self.days_played % self.improve_interval == 0:
+        
             self.alpha -= np.abs(np.random.normal(scale= self.improve_alpha_std))
             self.sigma -= np.abs(np.random.normal(scale= self.improve_sigma_std))
 
-            self.alpha = np.clip(self.alpha, 0.0, 90.0)
-            self.sigma = np.clip(self.sigma, 0.0, 1.0)
+            self.alpha = np.clip(self.alpha, 1.0, 89.0)
+            self.sigma = np.clip(self.sigma, 0.05, 1.0)
             
             self.boundary_vector = unit_vector(np.array([-math.sin(math.radians(self.alpha)), math.cos(math.radians(self.alpha))]))
             self.transform_mat =np.linalg.inv(np.array([[self.boundary_vector[0], self.boundary_vector[1]], [self.boundary_vector[1], -self.boundary_vector[0]]]))
         
         
         return self.boundary_vector, self.sigma
+
+    #TODO different functions to module the growth of the child (i.e. linear, exponential etc.)

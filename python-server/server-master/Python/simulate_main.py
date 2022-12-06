@@ -79,7 +79,8 @@ if __name__ == "__main__":
 
     alphas = [
         [10, 30, 60],
-        [45]
+        [45],
+        [65],
         ]
     sigmas = [
         [0.10, 0.20, 0.4],
@@ -93,7 +94,7 @@ if __name__ == "__main__":
     modes = ["filtering", "sharpening"]
 
     days = 60
-    trials_per_day = 6
+    trials_per_day = 30
     interval = 5
 
     evaluator = "PDEP"
@@ -101,9 +102,9 @@ if __name__ == "__main__":
     add_date = False
     update_evaluator_stats = True
 
-    update_child = False
+    update_child = True
     child_alpha_std = 0.5
-    child_sigma_std = 0.05
+    child_sigma_std = 0.005
     child_improve_step = 1
 
     target_prob = probs[2]
@@ -111,12 +112,12 @@ if __name__ == "__main__":
     mode = modes[0]
     save_trials = False
     save_plots = True
-    alpha_i = 1
-    sigma_i = 3
+    alpha_i = 2
+    sigma_i = 2
     mock = True
-    estimate_step = 6
+    estimate_step = 5
 
-    suite_name = "ASDll_test"
+    suite_name = "ASD_all_updates"
 
     sr = SimulationsRunner( days, trials_per_day, interval, evaluator, kids_ds, update_evaluator_stats, update_child, suite_name, 
                             target_prob, target_diff, mode, save_trials, save_plots, alphas[alpha_i], sigmas[sigma_i], mock, estimate_step,

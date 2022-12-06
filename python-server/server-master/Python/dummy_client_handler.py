@@ -120,6 +120,8 @@ class SimulatedClient:
 
         sim_boundary_vectors = []
         sim_sigmas = []
+        e_sigmas = []
+        e_bvs = []
 
         print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} starting run with starting parameters: {self.alpha}-{self.sigma}")
 
@@ -160,6 +162,11 @@ class SimulatedClient:
                 sim_boundary_vectors.append(bv)
                 sim_sigmas.append(sig)
 
+                e_bvs.append(self.player_evaluator.boundary_vector)
+                e_sigmas.append(self.player_evaluator.sigma)
+
+
+
             if plot_each_day or figsaver is not None:
                 
                 boundary = self.player_evaluator.boundary_vector if self.evaluator == "PDEP" else None
@@ -183,15 +190,10 @@ class SimulatedClient:
         plot_stats(t1_stat2_history, sim_sigma_history, days*trials_per_day, labels=sigma_labels, figsaver=figsaver)
         
         plot_stats(t2_stat1_history, t2_stat2_history, days*trials_per_day, labels=self.player_evaluator.get_labels_for_stats(1), figsaver=figsaver)
-        
 
-    def predict_trial(self, trial: pandas.Series) -> Tuple[int, float]:
-        correct = 1
-        #simple predictor, if aggregated trial difficulty is higher than player ability just mispredict
-        if self.player_evaluator.last_diffs[0] + self.player_evaluator.last_diffs[1] > self.sharpening_diff + self.filtering_diff:
-            correct = 0
+        if self.evaluator == "PDEP":
+            plot_player_cycle3D(sim_boundary_vectors, e_bvs, sim_sigmas, e_sigmas, proposed_trials, corrects, trials_per_day, figsaver= figsaver)
         
-        return correct, 500.0
 
 
 

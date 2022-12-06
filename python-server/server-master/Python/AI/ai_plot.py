@@ -36,12 +36,33 @@ class FigSaver:
         figpath = os.path.join(self.root, f"{name}.png")
         plt.savefig(figpath, format= "png")
         plt.close()
+    
+    def save_player_cycle_3D(self, ax):
+        elev = [0, 60, 90]
+        az = [10, 45, 75]
+
+        for e in elev:
+            for a in az:
+                figpath=os.path.join(self.root, f"PC3D_{e}_{a}.png")
+        
+                ax.view_init(e,a)
+                plt.savefig(figpath, format = "png")
+        plt.close()
+        
 
 
-def plot_trials(boundary_vector: np.ndarray, trials: List[List[Any]], corrects: List[bool], 
-                annotations: List[float], ann_str: bool = False, plot_stats: Callable = None, 
-                plot_dist: bool = False, norm_lim: bool = True, sharp_std: float = None, figsaver: FigSaver = None,
-                estimated_boundary: np.ndarray = None, estimated_std: np.ndarray = None):
+def plot_trials(boundary_vector: np.ndarray, 
+                trials: List[List[Any]], 
+                corrects: List[bool], 
+                annotations: List[float], 
+                ann_str: bool = False, 
+                plot_stats: Callable = None, 
+                plot_dist: bool = False, 
+                norm_lim: bool = True, 
+                sharp_std: float = None, 
+                figsaver: FigSaver = None,
+                estimated_boundary: np.ndarray = None, 
+                estimated_std: np.ndarray = None):
 
     if figsaver is not None:
         #just a speedup, avoid plotting if you're not going to show or save the figure
@@ -117,8 +138,11 @@ def plot_trials(boundary_vector: np.ndarray, trials: List[List[Any]], corrects: 
     else:
         figsaver.save_day()
 
-def plot_stats( local_accuracies: List[float], cumulative_accuracies: List[float], days: int, 
-                labels: List[str] = ['local_accuracy', 'cumulative_accuracy'], figsaver: FigSaver = None,
+def plot_stats( local_accuracies: List[float], 
+                cumulative_accuracies: List[float], 
+                days: int, 
+                labels: List[str] = ['local_accuracy', 'cumulative_accuracy'], 
+                figsaver: FigSaver = None,
                 lim_bounds: List[float] = [-0.1, 1.1]):
     fig = plt.figure()
     ax = fig.gca()
@@ -147,29 +171,60 @@ def separate_by_day(vec: List[Any], trials_per_day: int):
         ret.append(to_add)
     return ret
 
-def plot_player_cycle3D(boundary_vectors: List[np.ndarray], sigmas: List[float], trials: List[List[Any]], corrects: List[bool],
-                        trials_per_day:int, norm_lim: bool = True, figsaver: FigSaver = None, plot_eval_stats: Callable = None):
+def filter_trials_per_day(trials: np.ndarray, corrects: np.ndarray, tpd: int, max_tpd: int):
+    ret_t = []
+    ret_c = []
+
+    for day in range(0, int(len(trials)/tpd)):
+        for td in range(0, max_tpd):
+            ret_t.append(trials[day*tpd + td])
+            ret_c.append(corrects[day*tpd + td])
+
+    return np.array(ret_t), np.array(ret_c)
+
+def plot_player_cycle3D(boundary_vectors: List[np.ndarray], 
+                        estimated_vectors: List[np.ndarray], 
+                        sigmas: List[float],
+                        estimated_sigmas: List[float],
+                        trials: List[List[Any]], 
+                        corrects: List[bool], 
+                        trials_per_day:int, 
+                        norm_lim: bool = True, 
+                        figsaver: FigSaver = None, 
+                        plot_eval_stats: bool = True,
+                        skip_sigmas: int = 5,
+                        skip_bvs: int = 5,
+                        max_trials_per_day_plotted: int = 2):
     n_days = len(boundary_vectors)
     corrects = np.array(corrects)
-    incorrects = corrects == False
 
     fig = plt.figure()
     ax = plt.axes(projection='3d')
 
+    tpd = min(trials_per_day, max_trials_per_day_plotted)
     #plot trials
-    zline = np.array([d for d in range(0, n_days) for t in range(0,trials_per_day)])
-    xline = np.array(list(map(lambda x: x[8],trials)))
-    yline = np.array(list(map(lambda x: x[9],trials)))
+    zline = np.array([d for d in range(0, n_days) for t in range(0,tpd)])
+    
+    f_trials = trials
+    f_corrects = corrects
+
+    if max_trials_per_day_plotted < trials_per_day:
+        f_trials, f_corrects = filter_trials_per_day(trials, corrects, trials_per_day,max_trials_per_day_plotted)
+
+    f_incorrects = f_corrects == False
+
+    xline = np.array(list(map(lambda x: x[8],f_trials)))
+    yline = np.array(list(map(lambda x: x[9],f_trials)))
 
     #corrects
-    zline_c = zline[corrects]
-    xline_c = xline[corrects]
-    yline_c = yline[corrects] 
+    zline_c = zline[f_corrects]
+    xline_c = xline[f_corrects]
+    yline_c = yline[f_corrects] 
     ax.scatter3D(xline_c, yline_c, zline_c, color="green")
     #incorrects
-    zline_i = zline[incorrects]
-    xline_i = xline[incorrects]
-    yline_i = yline[incorrects] 
+    zline_i = zline[f_incorrects]
+    xline_i = xline[f_incorrects]
+    yline_i = yline[f_incorrects] 
     ax.scatter3D(xline_i, yline_i, zline_i, color="red")
     
 
@@ -180,7 +235,7 @@ def plot_player_cycle3D(boundary_vectors: List[np.ndarray], sigmas: List[float],
     Y, Z = np.meshgrid(ys, zs)
     X = np.array([0 for i in range(0,10)])
 
-    ax.plot_surface(X, Y, Z, color= "gray", alpha = 0.5)
+    ax.plot_surface(X, Y, Z, color= "gray", alpha = 0.3)
 
     #plot X plane
     xs = np.linspace(-1, 1, 10)
@@ -189,22 +244,57 @@ def plot_player_cycle3D(boundary_vectors: List[np.ndarray], sigmas: List[float],
     X, Z = np.meshgrid(xs, zs)
     Y = np.array([0 for i in range(0,10)])
 
-    ax.plot_surface(X, Y, Z, color= "gray", alpha = 0.5)
+    ax.plot_surface(X, Y, Z, color= "gray", alpha = 0.3)
 
-    #plot child evolution
+    #plot child alpha evolution
     for i, bv in enumerate(boundary_vectors):
+        if i % skip_bvs != 0:
+            continue
         zline = [i, i]
         xline = [-bv[0],bv[0]]
         yline = [-bv[1],bv[1]]
-        ax.plot3D(xline, yline, zline, color= "orange", alpha = 0.8)
+        ax.plot3D(xline, yline, zline, color= "purple", alpha = 0.6)
     
+    #plot evaluator alpha evolution
+    for i, bv in enumerate(estimated_vectors):
+        if i % skip_bvs != 0:
+            continue
+        zline = [i, i]
+        xline = [-bv[0],bv[0]]
+        yline = [-bv[1],bv[1]]
+        ax.plot3D(xline, yline, zline, color= "orange", alpha = 0.6)
+    
+    circle_resolution = 50
+    #plot child sigma evolution
+    for i, s in enumerate(sigmas):
+        if i % skip_sigmas != 0:
+            continue
+        theta = np.linspace(0, 2 * np.pi, circle_resolution)
+        x = s*np.cos(theta)
+        y = s*np.sin(theta)
+        ax.plot(x, y, [i for j in range(0, circle_resolution)], color = "blue", alpha = 0.6)
+
+    #plot evaluator sigma evolution
+    for i, s in enumerate(estimated_sigmas):
+        if i % skip_sigmas != 0:
+            continue
+        theta = np.linspace(0, 2 * np.pi, circle_resolution)
+        x = s*np.cos(theta)
+        y = s*np.sin(theta)
+        ax.plot(x, y, [i for j in range(0, circle_resolution)], color = "red", alpha= 0.6)
+    
+
     if norm_lim:
         plt.xlim([-1, 1])
         plt.ylim([-1,1])
     else:
         plt.xlim([-2, 2])
         plt.ylim([-2,2])
-    plt.show()
+
+    if figsaver is None:
+        plt.show()
+    else:
+        figsaver.save_player_cycle_3D(ax)
 
 
 def plot_histograms(data: List[np.ndarray]):

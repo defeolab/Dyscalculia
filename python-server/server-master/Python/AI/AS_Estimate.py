@@ -34,7 +34,7 @@ class ASD_Estimator:
     def append_prediction(self, predicted_right: bool) -> None:
         self.predictions.append(predicted_right)
 
-    def produce_estimate(self) -> Tuple[float, float]:
+    def produce_estimate(self, prev_norm: np.ndarray, prev_sigma: np.ndarray) -> Tuple[float, float]:
         """
             Given the previous trials, perform alpha and sigma estimation
         """
@@ -46,8 +46,11 @@ class ASD_Estimator:
             return produce_estimate_denoising_OCSVM(trials, predictions), "support"
 
         elif self.denoiser_type == "simple_denoising":
-            return produce_estimate_simple_denoising(trials, predictions), "support"
+            return produce_estimate_simple_denoising(trials, predictions, prev_norm, prev_sigma), "support"
             
 
 
         return 45.0, 0.1, unit_vector(np.array([-1,1])), "support"        
+
+
+#TODO estimator with esplicit trial suggestion like professor asked

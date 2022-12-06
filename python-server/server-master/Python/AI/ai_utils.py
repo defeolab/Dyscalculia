@@ -32,6 +32,10 @@ def angle_between(v1, v2):
     rads = np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
     return rads
 
+def custom_erf(x: float, sigma: float) -> np.ndarray:
+    #erf(0) for a normal distribution with mean centered on x
+    return 0.5*sp.special.erf(x/(math.sqrt(2)*sigma)) - 0.5*sp.special.erf(-x/(math.sqrt(2)*sigma))
+
 def return_plottable_list( list, corrects=None):
         nl =  []
         for r in list:

@@ -64,6 +64,8 @@ class PDEP_Evaluator(PlayerEvaluator):
             return self.alpha, self.sigma
         elif type == 1:
             return self.target_error_prob, self.target_perceived_diff
+        elif type == 3:
+            return self.boundary_vector
     
     def get_labels_for_stats(self, type: int) -> Any:
         if type == 0:
@@ -154,7 +156,7 @@ class PDEP_Evaluator(PlayerEvaluator):
             
         if (self.iteration%self.estimate_step ==0 or self.mode == "estimate") and self.iteration > self.estimation_min_trials:
             self.mode = "estimate"
-            (self.alpha, self.sigma, self.boundary_vector), self.mode = self.estimator.produce_estimate()
+            (self.alpha, self.sigma, self.boundary_vector), self.mode = self.estimator.produce_estimate(self.boundary_vector, self.sigma)
             self.transform_mat =np.linalg.inv(np.array([[self.boundary_vector[0], self.boundary_vector[1]], [self.boundary_vector[1], -self.boundary_vector[0]]]))
 
         
