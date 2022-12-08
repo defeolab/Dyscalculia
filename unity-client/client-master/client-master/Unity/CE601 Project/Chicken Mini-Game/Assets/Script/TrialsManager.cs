@@ -16,7 +16,6 @@ public class TrialsManager : MonoBehaviour
 
     private Stack<TrialData> upcomingTrials;
     public List<TrialResult> completedTrialResults { get; set; }
-    //public List<TrialData> prova = new List<TrialData>();
 
     public bool animalsReady = false, trialStarted, connectionStarted = false;
 
