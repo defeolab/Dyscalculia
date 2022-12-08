@@ -303,6 +303,17 @@ class TestAI(unittest.TestCase):
         norm = unit_vector([-1,1])
         compute_sharpening_std_loglikelihood(ct, cp, wt, wp, norm)
 
+    def test_study_optimal_C(self):
+        print(BEST_CS)
+        #rint(CS[BEST_CS[1]])
+        print(find_expected_optimal_C(np.array([-0.1,1]), 0.11))
+
+
+
+        
+
+
+
     def test_misc(self):
         sigma = 0.8
         nd_variable = -0.3
@@ -361,14 +372,16 @@ if __name__ == "__main__":
     #tc.test_player_cycle_simple()
     #tc.test_player_cycle_PDEP()
     #tc.test_trial_adapter()
-    tc.test_3D_plot()
+    #tc.test_3D_plot()
     #tc.test_precompute()
     #tc.test_AS()
     #tc.test_AS_extensively()
     #tc.test_misc()
     #tc.test_PDEP_update()
     #tc.test_std_loglikelihood()
-    
+    tc.test_study_optimal_C()
+
+
     duration = 1000  # milliseconds
     freq = 440  # Hz
     #winsound.Beep(freq, duration)

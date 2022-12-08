@@ -94,8 +94,13 @@ class SimulatedClient:
             print(f"Dummy client run, performance: {performance}, running results: {self.player_evaluator.running_results}")
         
 
-    def simulate_player_cycle(  self, days: int, trials_per_day: int, plot_each_day: bool, update_evaluator_stats: bool,
-                                update_child:bool, figsaver: FigSaver = None):
+    def simulate_player_cycle(  self, days: int, 
+                                trials_per_day: int, 
+                                plot_each_day: bool, 
+                                update_evaluator_stats: bool,
+                                update_child:bool, 
+                                figsaver: FigSaver = None,
+                                make_plots: bool = True):
 
         performance = []
 
@@ -161,10 +166,12 @@ class SimulatedClient:
                 bv, sig = self.player.random_improvement()
                 sim_boundary_vectors.append(bv)
                 sim_sigmas.append(sig)
+            else:
+                sim_boundary_vectors.append(self.player.boundary_vector)
+                sim_sigmas.append(self.player.sigma)
 
-                e_bvs.append(self.player_evaluator.boundary_vector)
-                e_sigmas.append(self.player_evaluator.sigma)
-
+            e_bvs.append(self.player_evaluator.boundary_vector)
+            e_sigmas.append(self.player_evaluator.sigma)
 
 
             if plot_each_day or figsaver is not None:
@@ -181,18 +188,21 @@ class SimulatedClient:
         
         print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} finished run with starting parameters: {self.alpha}-{self.sigma}")
         print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} final evaluator stats are: {self.player_evaluator.get_stats_as_str()}")
-        plot_stats(local_accuracies, cumulative_accuracies, days, figsaver=figsaver)
-        label1 = self.player_evaluator.get_labels_for_stats(0)
-        alpha_labels = [f"estimated {label1[0]}", f"actual {label1[0]}"]
-        sigma_labels = [f"estimated {label1[1]}", f"actual {label1[1]}"]
+        if make_plots:
+            plot_stats(local_accuracies, cumulative_accuracies, days, figsaver=figsaver)
+            label1 = self.player_evaluator.get_labels_for_stats(0)
+            alpha_labels = [f"estimated {label1[0]}", f"actual {label1[0]}"]
+            sigma_labels = [f"estimated {label1[1]}", f"actual {label1[1]}"]
         
-        plot_stats(t1_stat1_history, sim_alpha_history, days*trials_per_day, labels=alpha_labels, figsaver=figsaver, lim_bounds=[-5, 95])
-        plot_stats(t1_stat2_history, sim_sigma_history, days*trials_per_day, labels=sigma_labels, figsaver=figsaver)
+            plot_stats(t1_stat1_history, sim_alpha_history, days*trials_per_day, labels=alpha_labels, figsaver=figsaver, lim_bounds=[-5, 95])
+            plot_stats(t1_stat2_history, sim_sigma_history, days*trials_per_day, labels=sigma_labels, figsaver=figsaver)
         
-        plot_stats(t2_stat1_history, t2_stat2_history, days*trials_per_day, labels=self.player_evaluator.get_labels_for_stats(1), figsaver=figsaver)
+            plot_stats(t2_stat1_history, t2_stat2_history, days*trials_per_day, labels=self.player_evaluator.get_labels_for_stats(1), figsaver=figsaver)
 
-        if self.evaluator == "PDEP":
-            plot_player_cycle3D(sim_boundary_vectors, e_bvs, sim_sigmas, e_sigmas, proposed_trials, corrects, trials_per_day, figsaver= figsaver)
+            if self.evaluator == "PDEP":
+                plot_player_cycle3D(sim_boundary_vectors, e_bvs, sim_sigmas, e_sigmas, proposed_trials, corrects, trials_per_day, figsaver= figsaver)
+        
+        return (t1_stat1_history, t1_stat2_history), (sim_alpha_history, sim_sigma_history)
         
 
 

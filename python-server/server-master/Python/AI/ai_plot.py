@@ -209,12 +209,14 @@ def plot_player_cycle3D(boundary_vectors: List[np.ndarray],
     f_corrects = corrects
 
     if max_trials_per_day_plotted < trials_per_day:
-        f_trials, f_corrects = filter_trials_per_day(trials, corrects, trials_per_day,max_trials_per_day_plotted)
+ 
+        f_trials, f_corrects = filter_trials_per_day(trials, corrects, trials_per_day,max_trials_per_day_plotted)    
 
     f_incorrects = f_corrects == False
 
     xline = np.array(list(map(lambda x: x[8],f_trials)))
     yline = np.array(list(map(lambda x: x[9],f_trials)))
+
 
     #corrects
     zline_c = zline[f_corrects]

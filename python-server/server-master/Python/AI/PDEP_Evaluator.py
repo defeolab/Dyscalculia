@@ -120,7 +120,6 @@ class PDEP_Evaluator(PlayerEvaluator):
         self.estimator.append_prediction(prediction)
 
         if self.iteration%self.update_step == 0 and self.mode == "support":
-            #TODO: fix bug where after 40+ days of simulation this leads always to the same target error prob
             self.prob_choice_iteration+=1
             #choose a balanced target error probability based on previously selected ones
             unused_probs_i = []

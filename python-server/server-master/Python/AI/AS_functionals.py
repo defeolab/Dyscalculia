@@ -8,12 +8,29 @@ from AI.ai_utils import *
 import math
 from AI.ai_plot import plot_trials, plot_histograms
 import scipy as sp
+import os
 
 DEBUG_D = False
 DEBUG_S = False
 DEBUG_PC = False
+PATH_FOR_C_ABLATION = "C:\\Users\\fblan\\Dyscalculia\\python-server\\server-master\\Python\\AI\\precomputed_data\\PDEP\\C_ablation"
+PERFORM_ABLATION = True
+C = 100
 
 STD_COMPUTATION = "ll" #can be "ll" for loglilkelihood, "basic" for fetched formula 
+
+#load constants from file
+filepath = os.path.join(PATH_FOR_C_ABLATION, "best_Cs.npy")
+BEST_CS : np.ndarray = np.load(filepath)
+
+filepath = os.path.join(PATH_FOR_C_ABLATION, "configs.npy")
+CONFIGS : np.ndarray = np.load(filepath)
+CONFIGS[:, 0]/=90
+CONFIGS[:, 1]/=0.5
+
+
+filepath = os.path.join(PATH_FOR_C_ABLATION, "Cs.npy")
+CS : np.ndarray = np.load(filepath)
 
 def mirror_trials_list(trials: List[np.ndarray], predictions: List[bool]) -> Tuple[List[np.ndarray], List[bool]]:
     n_t = []
@@ -89,12 +106,19 @@ def compute_sharpening_std_loglikelihood(c_trials: np.ndarray, c_predictions: np
     #print(lls)
     return considered_sigmas[best_ll_i]
 
-def find_expected_optimal_C(prev_sigma: float) -> float:
-    #TODO
-    #return np.clip(0.5/prev_sigma, 1, 100)
-    return 100
+def find_expected_optimal_C(prev_norm: np.ndarray, prev_sigma: float) -> float:
+    if PERFORM_ABLATION:
+        return C
+    prev_alpha =  math.degrees(angle_between(np.array([0,1]), prev_norm))
+    
+    print(prev_alpha)
+    dists = ((CONFIGS - np.array([prev_alpha/90, prev_sigma/0.2]))**2).sum(axis=1)
+    curr_config_i = np.argmin(dists)
 
-def simple_denoising_clean_trials(trials: np.ndarray, predictions: np.ndarray, iterations: int, prev_sigma: float) -> Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray],  np.ndarray]:
+    
+    return CS[BEST_CS[curr_config_i]]
+
+def simple_denoising_clean_trials(trials: np.ndarray, predictions: np.ndarray, iterations: int, prev_norm: np.ndarray, prev_sigma: float) -> Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray],  np.ndarray]:
     c_trials = trials
     c_predictions = predictions
     c_indexes =np.array([i for i in range(0, predictions.shape[0])])
@@ -103,9 +127,9 @@ def simple_denoising_clean_trials(trials: np.ndarray, predictions: np.ndarray, i
     w_predictions = []
     w_indexes = []
     model = None
-    C = find_expected_optimal_C(prev_sigma)
+    target_C = find_expected_optimal_C(prev_norm, prev_sigma)
     for i in range(0, iterations):
-        model = LinearSVC(dual=False, C= C)
+        model = LinearSVC(dual=False, C= target_C)
         model.fit(c_trials, c_predictions)
 
         lw_indexes = model.predict(c_trials) != c_predictions
@@ -125,7 +149,7 @@ def simple_denoising_clean_trials(trials: np.ndarray, predictions: np.ndarray, i
 
     w_trials = np.array(w_trials)
     w_predictions = np.array(w_predictions)
-    model = LinearSVC(dual=False)
+    model = LinearSVC(dual=False, C= target_C)
     model.fit(c_trials, c_predictions)
     norm = unit_vector(np.array([-model.coef_[0][1], model.coef_[0][0]]))
 
@@ -169,7 +193,7 @@ def produce_estimate_simple_denoising(trials: np.ndarray, predictions: np.ndarra
         norm = prev_norm
         (c_trials, c_predictions), (w_trials, w_predictions) = simple_denoising_fixed_boundary(e_trials, e_predictions, norm)
     else:
-        (c_trials, c_predictions), (w_trials, w_predictions), norm = simple_denoising_clean_trials(e_trials, e_predictions, 5, prev_sigma)
+        (c_trials, c_predictions), (w_trials, w_predictions), norm = simple_denoising_clean_trials(e_trials, e_predictions, 5, prev_norm, prev_sigma)
 
     alpha =  math.degrees(angle_between(np.array([0,1]), norm))
 
