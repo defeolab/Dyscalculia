@@ -143,7 +143,8 @@ def plot_stats( local_accuracies: List[float],
                 days: int, 
                 labels: List[str] = ['local_accuracy', 'cumulative_accuracy'], 
                 figsaver: FigSaver = None,
-                lim_bounds: List[float] = [-0.1, 1.1]):
+                lim_bounds: List[float] = [-0.1, 1.1],
+                write_avg_dists: bool = False):
     fig = plt.figure()
     ax = fig.gca()
 
@@ -151,6 +152,12 @@ def plot_stats( local_accuracies: List[float],
 
     ax.plot(x, local_accuracies, color= 'green', label=labels[0])
     ax.plot(x, cumulative_accuracies, color= 'red', label=labels[1])
+
+    if write_avg_dists:
+        la = np.array(local_accuracies)
+        ca = np.array(cumulative_accuracies)
+        d = np.abs(la-ca).sum()/la.shape[0]
+        plt.title(f"Avg dist: {d}")
 
     ax.legend()
 

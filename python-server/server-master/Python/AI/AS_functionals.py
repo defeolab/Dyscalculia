@@ -14,8 +14,10 @@ DEBUG_D = False
 DEBUG_S = False
 DEBUG_PC = False
 PATH_FOR_C_ABLATION = "C:\\Users\\fblan\\Dyscalculia\\python-server\\server-master\\Python\\AI\\precomputed_data\\PDEP\\C_ablation"
-PERFORM_ABLATION = True
+PERFORM_ABLATION = False
 C = 100
+
+PATH_FOR_CONST = "C:\\Users\\fblan\\Dyscalculia\\python-server\\server-master\\Python\\AI\\precomputed_data\\PDEP\\consts\\C.npy"
 
 STD_COMPUTATION = "ll" #can be "ll" for loglilkelihood, "basic" for fetched formula 
 
@@ -31,6 +33,9 @@ CONFIGS[:, 1]/=0.5
 
 filepath = os.path.join(PATH_FOR_C_ABLATION, "Cs.npy")
 CS : np.ndarray = np.load(filepath)
+
+filepath = os.path.join(PATH_FOR_C_ABLATION, "errors_by_Cs.npy")
+ERR_CS : np.ndarray = np.load(filepath)
 
 def mirror_trials_list(trials: List[np.ndarray], predictions: List[bool]) -> Tuple[List[np.ndarray], List[bool]]:
     n_t = []
@@ -95,7 +100,7 @@ def compute_sharpening_std_loglikelihood(c_trials: np.ndarray, c_predictions: np
 
 
     n_sigmas = 20
-    considered_sigmas = np.linspace(0.05, 0.5, n_sigmas)
+    considered_sigmas = np.linspace(0.05, 0.60, n_sigmas)
     lls = np.ones(n_sigmas)
 
     for i,s in enumerate(considered_sigmas):
@@ -108,11 +113,14 @@ def compute_sharpening_std_loglikelihood(c_trials: np.ndarray, c_predictions: np
 
 def find_expected_optimal_C(prev_norm: np.ndarray, prev_sigma: float) -> float:
     if PERFORM_ABLATION:
-        return C
+        ls=np.logspace(1, 2, 5, base=10)
+        a = np.array([0.5,0.4,0.3,0.2,0.1])
+        pos = np.argmin(np.abs(a-prev_sigma))
+        val = np.load(PATH_FOR_CONST)[0]
+        return val
     prev_alpha =  math.degrees(angle_between(np.array([0,1]), prev_norm))
     
-    print(prev_alpha)
-    dists = ((CONFIGS - np.array([prev_alpha/90, prev_sigma/0.2]))**2).sum(axis=1)
+    dists = ((CONFIGS - np.array([prev_alpha/90, prev_sigma/0.5]))**2).sum(axis=1)
     curr_config_i = np.argmin(dists)
 
     

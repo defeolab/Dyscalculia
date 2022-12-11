@@ -11,6 +11,7 @@ import winsound
 
 BASE_PATH_FOR_PICS = "C:\\Users\\fblan\\Desktop\\thesis_pics"
 BASE_PATH_FOR_SAVING_TRIALS = "C:\\Users\\fblan\\Dyscalculia\\python-server\\server-master\\Python\\AI\\precomputed_data"
+PATH_FOR_CONST = "C:\\Users\\fblan\\Dyscalculia\\python-server\\server-master\\Python\\AI\\precomputed_data\\PDEP\\consts\\C.npy"
 
 class SimulationsRunner(unittest.TestCase):
     def __init__(   self, 
@@ -106,7 +107,7 @@ class SimulationsRunner(unittest.TestCase):
         
         return (e_alpha_hist, e_sigma_hist), (sim_alpha_hist, sim_sigma_hist)
 
-    def ablation_sim(self, last_n_days: int):
+    def ablation_sim(self, last_n_days: int, n_runs: int):
         target_C = np.array(self.target_C)
         i_C = np.arange(target_C.shape[0])
 
@@ -118,21 +119,23 @@ class SimulationsRunner(unittest.TestCase):
         print(f"target Cs: {target_C}")
 
         for i_c, c in zip(i_C, target_C):
-            C = c
-            (e_a_h, e_s_h), (s_a_h, s_s_h) = self.simulation_suite()
-            e_a_h = np.array(e_a_h)[:, -last_n_days:]
-            e_s_h = np.array(e_s_h)[:, -last_n_days:]
-            s_a_h = np.array(s_a_h)[:, -last_n_days:]
-            s_s_h = np.array(s_s_h)[:, -last_n_days:]
+            np.save(PATH_FOR_CONST, np.array([c]))
+            print(f">>> Making run with C = {c}")
+            for n in range(0,n_runs):
+                (e_a_h, e_s_h), (s_a_h, s_s_h) = self.simulation_suite()
+                e_a_h = np.array(e_a_h)[:, -last_n_days:]
+                e_s_h = np.array(e_s_h)[:, -last_n_days:]
+                s_a_h = np.array(s_a_h)[:, -last_n_days:]
+                s_s_h = np.array(s_s_h)[:, -last_n_days:]
 
-            avg_error_a = np.abs(e_a_h-s_a_h).sum(axis = 1)/last_n_days
-            avg_error_s = np.abs(e_s_h - s_s_h).sum(axis=1)/last_n_days
+                avg_error_a = np.abs(e_a_h-s_a_h).sum(axis = 1)/last_n_days
+                avg_error_s = np.abs(e_s_h - s_s_h).sum(axis=1)/last_n_days
 
-            for i, error_for_config in enumerate(avg_error_a):
-                errors_by_config[0, i, i_c] = error_for_config
+                for i, error_for_config in enumerate(avg_error_a):
+                    errors_by_config[0, i, i_c] += error_for_config
             
-            for i, error_for_config in enumerate(avg_error_s):
-                errors_by_config[1, i, i_c] = error_for_config
+                for i, error_for_config in enumerate(avg_error_s):
+                    errors_by_config[1, i, i_c] += error_for_config
 
         errors_by_config[0, :, :] = errors_by_config[0, :, :]/90
         errors_by_config[1, :, :] = errors_by_config[0, :, :]/0.5
@@ -179,14 +182,15 @@ if __name__ == "__main__":
         [0.1, 0.2, 0.3, 0.4, 0.5],
         [0.5],
         [0.2],
-        [0.1]
+        [0.1],
+        [0.3]
         ]
 
     probs = [0.10, 0.30, 0.80]
     diffs = [(0.1,0.1), (0.4, 0.4), (0.8, 0.8), (0.95,0.95)]
     modes = ["filtering", "sharpening"]
 
-    days = 15
+    days = 180
     trials_per_day = 30
     interval = 5
 
@@ -195,7 +199,7 @@ if __name__ == "__main__":
     add_date = False
     update_evaluator_stats = True
 
-    update_child = False
+    update_child = True
     child_alpha_std = 0.5
     child_sigma_std = 0.005
     child_improve_step = 1
@@ -204,9 +208,9 @@ if __name__ == "__main__":
     target_diff = diffs[0]
     mode = modes[0]
     save_trials = False
-    save_plots = False
-    alpha_i = 4
-    sigma_i = 4
+    save_plots = True
+    alpha_i = 2
+    sigma_i = 2
     mock = True
     estimate_step = 1
     target_C = np.logspace(-2, 3, 6, base=10)
@@ -214,8 +218,9 @@ if __name__ == "__main__":
 
     make_plots = True
     save_ablation = False
+    n_runs = 1
 
-    suite_name = "post_ablation"
+    suite_name = "post_ablation_with_update"
 
     sr = SimulationsRunner( days, trials_per_day, interval, evaluator, kids_ds, update_evaluator_stats, update_child, suite_name, 
                             target_prob, target_diff, mode, save_trials, save_plots, alphas[alpha_i], sigmas[sigma_i], mock, estimate_step,
@@ -224,7 +229,7 @@ if __name__ == "__main__":
     start_time = time.time()
 
     sr.simulation_suite()
-    #sr.ablation_sim(last_n_days)
+    #sr.ablation_sim(last_n_days, n_runs)
 
 
     duration = 1000  # milliseconds

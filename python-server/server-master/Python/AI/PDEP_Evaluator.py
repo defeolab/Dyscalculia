@@ -57,7 +57,7 @@ class PDEP_Evaluator(PlayerEvaluator):
         self.target_probs = np.array([0.1, 0.2, 0.3, 0.4, 0.6, 0.7, 0.8, 0.9])
         self.trials = []
         self.estimate_step = estimate_step
-        self.estimator = ASD_Estimator(max_trials_to_consider=90, denoiser_type="simple_denoising")
+        self.estimator = ASD_Estimator(max_trials_to_consider=180, denoiser_type="simple_denoising")
 
     def get_stats(self, type: int) -> Any:
         if type == 0:
@@ -99,7 +99,11 @@ class PDEP_Evaluator(PlayerEvaluator):
 
         nd_variable, nnd_variable, self.last_value = PDEP_find_trial(self.target_error_prob,self.target_perceived_diff, self.transform_mat, self.boundary_vector, self.sigma, self.norm_feats)
 
-        trial = self.trial_adapter.find_trial(nd_variable, nnd_variable)
+        if self.mode == "support":
+            trial = self.trial_adapter.find_trial(nd_variable, nnd_variable)
+        else:
+            trial = self.estimator.get_trial()
+            
         self.estimator.append_trial([trial[0][8], trial[0][9]])
 
         return trial

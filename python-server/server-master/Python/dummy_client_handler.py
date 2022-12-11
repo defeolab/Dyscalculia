@@ -58,7 +58,6 @@ class SimulatedClient:
             self.player_evaluator = PDEP_Evaluator(self.alpha, self.sigma, norm_feats=norm_feats,kids_ds=kids_ds)
 
     def run(self, trials: int, plot: bool, history_size: int = 10) -> None:
-
         
         mode = "filtering"
 
@@ -194,8 +193,8 @@ class SimulatedClient:
             alpha_labels = [f"estimated {label1[0]}", f"actual {label1[0]}"]
             sigma_labels = [f"estimated {label1[1]}", f"actual {label1[1]}"]
         
-            plot_stats(t1_stat1_history, sim_alpha_history, days*trials_per_day, labels=alpha_labels, figsaver=figsaver, lim_bounds=[-5, 95])
-            plot_stats(t1_stat2_history, sim_sigma_history, days*trials_per_day, labels=sigma_labels, figsaver=figsaver)
+            plot_stats(t1_stat1_history, sim_alpha_history, days*trials_per_day, labels=alpha_labels, figsaver=figsaver, lim_bounds=[-5, 95], write_avg_dists=True)
+            plot_stats(t1_stat2_history, sim_sigma_history, days*trials_per_day, labels=sigma_labels, figsaver=figsaver, write_avg_dists=True)
         
             plot_stats(t2_stat1_history, t2_stat2_history, days*trials_per_day, labels=self.player_evaluator.get_labels_for_stats(1), figsaver=figsaver)
 

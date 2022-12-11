@@ -306,8 +306,10 @@ class TestAI(unittest.TestCase):
     def test_study_optimal_C(self):
         print(BEST_CS)
         #rint(CS[BEST_CS[1]])
-        print(find_expected_optimal_C(np.array([-0.1,1]), 0.11))
-
+        #print(find_expected_optimal_C(np.array([-0.6,0.4]), 0.50))
+        print(CONFIGS)
+        print(CS)
+        print(ERR_CS)
 
 
         
