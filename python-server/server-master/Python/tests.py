@@ -311,11 +311,6 @@ class TestAI(unittest.TestCase):
         print(CS)
         print(ERR_CS)
 
-
-        
-
-
-
     def test_misc(self):
         sigma = 0.8
         nd_variable = -0.3

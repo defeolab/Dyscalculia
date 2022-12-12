@@ -37,7 +37,8 @@ class SimulationsRunner(unittest.TestCase):
                     child_improve_step: int, 
                     target_Cs: np.ndarray,
                     make_plots: bool, 
-                    save_ablation: bool):
+                    save_ablation: bool,
+                    estimation_duration: int):
         
         self.days = days
         self.trials_per_day = trials_per_day
@@ -62,6 +63,7 @@ class SimulationsRunner(unittest.TestCase):
         self.target_C = target_Cs
         self.make_plots = make_plots
         self.save_ablation = save_ablation
+        self.estimation_duration = estimation_duration
 
         self.base_root = os.path.join(BASE_PATH_FOR_PICS, self.evaluator)
         self.base_root = os.path.join(self.base_root, suite_name)
@@ -83,7 +85,7 @@ class SimulationsRunner(unittest.TestCase):
             for sigma in self.sigmas:
                 exp_name = f"alpha_{alpha}_sigma_{int(sigma*100)}"
                 save_file = os.path.join(self.save_root, exp_name) if self.save_trials else None
-                handler = SimulatedClient(0.5,0.5, alpha=alpha, sigma=sigma, evaluator=self.evaluator, kids_ds=kids_ds, save_file=save_file)
+                handler = SimulatedClient(0.5,0.5, alpha=alpha, sigma=sigma, evaluator=self.evaluator, kids_ds=kids_ds, save_file=save_file, estimation_duration=self.estimation_duration)
                 
                 handler.player.improve_alpha_std = self.child_alpha_std
                 handler.player.improve_sigma_std = self.child_sigma_std
@@ -212,19 +214,21 @@ if __name__ == "__main__":
     alpha_i = 2
     sigma_i = 2
     mock = True
-    estimate_step = 1
+    estimate_step = 180
     target_C = np.logspace(-2, 3, 6, base=10)
     last_n_days = 200
+
+    estimation_duration = 30
 
     make_plots = True
     save_ablation = False
     n_runs = 1
 
-    suite_name = "post_ablation_with_update"
+    suite_name = "ASE_with_update"
 
     sr = SimulationsRunner( days, trials_per_day, interval, evaluator, kids_ds, update_evaluator_stats, update_child, suite_name, 
                             target_prob, target_diff, mode, save_trials, save_plots, alphas[alpha_i], sigmas[sigma_i], mock, estimate_step,
-                            child_alpha_std, child_sigma_std, child_improve_step, target_C, make_plots, save_ablation)
+                            child_alpha_std, child_sigma_std, child_improve_step, target_C, make_plots, save_ablation, estimation_duration)
 
     start_time = time.time()
 

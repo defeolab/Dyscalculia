@@ -2,7 +2,7 @@ from AI.SimpleEvaluator import PlayerEvaluator
 from AI.ai_utils import unit_vector
 from AI.PDEP_functionals import PDEP_find_trial
 from typing import Any
-from AI.AS_Estimate import ASD_Estimator
+from AI.AS_Estimate import ASD_Estimator, ASE_Estimator
 
 from AI.TrialAdapter import TrialAdapter
 from typing import List, Any
@@ -29,8 +29,20 @@ class PDEP_Evaluator(PlayerEvaluator):
     """
 
 
-    def __init__(   self, init_alpha: float, init_sigma: float, init_prob: float = 0.10, init_perceived_diff: float = 0.1, norm_feats: bool=True, 
-                    update_step: int=5, mock: bool = False, kids_ds: bool = False, estimate_step: int = 90, estimation_min_trials: int = 30):
+    def __init__(   self, 
+                    init_alpha: float, 
+                    init_sigma: float, 
+                    init_prob: float = 0.10, 
+                    init_perceived_diff: float = 0.1, 
+                    norm_feats: bool=True, 
+                    update_step: int=5, 
+                    mock: bool = False, 
+                    kids_ds: bool = False, 
+                    estimate_step: int = 90, 
+                    estimation_min_trials: int = 30,
+                    estimator_type: str = "ASD",
+                    estimator_max_trials: int = 180,
+                    estimation_duration: int = 10):
         self.trial_adapter = TrialAdapter(mock,True, norm_feats, kids_ds)
         self.alpha = init_alpha
         self.sigma = init_sigma
@@ -57,7 +69,13 @@ class PDEP_Evaluator(PlayerEvaluator):
         self.target_probs = np.array([0.1, 0.2, 0.3, 0.4, 0.6, 0.7, 0.8, 0.9])
         self.trials = []
         self.estimate_step = estimate_step
-        self.estimator = ASD_Estimator(max_trials_to_consider=180, denoiser_type="simple_denoising")
+        self.estimator_type = estimator_type
+        self.estimation_duration = estimation_duration
+
+        if estimator_type == "ASD":
+            self.estimator = ASD_Estimator(max_trials_to_consider=estimator_max_trials, denoiser_type="simple_denoising")
+        else:
+            self.estimator = ASE_Estimator(n_trials_per_cycle=estimation_duration, max_trials_to_consider=estimator_max_trials)
 
     def get_stats(self, type: int) -> Any:
         if type == 0:
@@ -103,8 +121,8 @@ class PDEP_Evaluator(PlayerEvaluator):
             trial = self.trial_adapter.find_trial(nd_variable, nnd_variable)
         else:
             trial = self.estimator.get_trial()
-            
-        self.estimator.append_trial([trial[0][8], trial[0][9]])
+
+        self.estimator.append_trial([trial[0][8], trial[0][9]], self.mode)
 
         return trial
     
@@ -121,7 +139,7 @@ class PDEP_Evaluator(PlayerEvaluator):
         #print(self.estimator.trials)
         nd = self.estimator.trials[-1][0]
         prediction = True if (nd>0) == correct else False
-        self.estimator.append_prediction(prediction)
+        self.estimator.append_prediction(prediction, self.mode)
 
         if self.iteration%self.update_step == 0 and self.mode == "support":
             self.prob_choice_iteration+=1

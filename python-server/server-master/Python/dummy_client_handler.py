@@ -37,9 +37,17 @@ def init_running_results() -> Dict[str, Any]:
     return running_results
 
 class SimulatedClient:
-    def __init__(   self, filtering_diff: float, sharpening_difficulty: float, alpha: float = 10.0, 
-                    sigma: float = 0.05, mock_trials: bool = False, norm_feats: bool = True, evaluator: str = "PDEP", 
-                    kids_ds: bool=False, save_file: str = None):
+    def __init__(   self, 
+                    filtering_diff: float, 
+                    sharpening_difficulty: float, 
+                    alpha: float = 10.0, 
+                    sigma: float = 0.05, 
+                    mock_trials: bool = False, 
+                    norm_feats: bool = True, 
+                    evaluator: str = "PDEP", 
+                    kids_ds: bool=False, 
+                    save_file: str = None,
+                    estimation_duration: int = 10):
         self.filtering_diff = filtering_diff
         self.sharpening_diff = sharpening_difficulty
         self.lookup_table = pandas.read_csv("./dataset/lookup_table.csv")
@@ -55,10 +63,10 @@ class SimulatedClient:
             self.player_evaluator = SimpleEvaluator(self.lookup_table, 1, 5, alt_mode_weight=0.5, kids_ds=kids_ds,)
             self.player_evaluator.set_running_results(init_running_results())
         elif evaluator == "PDEP":
-            self.player_evaluator = PDEP_Evaluator(self.alpha, self.sigma, norm_feats=norm_feats,kids_ds=kids_ds)
+            self.player_evaluator = PDEP_Evaluator(self.alpha, self.sigma, norm_feats=norm_feats,kids_ds=kids_ds, estimation_duration=estimation_duration)
 
     def run(self, trials: int, plot: bool, history_size: int = 10) -> None:
-        
+
         mode = "filtering"
 
         performance = []

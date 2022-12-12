@@ -91,7 +91,7 @@ def compute_log_likelihood(c_dists:np.ndarray, w_dists: np.ndarray, sigma:float)
     
 
 
-def compute_sharpening_std_loglikelihood(c_trials: np.ndarray, c_predictions: np.ndarray, w_trials: np.ndarray, w_predictions: np.ndarray, norm: np.ndarray):
+def compute_sharpening_std_loglikelihood(c_trials: np.ndarray, c_predictions: np.ndarray, w_trials: np.ndarray, w_predictions: np.ndarray, norm: np.ndarray) -> float:
     n = c_trials.shape[0] + w_trials.shape[0]
 
     transform_mat=np.linalg.inv(np.array([[norm[0], norm[1]], [norm[1], -norm[0]]]))
@@ -113,9 +113,6 @@ def compute_sharpening_std_loglikelihood(c_trials: np.ndarray, c_predictions: np
 
 def find_expected_optimal_C(prev_norm: np.ndarray, prev_sigma: float) -> float:
     if PERFORM_ABLATION:
-        ls=np.logspace(1, 2, 5, base=10)
-        a = np.array([0.5,0.4,0.3,0.2,0.1])
-        pos = np.argmin(np.abs(a-prev_sigma))
         val = np.load(PATH_FOR_CONST)[0]
         return val
     prev_alpha =  math.degrees(angle_between(np.array([0,1]), prev_norm))
