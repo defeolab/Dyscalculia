@@ -47,7 +47,8 @@ class SimulatedClient:
                     evaluator: str = "PDEP", 
                     kids_ds: bool=False, 
                     save_file: str = None,
-                    estimation_duration: int = 10):
+                    estimation_duration: int = 10,
+                    estimator_type: str = "ASD"):
         self.filtering_diff = filtering_diff
         self.sharpening_diff = sharpening_difficulty
         self.lookup_table = pandas.read_csv("./dataset/lookup_table.csv")
@@ -63,7 +64,7 @@ class SimulatedClient:
             self.player_evaluator = SimpleEvaluator(self.lookup_table, 1, 5, alt_mode_weight=0.5, kids_ds=kids_ds,)
             self.player_evaluator.set_running_results(init_running_results())
         elif evaluator == "PDEP":
-            self.player_evaluator = PDEP_Evaluator(self.alpha, self.sigma, norm_feats=norm_feats,kids_ds=kids_ds, estimation_duration=estimation_duration)
+            self.player_evaluator = PDEP_Evaluator(self.alpha, self.sigma, norm_feats=norm_feats,kids_ds=kids_ds, estimation_duration=estimation_duration, estimator_type=estimator_type)
 
     def run(self, trials: int, plot: bool, history_size: int = 10) -> None:
 

@@ -1,11 +1,11 @@
 import unittest
 from AI.ai_utils import *
 from AI.TrialAdapter import TrialAdapter
-from AI.ai_plot import plot_trials, FigSaver, plot_player_cycle3D
+from AI.ai_plot import plot_trials, FigSaver, plot_player_cycle3D, plot_ablation_C
 from AI.PDEP_Evaluator import PDEP_Evaluator
 from dummy_client_handler import SimulatedClient
 from AI.PlayerSimulator import PlayerSimulator
-from AI.AS_Estimate import ASD_Estimator
+from AI.AS_Estimate import ASD_Estimator, ASE_Estimator
 from AI.PDEP_functionals import PDEP_find_trial, compute_error_probability_2d
 from AI.AS_functionals import *
 import time
@@ -166,7 +166,7 @@ class TestAI(unittest.TestCase):
         n=90
         n_part = 30
         e = ASD_Estimator(n, "simple_denoising")
-        target_s = 10
+        target_s = 30
 
         filename = f"alpha_45_sigma_{target_s}.npy"
 
@@ -201,7 +201,7 @@ class TestAI(unittest.TestCase):
         e.trials = trials 
         e.predictions = looks_right
 
-        print(e.produce_estimate())
+        print(e.produce_estimate(np.array(unit_vector([-1,1])), 0.3))
 
 
     def test_AS_extensively(self):
@@ -308,8 +308,30 @@ class TestAI(unittest.TestCase):
         #rint(CS[BEST_CS[1]])
         #print(find_expected_optimal_C(np.array([-0.6,0.4]), 0.50))
         print(CONFIGS)
-        print(CS)
-        print(ERR_CS)
+        #print(CS)
+        #print(ERR_CS)
+
+        #plot_ablation_C(CONFIGS, CS, BEST_CS)
+
+    
+    def test_ASE(self):
+        e = ASE_Estimator(30, 90)
+        e.target_line = np.array(unit_vector([0.2, 0.6]))
+        e.curr_sigma = 0.3
+        n = 10
+        t = []
+        p = []
+        anns = []
+        for i in range(0, n):
+            tr, ann = e.get_trial()
+            t.append(tr)
+            anns.append(ann)
+            p.append(np.random.choice([True, False]))
+        
+        t, c, a = return_plottable_list(t, p)
+        plot_trials(np.array([-0.6, 0.2]), t, c, a, ann_str= True)
+        
+
 
     def test_misc(self):
         sigma = 0.8
@@ -376,7 +398,8 @@ if __name__ == "__main__":
     #tc.test_misc()
     #tc.test_PDEP_update()
     #tc.test_std_loglikelihood()
-    tc.test_study_optimal_C()
+    #tc.test_study_optimal_C()
+    tc.test_ASE()
 
 
     duration = 1000  # milliseconds

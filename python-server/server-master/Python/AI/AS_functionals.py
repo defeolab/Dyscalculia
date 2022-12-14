@@ -165,10 +165,10 @@ def simple_denoising_clean_trials(trials: np.ndarray, predictions: np.ndarray, i
     
     if DEBUG_D:
         t,c,a = return_plottable_list(c_trials, c_predictions)
-        plot_trials(norm, t, c, a, ann_str=True)
+        plot_trials(np.array([-1,1]), t, c, a, ann_str=True, estimated_boundary=norm)
 
         t,c,a = return_plottable_list(w_trials, w_predictions)
-        plot_trials(norm, t, c, a, ann_str=True)  
+        plot_trials(np.array([-1,1]), t, c, a, ann_str=True, estimated_boundary=norm)  
     
 
     return (c_trials, c_predictions), (w_trials, w_predictions), norm
@@ -198,7 +198,11 @@ def produce_estimate_simple_denoising(trials: np.ndarray, predictions: np.ndarra
         norm = prev_norm
         (c_trials, c_predictions), (w_trials, w_predictions) = simple_denoising_fixed_boundary(e_trials, e_predictions, norm)
     else:
-        (c_trials, c_predictions), (w_trials, w_predictions), norm = simple_denoising_clean_trials(e_trials, e_predictions, 5, prev_norm, prev_sigma)
+        (c_trials, c_predictions), (w_trials, w_predictions), norm = simple_denoising_clean_trials(e_trials, e_predictions, 1, prev_norm, prev_sigma)
+
+    if DEBUG_D:
+        t,c,a = return_plottable_list(e_trials, e_predictions)
+        plot_trials(np.array([-1,1]), t, c, a, ann_str=True, estimated_boundary=norm)
 
     alpha =  math.degrees(angle_between(np.array([0,1]), norm))
 

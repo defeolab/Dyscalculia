@@ -12,7 +12,7 @@ class Estimator_Interface:
         self.trials: List[np.ndarray] = []
         self.predictions: List[bool] = []
 
-    def get_trial(self) -> np.ndarray:
+    def get_trial(self) -> Tuple[np.ndarray, float]:
         pass
 
     def append_trial(self, trial: List[float], mode: str) -> None:
@@ -69,9 +69,9 @@ class ASE_Estimator(Estimator_Interface):
         self.max_trials_to_consider = max_trials_to_consider
         self.i = 0
 
-    def get_trial(self) -> np.ndarray:
+    def get_trial(self) -> Tuple[np.ndarray, float]:
         random_scalar = np.random.normal(scale = self.curr_sigma)
-        return random_scalar*self.target_line
+        return random_scalar*self.target_line, random_scalar
 
     def produce_estimate(self, prev_norm: np.ndarray, prev_sigma: np.ndarray) -> Tuple[float, float, np.ndarray, str]:
         
@@ -90,8 +90,9 @@ class ASE_Estimator(Estimator_Interface):
             self.sigma_predictions = []
 
             self.curr_sigma = prev_sigma
-
-            return self.curr_alpha, prev_sigma, self.curr_bv, "estimate"
+            self.prev_sigma = prev_sigma
+            self.i+=1
+            return (self.curr_alpha, prev_sigma, self.curr_bv), "estimate"
         else:
             #process last trial
             self.i += 1
@@ -104,7 +105,7 @@ class ASE_Estimator(Estimator_Interface):
             (c_trials, c_predictions), (w_trials, w_predictions) = simple_denoising_fixed_boundary(e_trials, e_predictions, self.curr_bv)
 
             ith_sigma = compute_sharpening_std_loglikelihood(c_trials, c_predictions, w_trials, w_predictions, self.curr_bv)
-
+            ith_sigma = np.clip(ith_sigma, 0.02, 1.0)
             if self.i % self.n_trials_per_cycle == 0:
                 #end of estimation phase
                 #reestimate alpha with sigma knowledge
@@ -115,12 +116,14 @@ class ASE_Estimator(Estimator_Interface):
                 (_, _), (_,_), self.curr_bv = simple_denoising_clean_trials(e_trials, e_predictions, 1, self.curr_bv, ith_sigma)
 
                 final_alpha = math.degrees(angle_between(np.array([0,1]),self.curr_bv))
-
-                return final_alpha, ith_sigma, self.curr_bv, "support"
+                #print("end")
+                self.i = 0
+                return (final_alpha, ith_sigma, self.curr_bv), "support"
 
             else:
+                #print("not end")
                 #in between of estimation phase
-                self.curr_sigma += 0.05 if ith_sigma > self.curr_sigma else -0.05
-                return self.curr_alpha, self.curr_sigma, self.curr_bv, "estimate"
+                self.curr_sigma = (self.curr_sigma + ith_sigma)/2
+                return (self.curr_alpha, self.prev_sigma, self.curr_bv), "estimate"
 
 

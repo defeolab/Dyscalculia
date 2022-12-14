@@ -9,6 +9,9 @@ import numpy as np
 import os
 from datetime import date
 from mpl_toolkits import mplot3d
+from matplotlib import cm
+from matplotlib.ticker import LinearLocator
+
 
 class FigSaver:
     def __init__(self, base_root: str,exp_name: str, add_date:bool=False, interval: int=5, figname: str = None) -> None:
@@ -311,5 +314,22 @@ def plot_histograms(data: List[np.ndarray]):
 
     for i,d in enumerate(data):
         plt.hist(d, color = colors[i], alpha = 0.6, histtype="bar", bins=50)
+
+    plt.show()
+
+
+def plot_ablation_C(configs: np.ndarray, Cs: np.ndarray, best_Cs: np.ndarray):
+
+    fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+
+    X = configs[:, 0]
+    Y = configs[:, 1]
+
+    #print(X)
+
+    Z = best_Cs 
+
+
+    surf = ax.plot_trisurf(X, Y, Z)
 
     plt.show()

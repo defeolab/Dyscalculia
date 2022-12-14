@@ -73,8 +73,10 @@ class PDEP_Evaluator(PlayerEvaluator):
         self.estimation_duration = estimation_duration
 
         if estimator_type == "ASD":
+            print("using ASD")
             self.estimator = ASD_Estimator(max_trials_to_consider=estimator_max_trials, denoiser_type="simple_denoising")
         else:
+            print("using ASE")
             self.estimator = ASE_Estimator(n_trials_per_cycle=estimation_duration, max_trials_to_consider=estimator_max_trials)
 
     def get_stats(self, type: int) -> Any:
@@ -118,9 +120,13 @@ class PDEP_Evaluator(PlayerEvaluator):
         nd_variable, nnd_variable, self.last_value = PDEP_find_trial(self.target_error_prob,self.target_perceived_diff, self.transform_mat, self.boundary_vector, self.sigma, self.norm_feats)
 
         if self.mode == "support":
-            trial = self.trial_adapter.find_trial(nd_variable, nnd_variable)
+            nd_variable, nnd_variable, self.last_value = PDEP_find_trial(self.target_error_prob,self.target_perceived_diff, self.transform_mat, self.boundary_vector, self.sigma, self.norm_feats)    
         else:
-            trial = self.estimator.get_trial()
+            trial, self.last_value = self.estimator.get_trial()
+            nd_variable = trial[0]
+            nnd_variable = trial[1]
+
+        trial = self.trial_adapter.find_trial(nd_variable, nnd_variable)
 
         self.estimator.append_trial([trial[0][8], trial[0][9]], self.mode)
 

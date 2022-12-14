@@ -38,7 +38,8 @@ class SimulationsRunner(unittest.TestCase):
                     target_Cs: np.ndarray,
                     make_plots: bool, 
                     save_ablation: bool,
-                    estimation_duration: int):
+                    estimation_duration: int,
+                    estimator_type: str):
         
         self.days = days
         self.trials_per_day = trials_per_day
@@ -64,6 +65,7 @@ class SimulationsRunner(unittest.TestCase):
         self.make_plots = make_plots
         self.save_ablation = save_ablation
         self.estimation_duration = estimation_duration
+        self.estimator_type = estimator_type
 
         self.base_root = os.path.join(BASE_PATH_FOR_PICS, self.evaluator)
         self.base_root = os.path.join(self.base_root, suite_name)
@@ -85,7 +87,7 @@ class SimulationsRunner(unittest.TestCase):
             for sigma in self.sigmas:
                 exp_name = f"alpha_{alpha}_sigma_{int(sigma*100)}"
                 save_file = os.path.join(self.save_root, exp_name) if self.save_trials else None
-                handler = SimulatedClient(0.5,0.5, alpha=alpha, sigma=sigma, evaluator=self.evaluator, kids_ds=kids_ds, save_file=save_file, estimation_duration=self.estimation_duration)
+                handler = SimulatedClient(0.5,0.5, alpha=alpha, sigma=sigma, evaluator=self.evaluator, kids_ds=kids_ds, save_file=save_file, estimation_duration=self.estimation_duration, estimator_type=self.estimator_type)
                 
                 handler.player.improve_alpha_std = self.child_alpha_std
                 handler.player.improve_sigma_std = self.child_sigma_std
@@ -202,8 +204,8 @@ if __name__ == "__main__":
     update_evaluator_stats = True
 
     update_child = True
-    child_alpha_std = 0.5
-    child_sigma_std = 0.005
+    child_alpha_std = 0.45
+    child_sigma_std = 0.003
     child_improve_step = 1
 
     target_prob = probs[2]
@@ -219,16 +221,16 @@ if __name__ == "__main__":
     last_n_days = 200
 
     estimation_duration = 30
+    estimator_type = "ASE"
 
     make_plots = True
     save_ablation = False
     n_runs = 1
 
-    suite_name = "ASE_with_update"
-
+    suite_name = "ASE_with_update3"
     sr = SimulationsRunner( days, trials_per_day, interval, evaluator, kids_ds, update_evaluator_stats, update_child, suite_name, 
                             target_prob, target_diff, mode, save_trials, save_plots, alphas[alpha_i], sigmas[sigma_i], mock, estimate_step,
-                            child_alpha_std, child_sigma_std, child_improve_step, target_C, make_plots, save_ablation, estimation_duration)
+                            child_alpha_std, child_sigma_std, child_improve_step, target_C, make_plots, save_ablation, estimation_duration, estimator_type)
 
     start_time = time.time()
 
