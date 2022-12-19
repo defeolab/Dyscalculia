@@ -100,7 +100,7 @@ class PlayerHandler(Thread) :
         elif "TRIALS:" in data :
             print("SENDING TRIALS TO GAME")
 
-            print("Diff: " + str(self.player_evaluator.get_stats()))
+            print("Diff: " + str(self.player_evaluator.get_stats(0)))
             
             trials_matrix = TransformMatrix(self.player_evaluator.get_trial())
             return convert_trials_to_json(convert_matrix_to_trials(trials_matrix))
