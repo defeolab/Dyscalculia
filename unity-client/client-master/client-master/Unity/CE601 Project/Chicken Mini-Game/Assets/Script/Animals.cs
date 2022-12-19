@@ -60,7 +60,8 @@ public class Animals : MonoBehaviour
             {
                 var distanceBetween = Vector2.Distance(dragManager.worldPosition, this.transform.position);
 
-                if (distanceBetween < 0.3f)
+                if (distanceBetween < 0.8f && !dragManager.findDrag1 && (Input.GetMouseButton(0)|| Input.touchCount > 0))
+                //if (IsInside(dragManager.worldPosition, this.transform.position) && !dragManager.findDrag1 && (Input.GetMouseButtonDown(0) || Input.touchCount > 0))
                 {
                     dragManager.findDrag1 = true;
                     dragManager.draggedArea1 = gameObject;
@@ -70,7 +71,8 @@ public class Animals : MonoBehaviour
             {
                 var distanceBetween = Vector2.Distance(dragManager.worldPosition, this.transform.position);
 
-                if (distanceBetween < 0.3f)
+                if (distanceBetween < 0.8f && !dragManager.findDrag2 && (Input.GetMouseButton(0) || Input.touchCount > 0))
+                //if (IsInside(dragManager.worldPosition, this.transform.position) && !dragManager.findDrag2 && (Input.GetMouseButtonDown(0) || Input.touchCount > 0))
                 {
                     dragManager.findDrag2 = true;
                     dragManager.draggedArea2 = gameObject;
@@ -84,6 +86,16 @@ public class Animals : MonoBehaviour
             animator.SetBool("eat", false);
         }
 
+    }
+
+    private bool IsInside(Vector2 worldPosition, Vector2 thisPosition)
+    {
+        float radius_area = this.transform.localScale.x * 0.18f;
+        float d_x = (worldPosition.x - thisPosition.x) * (worldPosition.x - thisPosition.x);
+        float d_y = (worldPosition.y - thisPosition.y) * (worldPosition.y - thisPosition.y);
+
+        if ((Math.Sqrt(d_x + d_y) < radius_area)) return true;
+        else return false;
     }
 
     public void SetAnimal(GameObject area, int number, AreaTrialData areaData)

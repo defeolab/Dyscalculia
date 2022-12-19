@@ -11,6 +11,7 @@ public class InitialVideo : MonoBehaviour
     private bool isplaying;
     public AudioMixer audioMixer;
     public GameObject loadScene;
+    public GameObject skip;
 
     // Start is called before the first frame update
     void Start()
@@ -19,6 +20,7 @@ public class InitialVideo : MonoBehaviour
         vid.time = 0;
         vid.Play();
         isplaying = true;
+        skip.SetActive(true);
     }
 
     // Update is called once per frame
@@ -31,12 +33,9 @@ public class InitialVideo : MonoBehaviour
 
         this.SetLevelAudio();
 
-        if (Input.GetKeyDown(KeyCode.A))
+        if (Input.GetKeyDown(KeyCode.S))
         {
-            isplaying = false;
-            this.gameObject.SetActive(false);
-            loadScene.SetActive(true);
-            loadScene.GetComponent<LoadLevelTwoFences>().enabled = true;
+            SkipVideo();
         }
     }
 
@@ -44,6 +43,7 @@ public class InitialVideo : MonoBehaviour
     {
         isplaying = false;
         this.gameObject.SetActive(false);
+        skip.SetActive(false);
         loadScene.SetActive(true);
         loadScene.GetComponent<LoadLevelTwoFences>().enabled = true;
     }
@@ -62,5 +62,14 @@ public class InitialVideo : MonoBehaviour
         {
             vid.SetDirectAudioVolume(0, 1);
         }
+    }
+
+    public void SkipVideo()
+    {
+        isplaying = false;
+        this.gameObject.SetActive(false);
+        skip.SetActive(false);
+        loadScene.SetActive(true);
+        loadScene.GetComponent<LoadLevelTwoFences>().enabled = true;
     }
 }
