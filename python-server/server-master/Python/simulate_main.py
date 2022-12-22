@@ -39,7 +39,9 @@ class SimulationsRunner(unittest.TestCase):
                     make_plots: bool, 
                     save_ablation: bool,
                     estimation_duration: int,
-                    estimator_type: str):
+                    estimator_type: str,
+                    init_evaluator_stats: bool,
+                    estimator_max_trials: int):
         
         self.days = days
         self.trials_per_day = trials_per_day
@@ -66,6 +68,8 @@ class SimulationsRunner(unittest.TestCase):
         self.save_ablation = save_ablation
         self.estimation_duration = estimation_duration
         self.estimator_type = estimator_type
+        self.init_evaluator_stats = init_evaluator_stats
+        self.estimator_max_trials = estimator_max_trials
 
         self.base_root = os.path.join(BASE_PATH_FOR_PICS, self.evaluator)
         self.base_root = os.path.join(self.base_root, suite_name)
@@ -87,7 +91,10 @@ class SimulationsRunner(unittest.TestCase):
             for sigma in self.sigmas:
                 exp_name = f"alpha_{alpha}_sigma_{int(sigma*100)}"
                 save_file = os.path.join(self.save_root, exp_name) if self.save_trials else None
-                handler = SimulatedClient(0.5,0.5, alpha=alpha, sigma=sigma, evaluator=self.evaluator, kids_ds=kids_ds, save_file=save_file, estimation_duration=self.estimation_duration, estimator_type=self.estimator_type)
+                handler = SimulatedClient(  0.5,0.5, alpha=alpha, sigma=sigma, evaluator=self.evaluator, kids_ds=kids_ds, 
+                                            save_file=save_file, estimation_duration=self.estimation_duration, 
+                                            estimator_type=self.estimator_type, init_evaluator=self.init_evaluator_stats,
+                                            estimator_max_trials=self.estimator_max_trials)
                 
                 handler.player.improve_alpha_std = self.child_alpha_std
                 handler.player.improve_sigma_std = self.child_sigma_std
@@ -194,7 +201,7 @@ if __name__ == "__main__":
     diffs = [(0.1,0.1), (0.4, 0.4), (0.8, 0.8), (0.95,0.95)]
     modes = ["filtering", "sharpening"]
 
-    days = 180
+    days = 15
     trials_per_day = 30
     interval = 5
 
@@ -202,8 +209,9 @@ if __name__ == "__main__":
     kids_ds = False
     add_date = False
     update_evaluator_stats = True
+    init_evaluator_stats = False
 
-    update_child = True
+    update_child = False
     child_alpha_std = 0.45
     child_sigma_std = 0.003
     child_improve_step = 1
@@ -213,24 +221,26 @@ if __name__ == "__main__":
     mode = modes[0]
     save_trials = False
     save_plots = True
-    alpha_i = 2
-    sigma_i = 2
+    alpha_i = 0
+    sigma_i = 0
     mock = True
-    estimate_step = 180
+    estimate_step = 1
     target_C = np.logspace(-2, 3, 6, base=10)
     last_n_days = 200
 
-    estimation_duration = 30
-    estimator_type = "ASE"
+    estimation_duration = 1
+    estimator_type = "ASD"
+    estimator_max_trials = 500
 
     make_plots = True
     save_ablation = False
     n_runs = 1
 
-    suite_name = "ASE_with_update3"
+    suite_name = "ASD_const"
     sr = SimulationsRunner( days, trials_per_day, interval, evaluator, kids_ds, update_evaluator_stats, update_child, suite_name, 
                             target_prob, target_diff, mode, save_trials, save_plots, alphas[alpha_i], sigmas[sigma_i], mock, estimate_step,
-                            child_alpha_std, child_sigma_std, child_improve_step, target_C, make_plots, save_ablation, estimation_duration, estimator_type)
+                            child_alpha_std, child_sigma_std, child_improve_step, target_C, make_plots, save_ablation, estimation_duration, 
+                            estimator_type, init_evaluator_stats, estimator_max_trials)
 
     start_time = time.time()
 
