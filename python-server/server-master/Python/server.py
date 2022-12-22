@@ -6,7 +6,7 @@ import select
 
 class GameServer:
 
-    def __init__(self, server_socket, host, port, db, disable_shutdown, always_new_player, kids_ds) -> None:
+    def __init__(self, server_socket, host, port, db, disable_shutdown, always_new_player, evaluator, kids_ds) -> None:
         self.server_socket = server_socket
         self.host = host 
         self.port = port
@@ -14,13 +14,15 @@ class GameServer:
         self.players = []
         self.running = True
         self.disable_shutdown=disable_shutdown
+        self.evaluator = evaluator
         self.always_new_player = always_new_player
-        
-        # lookup table is shared in the server to avoid multiple opens
+        self.kids_ds = kids_ds
+
         if kids_ds:
             self.lookup_table = pandas.read_csv("./dataset/lookup_table_kids.csv")
         else:
             self.lookup_table = pandas.read_csv("./dataset/lookup_table.csv")
+        
 
     def run(self):
 
@@ -52,7 +54,7 @@ class GameServer:
                 print("Player " + str(player_id) + " has joined")
 
                 # Starting a thread to handle the player
-                player_thread = PlayerHandler(self.lookup_table, client, self.db, player_id)
+                player_thread = PlayerHandler(self.lookup_table, client, self.db, player_id, self.evaluator, self.kids_ds)
                 player_thread.start()
                 self.players.append(player_thread)
                 print("Number of players: " + str(len(self.players)))
@@ -66,14 +68,14 @@ class GameServer:
             
 
 
-
 # LEGACY
 class Create_Game:
     
     def __init__ (self, trials_matrix):
         self.trials_matrix = trials_matrix
+        self.lookup_table = pandas.read_csv("./dataset/lookup_table.csv")
            
-    def run(self, simulation_on, nnd_selector, alpha, sigma, ServerSocket, host, port, DB, ThreadCount):
+    def run(self, simulation_on, nnd_selector, alpha, sigma, ServerSocket=None, host=None, port=None, DB=None, ThreadCount=None):
         
         # REAL GAME
         if simulation_on == 0:
@@ -118,7 +120,7 @@ class Create_Game:
             Client = ''
             player_id = 1
             print('Player ID: ' + str(player_id))
-            print('SENT DATA: ' + str(self.trials_matrix))
+            print('SENT DATA: ' + str(self.trials_matrix[0]))
             print()
             
             if player_id == 1:
@@ -132,4 +134,5 @@ class Create_Game:
                 # performing the ChildSimulator method, which represents the simulation of a child
                 # playing our game, and obtain back a response_vector, in its simulated version
                 response_vector = game.Run(self.trials_matrix, nnd_selector, alpha, sigma)
+                print(response_vector)
         return response_vector
