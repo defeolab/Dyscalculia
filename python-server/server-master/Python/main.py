@@ -1,6 +1,5 @@
 import socket
 from db.db_connector import DBConnector
-from dummy_client_handler import SimulatedClient
 from server import Create_Game, GameServer
 from mapping_matrix import dummy_matrix_generator
 from plot_trials import PlotTrials
@@ -77,14 +76,8 @@ nnd_general = 0
 # else:
 #     trials_matrix = dummy_matrix_generator(nnd_selector, nnd_number)
 
-if args.sim_child:
-    client = SimulatedClient(   0.5, 0.5, alpha = args.sim_alpha, sigma= args.sim_sigma, 
-                                mock_trials=args.sim_mock_trials, norm_feats=args.normalized_features, 
-                                evaluator=args.evaluator)
-    client.run(args.sim_n_trials, args.sim_plot)
-else:
-    game = GameServer(server_socket, args.host, args.port, db, args.disable_shutdown, args.always_new_player, args.evaluator, args.kids_dataset)
-    game.run()
+game = GameServer(server_socket, args.host, args.port, db, args.disable_shutdown, args.always_new_player, args.kids_dataset)
+game.run()
 # game = Create_Game(trials_matrix)
 # response_vector = game.run(simulation_on, nnd_selector, alpha, sigma, ServerSocket, host, port, DB, ThreadCount)
 

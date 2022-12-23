@@ -267,7 +267,6 @@ public class ButtonsManager : MonoBehaviour
 
     IEnumerator NewTrial(float timeAudio) 
     {
-        TrialsManager.instance.AskNextTrial();
         yield return new WaitForSeconds(timeAudio + 0.3f);
         
         //Reset all the Managers
