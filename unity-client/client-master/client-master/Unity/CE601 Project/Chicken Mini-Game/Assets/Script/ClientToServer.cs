@@ -27,14 +27,11 @@ public class ClientToServer : MonoBehaviour
         writer.AutoFlush = true;
     }
 
-    public void AskTrials()
+    public Stack<TrialData> GetTrials()
     {
         // Sending command
         writer.WriteLine("TRIALS:");
-    }
 
-    public Stack<TrialData> GetTrials()
-    {
         string line = reader.ReadLine();
         Debug.Log("GET TRIALS: " + line);
 
