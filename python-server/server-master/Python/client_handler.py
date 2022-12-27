@@ -1,6 +1,8 @@
 import json
 import random
 import math
+from AI.SimpleEvaluator import SimpleEvaluator
+from AI.PDEP_Evaluator import PDEP_Evaluator
 import settings_manager
 
 import time
@@ -50,31 +52,33 @@ def calculate_next_correlation(average_decision_time, correct_answer_ratio):
         return 0.00
 
 class PlayerHandler(Thread) :
-    def __init__(self, lookup_table, client, db, player_id):
+    def __init__(self, lookup_table, client, db, player_id, evaluator, kids_ds):
         super().__init__()
         self.client = client 
         self.db = db
         self.player_id = player_id
         self.running = True
         self.lookup_table = lookup_table
-        self.running_results = {} 
         self.first_communication = True # sending trials is different for the first run, should probably be changed
         self.mode = "filtering" # 0 for sharpening | 1 for filtering
         self.num_trials = 1 # number of trials sent to the client at a time
         self.history_size = 5 
+
+        self.evaluator_type = evaluator
+        if evaluator == "simple":
+            self.player_evaluator = SimpleEvaluator(lookup_table, player_id, self.history_size, kids_ds=kids_ds)
+        else:
+            init_alpha = 45
+            init_sigma = 0.2
+            self.player_evaluator = PDEP_Evaluator(init_alpha, init_sigma, norm_feats=True, mock=False, kids_ds=kids_ds)
 
     def run(self) :
 
         #At this point there must be data about this player's statistics
         #load them and run the player
 
-        self.running_results = self.db.get_player_stats(self.player_id, self.history_size)
-        self.both_histories = self.db.fetch_both_histories(self.player_id, self.history_size)
-        print(self.running_results)
-        print(self.both_histories)
-        if len(self.both_histories) >0:
-            suggestion = qserver_ask_for_question_recommendation(self.both_histories[-1][0], -1,-1, self.both_histories[:-1])
-            self.mode = "filtering" if suggestion[0] == "f" else "sharpening"
+        #fetch stats from db
+        self.player_evaluator.db_set_running_results(self.db, self.player_id)
 
         #assert True == False
         print("Game " + str(self.player_id) + " is running") 
@@ -96,9 +100,9 @@ class PlayerHandler(Thread) :
         elif "TRIALS:" in data :
             print("SENDING TRIALS TO GAME")
 
-            print("Diff: " + str(self.running_results[self.mode +"_diff"]))
+            print("Diff: " + str(self.player_evaluator.get_stats(0)))
             
-            trials_matrix = TransformMatrix(self.lookup_trials())
+            trials_matrix = TransformMatrix(self.player_evaluator.get_trial())
             return convert_trials_to_json(convert_matrix_to_trials(trials_matrix))
    
 
@@ -127,40 +131,16 @@ class PlayerHandler(Thread) :
             results_to_add = []
             correct = 0
             for result in results["results"] :
-                results_to_add.append(TrialResult(mode = self.mode, difficulty = self.running_results[self.mode + "_diff"], decision_time=result["DecisionTime"], correct=result["Correct"], raw_trial_data=result["TrialData"]))
+                results_to_add.append(TrialResult(mode = self.player_evaluator.mode, difficulty = self.player_evaluator.get_main_stat(), decision_time=result["DecisionTime"], correct=result["Correct"], raw_trial_data=result["TrialData"]))
                 correct += int(result["Correct"])
 
-            self.db.add_results(self.player_id, results_to_add)
-
             # updating player stats
-            self.running_results[self.mode + "_total"] += 1
-            self.running_results[self.mode + "_correct"] += correct
-            self.running_results[self.mode + "_acc"] = self.running_results[self.mode + "_correct"] / self.running_results[self.mode + "_total"]
-            self.running_results[self.mode + "_total_time"] += result["DecisionTime"]
-            self.running_results[self.mode + "_avg_time"] = self.running_results[self.mode + "_total_time"] / self.running_results[self.mode + "_total"]
-            self.running_results[self.mode + "_history"].append(correct)
-
-            if len(self.running_results[self.mode + "_history"]) > self.history_size : self.running_results[self.mode + "_history"].pop(0)
+            self.player_evaluator.update_statistics(correct, result["DecisionTime"])
             #print(self.running_results[self.mode + "_history"])
 
-            step = 0.05 # increments difficulty 5% at a time
-            if self.running_results[self.mode + "_acc"] >= 0.8 :
-                if self.running_results[self.mode + "_diff"] + step < 1 :
-                    self.running_results[self.mode + "_diff"] += step
-
-            elif self.running_results[self.mode + "_acc"] <= 0.5 :
-                if self.running_results[self.mode + "_diff"] - step > 0 :
-                    self.running_results[self.mode + "_diff"] -= step
-
-
-            suggestion = qserver_ask_for_question_recommendation('f' if self.mode == "filtering" else "s", results_to_add[0].correct, results_to_add[0].decision_time, self.both_histories)
-
-            self.mode = "filtering" if suggestion[0] == "f" else "sharpening"
-            self.both_histories = suggestion[1]
-
-            # TODO: update player stats in the database
-            print(self.running_results)
-            self.db.update_player_stats(self.player_id, self.running_results)
+            # update player stats in the database
+            #print(self.player_evaluator.running_results)
+            self.player_evaluator.db_update(self.db, self.player_id, results_to_add)
 
             return "SUCCESS" + "\n"
 
@@ -171,6 +151,7 @@ class PlayerHandler(Thread) :
         
         return "SERVER SAYS: " + data
     
+    #moved to player_evaluate
     def lookup_trials(self) :
         margin = 0.005
 

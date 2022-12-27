@@ -8,6 +8,8 @@ def parse_arguments(args_list: List[str]) -> Namespace:
     parser = argparse.ArgumentParser(description="Server for the chicken minigame",
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     
+
+    #arguments for normal usage
     parser.add_argument("--use_lan", help="specify that server is being launched from the pc in the lab using LAN connection",
                         action="store_true")
     
@@ -16,7 +18,28 @@ def parse_arguments(args_list: List[str]) -> Namespace:
 
     parser.add_argument("--disable_shutdown", help="specify if the server has to stay on even if there are no clients connected",
                         action="store_true")
+
+    parser.add_argument("--evaluator", choices=["PDEP", "simple"], default="PDEP", help="the evaluator that should be used")
+
+    #arguments for simulated child
+    parser.add_argument("--sim_child", help="specify that you are not expecting a client connection and just want to use the simulated child",
+                        action="store_true")
+
+    parser.add_argument("--sim_n_trials", help="number of trials for the simulation",
+                        type=int, default=32)
     
+    parser.add_argument("--sim_plot", help="option to enable plots at the end of the simulation", action="store_true")
+
+    parser.add_argument("--sim_alpha", help="simulated filtering angle", type=float, default=10.0)
+    parser.add_argument("--sim_sigma", help="simulated sharpening standard deviation", type=float, default=0.2)
+
+    parser.add_argument("--sim_mock_trials", help="pick mock trials for the simulation (not fetched from lookup table)", 
+                        action= "store_true")
+    
+
+    #miscellanea arguments
+    parser.add_argument("--normalized_features", help= "specify that the nd-nnd space is not normalized in the range [-1,1]",
+                        choices=["y","n"], default="y")
     parser.add_argument("--always_new_player", help= "if enabled, the server creates a new player in the database for every connection without trying to locate their info first",
                         action="store_true")
 
@@ -28,6 +51,10 @@ def parse_arguments(args_list: List[str]) -> Namespace:
 
     args = parser.parse_args(args_list)
 
+
+    #process arguments
+    args.normalized_features = True if args.normalized_features == "y" else False
+
     if args.use_lan and args.use_remote: 
         parser.error("you can only specify either lan or remote connection") 
 
@@ -36,12 +63,13 @@ def parse_arguments(args_list: List[str]) -> Namespace:
         args.use_lan = True
         args.always_new_player = True
         args.disable_shutdown = True
+        args.evaluator = "simple"
         args.kids_dataset = True
 
     if args.use_remote:
-        args.host = '192.168.1.30'
+        args.host = '192.168.1.8'
     elif args.use_lan:
-        args.host = '192.168.1.30'
+        args.host = '10.0.1.16'
     else:
         args.host = '127.0.0.1'
 
