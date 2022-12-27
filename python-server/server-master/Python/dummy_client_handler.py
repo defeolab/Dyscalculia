@@ -1,4 +1,4 @@
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Tuple, List
 from AI.PlayerSimulator import PlayerSimulator
 from AI.ai_plot import plot_trials, plot_stats, FigSaver, plot_player_cycle3D
 from AI.ai_utils import get_mock_trials
@@ -50,7 +50,10 @@ class SimulatedClient:
                     estimation_duration: int = 10,
                     estimator_type: str = "ASD",
                     init_evaluator: bool = False,
-                    estimator_max_trials: int = 180):
+                    estimator_max_trials: int = 180,
+                    improver_type: str = "linear",
+                    improver_parameters: List[float] = [1, 0.01, 5]):
+
         self.filtering_diff = filtering_diff
         self.sharpening_diff = sharpening_difficulty
         self.lookup_table = pandas.read_csv("./dataset/lookup_table.csv")
@@ -58,7 +61,7 @@ class SimulatedClient:
         self.sigma = sigma
         self.mock_trials = mock_trials
         self.norm_feats = norm_feats
-        self.player = PlayerSimulator(self.alpha, self.sigma)
+        self.player = PlayerSimulator(self.alpha, self.sigma, improver_type=improver_type, improver_parameters=improver_parameters)
         self.save_file = save_file
         self.evaluator = evaluator
 
@@ -175,7 +178,7 @@ class SimulatedClient:
                 self.player_evaluator.save_trial(self.save_file, [], False, -1, commit= True)
 
             if update_child:
-                bv, sig = self.player.random_improvement()
+                bv, sig = self.player.apply_improvement()
                 sim_boundary_vectors.append(bv)
                 sim_sigmas.append(sig)
             else:

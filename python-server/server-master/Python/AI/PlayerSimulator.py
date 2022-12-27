@@ -1,10 +1,17 @@
 from AI.ai_utils import angle_between, unit_vector, vcol
+from AI.ImprovementHandler import Linear_IH, Normal_IH
 import numpy as np
 from typing import Any, List, Tuple
 import math
 
 class PlayerSimulator:
-    def __init__(self, alpha: float, sigma: float, add_decision_noise: bool = False, add_time_noise: bool = False):
+    def __init__    (self, alpha: float, 
+                    sigma: float, 
+                    add_decision_noise: bool = False, 
+                    add_time_noise: bool = False, 
+                    improver_type: str = "linear",
+                    improver_parameters : List[float] = [1, 0.01, 1],
+                    ):
         self.alpha = alpha
         self.sigma = sigma
         self.add_decision_noise = add_decision_noise
@@ -19,6 +26,11 @@ class PlayerSimulator:
         self.days_played = 0
         self.improve_alpha_std = 1
         self.improve_sigma_std = 0.01
+
+        if improver_type == "linear":
+            self.improver = Linear_IH(improver_parameters[-1], False, improver_parameters[0], improver_parameters[1])
+        elif improver_type == "normal":
+            self.improver = Normal_IH(improver_parameters[-1], False, improver_parameters[0], improver_parameters[1])
 
     def predict(self, trial: List[Any]) -> Tuple[bool, Tuple[float, bool]]:
         #print(trial)
@@ -72,25 +84,21 @@ class PlayerSimulator:
         
         return response_time
     
-    def random_improvement(self)-> Tuple[np.ndarray, float]:
+    def apply_improvement(self)-> Tuple[np.ndarray, float]:
         """
             Simple way to module child improvement: this function is called once per simulated day, and every fixed amount
             of days a random improvement is applied to the alpha and sigma coefficients
         """
         self.days_played+=1
         
-        if self.days_played % self.improve_interval == 0:
-        
-            self.alpha -= np.abs(np.random.normal(scale= self.improve_alpha_std))
-            self.sigma -= np.abs(np.random.normal(scale= self.improve_sigma_std))
+        self.alpha, self.sigma = self.improver.improve(self.alpha, self.sigma)
 
-            self.alpha = np.clip(self.alpha, 1.0, 89.0)
-            self.sigma = np.clip(self.sigma, 0.05, 1.0)
+
+        self.alpha = np.clip(self.alpha, 1.0, 89.0)
+        self.sigma = np.clip(self.sigma, 0.05, 1.0)
             
-            self.boundary_vector = unit_vector(np.array([-math.sin(math.radians(self.alpha)), math.cos(math.radians(self.alpha))]))
-            self.transform_mat =np.linalg.inv(np.array([[self.boundary_vector[0], self.boundary_vector[1]], [self.boundary_vector[1], -self.boundary_vector[0]]]))
+        self.boundary_vector = unit_vector(np.array([-math.sin(math.radians(self.alpha)), math.cos(math.radians(self.alpha))]))
+        self.transform_mat =np.linalg.inv(np.array([[self.boundary_vector[0], self.boundary_vector[1]], [self.boundary_vector[1], -self.boundary_vector[0]]]))
         
         
         return self.boundary_vector, self.sigma
-
-    #TODO different functions to module the growth of the child (i.e. linear, exponential etc.)
