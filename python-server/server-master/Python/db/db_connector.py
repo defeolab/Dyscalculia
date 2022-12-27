@@ -208,7 +208,6 @@ class DBConnector:
                        area_2_data.numberOfChickens, 
                        result_trial_data.chickenShowTime, now)
         
-        print(data_result)
 
         cursor.execute(add_result, data_result)
 

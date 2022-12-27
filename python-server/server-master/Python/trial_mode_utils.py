@@ -51,10 +51,10 @@ def qserver_suggest_next_question (current_question_type, current_question_score
             count_of_s_question +=1
             sum_of_s_scores += int(x[1])
     
-    print('count_of_f_question:' + str(count_of_f_question))
-    print('count_of_s_question:' + str(count_of_s_question))
-    print('sum_of_f_question:' + str(sum_of_f_scores))
-    print('sum_of_s_question:' + str(sum_of_s_scores))
+    #print('count_of_f_question:' + str(count_of_f_question))
+    #print('count_of_s_question:' + str(count_of_s_question))
+    #print('sum_of_f_question:' + str(sum_of_f_scores))
+    #print('sum_of_s_question:' + str(sum_of_s_scores))
     
     
     maximum_score_possible_f = count_of_f_question * 3 
@@ -128,8 +128,8 @@ def qserver_ask_for_question_recommendation(question_type,
         #this value is used just as initialization of the mode at the very first trial
         question_score = db_question_score
     
-    print('question_answer_status is : ' + str(question_answer_status))
-    print('question_score is : ' + str(question_score))
+    #print('question_answer_status is : ' + str(question_answer_status))
+    #print('question_score is : ' + str(question_score))
 
 
     
