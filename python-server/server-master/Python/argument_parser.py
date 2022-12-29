@@ -19,7 +19,7 @@ def parse_arguments(args_list: List[str]) -> Namespace:
     parser.add_argument("--disable_shutdown", help="specify if the server has to stay on even if there are no clients connected",
                         action="store_true")
 
-    parser.add_argument("--evaluator", choices=["PDEP", "simple"], default="PDEP", help="the evaluator that should be used")
+    parser.add_argument("--evaluator", choices=["PDEP", "simple"], default="simple", help="the evaluator that should be used")
 
     #arguments for simulated child
     parser.add_argument("--sim_child", help="specify that you are not expecting a client connection and just want to use the simulated child",
