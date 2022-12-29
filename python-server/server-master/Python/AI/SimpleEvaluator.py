@@ -260,7 +260,7 @@ class SimpleEvaluator(PlayerEvaluator):
             #Francesco's change, the rest of the code creates problems in the update of statistics
             step = -step if correct == False else step
             self.running_results[self.mode + "_diff"] += step
-            self.running_results[self.mode + "_diff"] = np.clip(self.running_results[self.mode + "_diff"], 0.05, 0.95)
+            self.running_results[self.mode + "_diff"] = float(np.clip(self.running_results[self.mode + "_diff"], 0.05, 0.95))
             return
 
         if self.running_results[self.mode + "_acc"] >= 0.8 :
