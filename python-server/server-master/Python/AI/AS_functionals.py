@@ -13,11 +13,11 @@ import os
 DEBUG_D = False
 DEBUG_S = False
 DEBUG_PC = False
-PATH_FOR_C_ABLATION = "C:\\Users\\fblan\\Dyscalculia\\python-server\\server-master\\Python\\AI\\precomputed_data\\PDEP\\C_ablation"
+PATH_FOR_C_ABLATION = ".\\AI\\precomputed_data\\PDEP\\C_ablation"
 PERFORM_ABLATION = False
 C = 100
 
-PATH_FOR_CONST = "C:\\Users\\fblan\\Dyscalculia\\python-server\\server-master\\Python\\AI\\precomputed_data\\PDEP\\consts\\C.npy"
+PATH_FOR_CONST = ".\\AI\\precomputed_data\\PDEP\\consts\\C.npy"
 
 STD_COMPUTATION = "ll" #can be "ll" for loglilkelihood, "basic" for fetched formula 
 
