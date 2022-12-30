@@ -1,6 +1,6 @@
 from typing import Any, Dict, Tuple, List
 from AI.PlayerSimulator import PlayerSimulator
-from AI.ai_plot import plot_trials, plot_stats, FigSaver, plot_player_cycle3D
+from AI.ai_plot import plot_trials, plot_stats, FigSaver, plot_player_cycle3D, plot_monthly_stats
 from AI.ai_utils import get_mock_trials
 import numpy as np
 from distributions import GaussianThreshold, UniformOutput
@@ -143,6 +143,14 @@ class SimulatedClient:
         e_sigmas = []
         e_bvs = []
 
+        month_n = 1
+
+        label1 = self.player_evaluator.get_labels_for_stats(0)
+        alpha_labels = [f"estimated {label1[0]}", f"actual {label1[0]}"]
+        sigma_labels = [f"estimated {label1[1]}", f"actual {label1[1]}"]
+        alpha_bounds = [-5, 95]
+        sigma_bounds = [-0.1, 0.9]
+
         print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} starting run with starting parameters: {self.alpha}-{self.sigma}")
 
         for day in range(1, days+1):
@@ -200,7 +208,12 @@ class SimulatedClient:
             
             local_accuracies.append(local_corrects/trials_per_day)
             cumulative_accuracies.append(tot_corrects/(day*trials_per_day))
-        
+
+            if make_plots and day % 30 == 0:
+                plot_monthly_stats([t1_stat1_history[-trials_per_day*30:], sim_alpha_history[-trials_per_day*30:]], trials_per_day, month_n, labels=alpha_labels, figsaver=figsaver, lim_bounds=alpha_bounds)
+                plot_monthly_stats([t1_stat2_history[-trials_per_day*30:], sim_sigma_history[-trials_per_day*30:]], trials_per_day, month_n, labels=sigma_labels, figsaver=figsaver, lim_bounds=sigma_bounds)
+                month_n+=1
+
         print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} finished run with starting parameters: {self.alpha}-{self.sigma}")
         print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} final evaluator stats are: {self.player_evaluator.get_stats_as_str()}")
         if make_plots:

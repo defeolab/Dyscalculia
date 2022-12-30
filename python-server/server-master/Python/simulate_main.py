@@ -212,7 +212,7 @@ if __name__ == "__main__":
                                         [-1, -0.05, 1]
                                     ]
 
-    pars_i = 1
+    pars_i = 0
     improver_type_options = ["normal", "linear"]
     improver_type = improver_type_options[pars_i]
 
@@ -236,7 +236,7 @@ if __name__ == "__main__":
     save_ablation = False
     n_runs = 1
 
-    suite_name = "Improver_test"
+    suite_name = "new_plots"
     sr = SimulationsRunner( days, trials_per_day, interval, evaluator, kids_ds, update_evaluator_stats, update_child, suite_name, 
                             target_prob, target_diff, mode, save_trials, save_plots, alphas[alpha_i], sigmas[sigma_i], mock, estimate_step,
                             target_C, make_plots, save_ablation, estimation_duration, 

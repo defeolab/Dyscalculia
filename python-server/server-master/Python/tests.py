@@ -1,7 +1,7 @@
 import unittest
 from AI.ai_utils import *
 from AI.TrialAdapter import TrialAdapter
-from AI.ai_plot import plot_trials, FigSaver, plot_player_cycle3D, plot_ablation_C
+from AI.ai_plot import plot_trials, FigSaver, plot_player_cycle3D, plot_ablation_C, plot_monthly_stats
 from AI.PDEP_Evaluator import PDEP_Evaluator
 from dummy_client_handler import SimulatedClient
 from AI.PlayerSimulator import PlayerSimulator
@@ -332,6 +332,11 @@ class TestAI(unittest.TestCase):
         plot_trials(np.array([-0.6, 0.2]), t, c, a, ann_str= True)
         
 
+    def test_monthly_plot(self):
+        stat1 = [np.random.normal(0.5) for i in range(0, 120)]
+        stat2 = [np.random.normal(0.5) for i in range(0, 120)]
+        
+        plot_monthly_stats([stat1, stat2], 4, 1, figsaver="asdsad")
 
     def test_misc(self):
         sigma = 0.8
@@ -399,8 +404,8 @@ if __name__ == "__main__":
     #tc.test_PDEP_update()
     #tc.test_std_loglikelihood()
     #tc.test_study_optimal_C()
-    tc.test_ASE()
-
+    #tc.test_ASE()
+    tc.test_monthly_plot()
 
     duration = 1000  # milliseconds
     freq = 440  # Hz

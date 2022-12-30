@@ -16,6 +16,7 @@ from matplotlib.ticker import LinearLocator
 class FigSaver:
     def __init__(self, base_root: str,exp_name: str, add_date:bool=False, interval: int=5, figname: str = None) -> None:
         self.root = os.path.join(base_root, exp_name) if figname is None else base_root
+        self.monthly_root = os.path.join(self.root, "monthly")
         self.figname = figname
         if add_date:
             today = date.today()
@@ -23,6 +24,9 @@ class FigSaver:
 
         if os.path.exists(self.root) == False and figname is None:
             os.mkdir(self.root)
+            if os.path.exists(self.monthly_root) == False:
+                os.mkdir(self.monthly_root)
+
         self.interval = interval
         self.i = 0
 
@@ -35,11 +39,12 @@ class FigSaver:
             plt.close()
         self.i+=1
 
-    def save_summary_stats(self, name: str):
-        figpath = os.path.join(self.root, f"{name}.png")
+    def save_summary_stats(self, name: str, root_type: str = "main"):
+        root = self.root if root_type == "main" else self.monthly_root
+        figpath = os.path.join(root, f"{name}.png")
         plt.savefig(figpath, format= "png")
         plt.close()
-    
+
     def save_player_cycle_3D(self, ax):
         elev = [0, 60, 90]
         az = [10, 45, 75]
@@ -170,6 +175,56 @@ def plot_stats( local_accuracies: List[float],
         plt.show()
     else:
         figsaver.save_summary_stats(f"{labels[0]}-{labels[1]}")
+
+def plot_monthly_stats( statlist: List[List[float]], 
+                        tpd: int,
+                        month_n: int,
+                        days: int = 30,
+                        labels: List[str] = ['local_accuracy', 'cumulative_accuracy'], 
+                        figsaver: FigSaver = None,
+                        lim_bounds: List[float] = [-0.1, 1.1]):
+    
+    if figsaver is None:
+        return
+
+    fig = plt.figure()
+    ax = fig.gca()
+    daily_statlist = []
+
+    x = np.linspace(1, days, days)
+
+    for l in statlist:
+        daily_stat = vec_reshape_by_day(l, tpd)
+        reduced = []
+        for ds in daily_stat:
+            reduced.append(sum(ds)/tpd)
+        daily_statlist.append(reduced)
+    
+    colors = ["green", "red", "yellow", "orange", "blue"]
+
+    for i, dl in enumerate(daily_statlist):
+        ax.plot(x, dl, color= colors[i], label=labels[i])
+
+    plt.title(f"Month n° {month_n}")
+
+    ax.legend()
+
+    plt.xlabel("day")
+
+    plt.ylim(lim_bounds)
+    plt.grid(True)
+    
+    figsaver.save_summary_stats(f"{month_n}-{labels[0]}-{labels[1]}", "monthly")
+
+def vec_reshape_by_day(vec: List[Any], trials_per_day: int):
+    ret = []
+    for i in range(0, int(len(vec)/trials_per_day)):
+        to_add = []
+        for j in range(0, trials_per_day):
+            to_add.append(vec[i*trials_per_day + j])
+        ret.append(to_add)
+    return ret
+
 
 def separate_by_day(vec: List[Any], trials_per_day: int):
     i=0
