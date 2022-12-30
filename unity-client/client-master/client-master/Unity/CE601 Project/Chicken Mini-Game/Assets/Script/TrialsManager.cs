@@ -32,6 +32,7 @@ public class TrialsManager : MonoBehaviour
 
     public bool remote;
     public bool useLan;
+    public string ip;
 
     public void Start()
     {
@@ -41,6 +42,8 @@ public class TrialsManager : MonoBehaviour
         finishImage.SetActive(false);
 
         instance = this;
+        maxTrialsNum = StoreIPAddress.instance.numTrials;
+
         ConnectWithClient();
     }
 
@@ -54,9 +57,11 @@ public class TrialsManager : MonoBehaviour
 
     public void ConnectWithClient()
     {
+        ip = StoreIPAddress.instance.ipAddress;
+
         try
         {
-            client = new ClientToServer(remote, useLan);
+            client = new ClientToServer(remote, useLan, ip);
             Debug.Log("Logged in successfully");
             connectionStarted = true;
             errorImage.SetActive(false);

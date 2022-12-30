@@ -10,17 +10,18 @@ public class ClientToServer : MonoBehaviour
 
     const String remote_host = "87.19.52.63";
     const int remote_port = 51831;
-    const String lan_host = "10.0.1.16"; //REPLACE HERE WITH THE LOCAL IP OF THE LAB PC
+    public string lan_host = ""; //REPLACE HERE WITH THE LOCAL IP OF THE LAB PC
     
-
     private readonly StreamReader reader;
     private readonly StreamWriter writer;
 
-    public ClientToServer(bool remote, bool use_lan)
+    public ClientToServer(bool remote, bool use_lan, string ip)
     {
         // Connecting to the server and creating objects for communications
+
+        if (use_lan) lan_host = ip; 
         
-        TcpClient tcpClient = remote ? new TcpClient(remote_host, remote_port) : use_lan ? new TcpClient(lan_host, port) : new TcpClient("localhost", port);
+        TcpClient tcpClient = remote ? new TcpClient(remote_host, remote_port) : use_lan ? new TcpClient(ip, port) : new TcpClient("localhost", port);
         NetworkStream stream = tcpClient.GetStream();
         reader = new StreamReader(stream);
         writer = new StreamWriter(stream);

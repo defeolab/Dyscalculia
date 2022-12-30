@@ -74,7 +74,7 @@ public class DataManager : MonoBehaviour
         for (int i = 0; i < areasData.Length; i++)
         {
             if(areasData[i].getSizeOfAnimal() > 7 && 
-                Mathf.Abs(areasData[0].getSizeOfAnimal() - areasData[1].getSizeOfAnimal()) > 1.5f)
+                Mathf.Abs(areasData[0].getSizeOfAnimal() - areasData[1].getSizeOfAnimal()) > 1f)
             {
                 for (int j = 0; j < areasData[i].getNumberOfAnimals(); j++)
                 {

@@ -56,11 +56,13 @@ public class Animals : MonoBehaviour
 
         if (errorStarted)
         {
+            float minValDistance = this.transform.localScale.x * 0.12f; //0.12f is the value of its BoxCollider.x
+
             if (area.name == "Area1")
             {
                 var distanceBetween = Vector2.Distance(dragManager.worldPosition, this.transform.position);
 
-                if (distanceBetween < 0.8f && !dragManager.findDrag1 && (Input.GetMouseButton(0)|| Input.touchCount > 0))
+                if (distanceBetween < minValDistance && !dragManager.findDrag1 && (Input.GetMouseButton(0)|| Input.touchCount > 0))
                 //if (IsInside(dragManager.worldPosition, this.transform.position) && !dragManager.findDrag1 && (Input.GetMouseButtonDown(0) || Input.touchCount > 0))
                 {
                     dragManager.findDrag1 = true;
@@ -71,7 +73,7 @@ public class Animals : MonoBehaviour
             {
                 var distanceBetween = Vector2.Distance(dragManager.worldPosition, this.transform.position);
 
-                if (distanceBetween < 0.8f && !dragManager.findDrag2 && (Input.GetMouseButton(0) || Input.touchCount > 0))
+                if (distanceBetween < minValDistance && !dragManager.findDrag2 && (Input.GetMouseButton(0) || Input.touchCount > 0))
                 //if (IsInside(dragManager.worldPosition, this.transform.position) && !dragManager.findDrag2 && (Input.GetMouseButtonDown(0) || Input.touchCount > 0))
                 {
                     dragManager.findDrag2 = true;
