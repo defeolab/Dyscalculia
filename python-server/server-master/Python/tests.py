@@ -1,7 +1,7 @@
 import unittest
 from AI.ai_utils import *
 from AI.TrialAdapter import TrialAdapter
-from AI.ai_plot import plot_trials, FigSaver, plot_player_cycle3D, plot_ablation_C, plot_monthly_stats
+from AI.ai_plot import plot_trials, FigSaver, plot_player_cycle3D, plot_ablation_C, plot_monthly_stats, make_tables
 from AI.PDEP_Evaluator import PDEP_Evaluator
 from dummy_client_handler import SimulatedClient
 from AI.PlayerSimulator import PlayerSimulator
@@ -17,10 +17,10 @@ import scipy as sp
 import winsound
 
 
-BASE_PATH_FOR_PICS = "C:\\Users\\fblan\\Desktop\\thesis_pics"
+BASE_PATH_FOR_PICS = ".\\experiments"
 BASE_PATH_FOR_CASUAL_PICS = "C:\\Users\\fblan\\Desktop\\thesis pics\\test"
 
-BASE_PATH_FOR_SAVING_TRIALS = "C:\\Users\\fblan\\Dyscalculia\\python-server\\server-master\\Python\\AI\\precomputed_data"
+BASE_PATH_FOR_SAVING_TRIALS = ".\\AI\\precomputed_data"
 
 def to_trial(nd, nnd):
     return [-1,-1,-1,-1,-1,-1,-1,-1,nd,nnd]
@@ -337,6 +337,22 @@ class TestAI(unittest.TestCase):
         stat2 = [np.random.normal(0.5) for i in range(0, 120)]
         
         plot_monthly_stats([stat1, stat2], 4, 1, figsaver="asdsad")
+    
+    def test_table(self):
+        
+        base_root = os.path.join(BASE_PATH_FOR_PICS, "PDEP")
+        figsaver = FigSaver(base_root, "test")
+
+        n_stats = 2 
+        tpd = 2
+        n_months = 2
+        main_stat = [i for i in range(0, n_months*30*tpd)]
+        secondary_stats = [[-i for i in range(0, n_months*30*tpd)] for j in range(0,n_stats)]
+        main_label = "alpha"
+        secondary_labels=["first pass", "second pass"]
+
+        make_tables(main_stat, secondary_stats, tpd, n_months, main_label = main_label, secondary_labels=secondary_labels, figsaver=figsaver)
+
 
     def test_misc(self):
         sigma = 0.8
@@ -405,7 +421,8 @@ if __name__ == "__main__":
     #tc.test_std_loglikelihood()
     #tc.test_study_optimal_C()
     #tc.test_ASE()
-    tc.test_monthly_plot()
+    #tc.test_monthly_plot()
+    tc.test_table()
 
     duration = 1000  # milliseconds
     freq = 440  # Hz

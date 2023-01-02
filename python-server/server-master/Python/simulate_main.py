@@ -9,9 +9,18 @@ import time
 import os
 import winsound
 
-BASE_PATH_FOR_PICS = "C:\\Users\\fblan\\Desktop\\thesis_pics"
-BASE_PATH_FOR_SAVING_TRIALS = "C:\\Users\\fblan\\Dyscalculia\\python-server\\server-master\\Python\\AI\\precomputed_data"
-PATH_FOR_CONST = "C:\\Users\\fblan\\Dyscalculia\\python-server\\server-master\\Python\\AI\\precomputed_data\\PDEP\\consts\\C.npy"
+BASE_PATH_FOR_PICS = ".\\experiments"
+BASE_PATH_FOR_SAVING_TRIALS = ".\\AI\\precomputed_data"
+PATH_FOR_CONST = ".\\AI\\precomputed_data\\PDEP\\consts\\C.npy"
+
+if os.path.exists(BASE_PATH_FOR_PICS) == False:
+    os.mkdir(BASE_PATH_FOR_PICS)
+    pdep = os.path.join(BASE_PATH_FOR_PICS, "PDEP")
+    default = os.path.join(BASE_PATH_FOR_PICS, "simple")
+
+    os.mkdir(pdep)
+    os.mkdir(default)
+
 
 class SimulationsRunner(unittest.TestCase):
     def __init__(   self, 
@@ -196,9 +205,9 @@ if __name__ == "__main__":
     diffs = [(0.1,0.1), (0.4, 0.4), (0.8, 0.8), (0.95,0.95)]
     modes = ["filtering", "sharpening"]
 
-    days = 60
+    days =60
     trials_per_day = 30
-    interval = 5
+    interval = 15
 
     evaluator = "PDEP"
     kids_ds = False
@@ -236,7 +245,7 @@ if __name__ == "__main__":
     save_ablation = False
     n_runs = 1
 
-    suite_name = "new_plots"
+    suite_name = "test_tables"
     sr = SimulationsRunner( days, trials_per_day, interval, evaluator, kids_ds, update_evaluator_stats, update_child, suite_name, 
                             target_prob, target_diff, mode, save_trials, save_plots, alphas[alpha_i], sigmas[sigma_i], mock, estimate_step,
                             target_C, make_plots, save_ablation, estimation_duration, 

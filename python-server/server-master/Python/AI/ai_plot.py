@@ -11,6 +11,8 @@ from datetime import date
 from mpl_toolkits import mplot3d
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator
+from tabulate import tabulate
+
 
 
 class FigSaver:
@@ -56,6 +58,26 @@ class FigSaver:
                 ax.view_init(e,a)
                 plt.savefig(figpath, format = "png")
         plt.close()
+    
+    def save_table(self, data: List[Any], headers: List[str], prefix: str, root_type: str = "main"):
+        root = self.root if root_type == "main" else self.monthly_root
+        table_plain = tabulate(data, headers, tablefmt="grid")
+        table_tex = tabulate(data, headers, tablefmt="latex")
+
+        plain_file = os.path.join(root, f"{prefix}_plain.txt")
+        with open(plain_file, 'a') as f:
+            f.write("\n")
+            f.write(table_plain)
+            f.write("\n")
+        
+        tex_file = os.path.join(root, f"{prefix}_tex.tex")
+        with open(tex_file, 'a') as f:
+            f.write("\n")
+            f.write(table_tex)
+            f.write("\n")
+
+
+
         
 
 
@@ -224,6 +246,69 @@ def vec_reshape_by_day(vec: List[Any], trials_per_day: int):
             to_add.append(vec[i*trials_per_day + j])
         ret.append(to_add)
     return ret
+
+def make_tables( main_stat: List[float],
+                secondary_stats: List[List[float]],
+                tpd: int,
+                n_months: int,
+                days: int = 30,
+                main_label: str = "alpha",
+                secondary_labels: List[str] = ['local accuracy', 'cumulative accuracy'], 
+                figsaver: FigSaver = None):
+
+    main_monthly_stat = vec_reshape_by_day(main_stat, days*tpd)
+
+    secondary_monthly_stats = []
+
+    for stat in secondary_stats:
+        secondary_monthly_stat = vec_reshape_by_day(stat, days*tpd)
+        secondary_monthly_stats.append(secondary_monthly_stat)
+
+    data = []
+    main_monthly_stat = np.array(main_monthly_stat)
+    secondary_monthly_stats = np.array(secondary_monthly_stats)
+    for i in range(0, n_months):
+        monthly_data = [i+1]
+        #print(main_monthly_stat[i])
+        for stat in secondary_monthly_stats:
+            #print(stat[i])
+            dist = np.abs(main_monthly_stat[i]-stat[i])
+            avg_dist = np.average(dist)
+            dist_std = np.std(dist)
+            max_dist = np.max(dist)
+            monthly_data.append(avg_dist)
+            monthly_data.append(dist_std)
+            monthly_data.append(max_dist)
+        
+        data.append(monthly_data)
+
+    last_row = ["All"]
+
+    main_all_data = np.array(main_stat)
+    secondary_all_data = np.array(secondary_stats)
+    for stat in secondary_all_data:
+        dist = np.abs(main_all_data-stat)
+        avg_dist = np.average(dist)
+        dist_std = np.std(dist)
+        max_dist = np.max(dist)
+        last_row.append(avg_dist)
+        last_row.append(dist_std)
+        last_row.append(max_dist)
+
+    data.append(last_row)
+    
+    header = ["Month"]
+
+    header_additions = ["Avg Dist", "Dist Std", "Max Dist"]
+    for i, stat in enumerate(secondary_monthly_stats):
+        for addition in header_additions:
+            header.append(secondary_labels[i] + " "+ addition)
+
+    if figsaver is not None:
+        figsaver.save_table(data, header, main_label,root_type = "monthly")
+    else:
+        print(tabulate(data, header, tablefmt="fancy_grid"))
+
 
 
 def separate_by_day(vec: List[Any], trials_per_day: int):
