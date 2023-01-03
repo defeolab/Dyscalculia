@@ -5,7 +5,7 @@ from typing import Any
 from AI.AS_Estimate import ASD_Estimator, ASE_Estimator
 
 from AI.TrialAdapter import TrialAdapter
-from typing import List, Any
+from typing import List, Any, Tuple
 
 import numpy as np
 import math
@@ -38,7 +38,7 @@ class PDEP_Evaluator(PlayerEvaluator):
                     update_step: int=5, 
                     mock: bool = False, 
                     kids_ds: bool = False, 
-                    estimate_step: int = 90, 
+                    estimate_step: int = 1, 
                     estimation_min_trials: int = 30,
                     estimator_type: str = "ASD",
                     estimator_max_trials: int = 180,
@@ -187,7 +187,8 @@ class PDEP_Evaluator(PlayerEvaluator):
             self.transform_mat =np.linalg.inv(np.array([[self.boundary_vector[0], self.boundary_vector[1]], [self.boundary_vector[1], -self.boundary_vector[0]]]))
 
         
-
+    def second_pass_estimation(self, alpha_data: List[float], sigma_data: List[float])-> Tuple[List[float], List[float], List[np.ndarray]]:
+        return self.estimator.second_pass_estimation(alpha_data, sigma_data)
     
     def save_trial(self, save_file: str, trial: List[float], correct: bool, decision_time: float, commit: bool = False) -> None:
         """

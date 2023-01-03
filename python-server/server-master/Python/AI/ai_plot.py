@@ -222,7 +222,7 @@ def plot_monthly_stats( statlist: List[List[float]],
             reduced.append(sum(ds)/tpd)
         daily_statlist.append(reduced)
     
-    colors = ["green", "red", "yellow", "orange", "blue"]
+    colors = ["green", "red", "blue", "orange", "yellow"]
 
     for i, dl in enumerate(daily_statlist):
         ax.plot(x, dl, color= colors[i], label=labels[i])

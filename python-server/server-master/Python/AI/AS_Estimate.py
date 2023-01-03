@@ -60,8 +60,39 @@ class ASD_Estimator(Estimator_Interface):
 
         return 45.0, 0.1, unit_vector(np.array([-1,1])), "support"        
 
+    def second_pass_estimation(self, alpha_data: List[float], sigma_data: List[float])-> Tuple[List[float], List[float], List[np.ndarray]]:
+        n_samples = len(alpha_data)
+        trials = np.array(self.trials[-n_samples:])
+        predictions = np.array(self.predictions[-n_samples:])
 
-#TODO estimator with esplicit trial suggestion like professor asked
+        print(f"second pass with {n_samples}")
+
+        ret_alphas = []
+        ret_sigmas = []
+        ret_norms = []
+
+        for i in range(0, n_samples):
+            lower_bound, upper_bound = fetch_estimation_window(i, alpha_data, sigma_data, self.max_trials_to_consider)
+            target_trials = trials[i-lower_bound:i+upper_bound]
+            target_predictions = predictions[i-lower_bound:i+upper_bound]
+
+            print(f"target with shape {target_trials.shape}")
+            if self.denoiser_type == "OneClassSVM":
+                (curr_alpha, curr_sigma, curr_norm) = produce_estimate_denoising_OCSVM(target_trials, target_predictions)
+
+            elif self.denoiser_type == "simple_denoising":
+                prev_norm = ret_norms[i-1] if i != 0 else np.array(unit_vector([-1, 1]))
+                prev_sigma = ret_sigmas[i-1] if i != 0 else 0.3
+                (curr_alpha, curr_sigma, curr_norm) = produce_estimate_simple_denoising(target_trials, target_predictions, prev_norm, prev_sigma)
+
+
+            ret_alphas.append(curr_alpha)
+            ret_sigmas.append(curr_sigma)
+            ret_norms.append(curr_norm)
+        
+        return ret_alphas, ret_sigmas, ret_norms
+
+#unused
 class ASE_Estimator(Estimator_Interface):
     def __init__(self, n_trials_per_cycle: int = 10, max_trials_to_consider: int = 90):
         super().__init__()

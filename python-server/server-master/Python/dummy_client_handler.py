@@ -148,8 +148,8 @@ class SimulatedClient:
         monthly_data = []
 
         label1 = self.player_evaluator.get_labels_for_stats(0)
-        alpha_labels = [f"estimated {label1[0]}", f"actual {label1[0]}"]
-        sigma_labels = [f"estimated {label1[1]}", f"actual {label1[1]}"]
+        alpha_labels = [f"estimated {label1[0]}", f"actual {label1[0]}", f"second pass {label1[0]}"]
+        sigma_labels = [f"estimated {label1[1]}", f"actual {label1[1]}", f"second pass {label1[1]}"]
         alpha_bounds = [-5, 95]
         sigma_bounds = [-0.1, 0.9]
 
@@ -211,18 +211,33 @@ class SimulatedClient:
             local_accuracies.append(local_corrects/trials_per_day)
             cumulative_accuracies.append(tot_corrects/(day*trials_per_day))
 
-            if make_plots and day % 30 == 0:
-                plot_monthly_stats([t1_stat1_history[-trials_per_day*30:], sim_alpha_history[-trials_per_day*30:]], trials_per_day, month_n, labels=alpha_labels, figsaver=figsaver, lim_bounds=alpha_bounds)
-                plot_monthly_stats([t1_stat2_history[-trials_per_day*30:], sim_sigma_history[-trials_per_day*30:]], trials_per_day, month_n, labels=sigma_labels, figsaver=figsaver, lim_bounds=sigma_bounds)
-                month_n+=1
+            
+            month_n+=1 if day%30==0 else 0
 
         print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} finished run with starting parameters: {self.alpha}-{self.sigma}")
         print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} final evaluator stats are: {self.player_evaluator.get_stats_as_str()}")
+
         if make_plots:
             plot_stats(local_accuracies, cumulative_accuracies, days, figsaver=figsaver)
             label1 = self.player_evaluator.get_labels_for_stats(0)
-            alpha_labels = [f"estimated {label1[0]}", f"actual {label1[0]}"]
-            sigma_labels = [f"estimated {label1[1]}", f"actual {label1[1]}"]
+            if self.evaluator == "PDEP":
+                sp_alpha, sp_sigma, sp_nomrs = self.player_evaluator.second_pass_estimation(t1_stat1_history, t1_stat2_history)
+
+
+            for i in range(0, month_n-1):
+
+                plot_monthly_stats( [   
+                                        t1_stat1_history[i*trials_per_day*30: (i+1)*trials_per_day*30], 
+                                        sim_alpha_history[i*trials_per_day*30: (i+1)*trials_per_day*30], 
+                                        sp_alpha[i*trials_per_day*30: (i+1)*trials_per_day*30]
+                                    ], 
+                                    trials_per_day, i+1, labels=alpha_labels, figsaver=figsaver, lim_bounds=alpha_bounds)
+                plot_monthly_stats( [
+                                        t1_stat2_history[i*trials_per_day*30: (i+1)*trials_per_day*30], 
+                                        sim_sigma_history[i*trials_per_day*30: (i+1)*trials_per_day*30],
+                                        sp_sigma[i*trials_per_day*30: (i+1)*trials_per_day*30]
+                                    ], 
+                                    trials_per_day, i+1, labels=sigma_labels, figsaver=figsaver, lim_bounds=sigma_bounds)
         
             plot_stats(t1_stat1_history, sim_alpha_history, days*trials_per_day, labels=alpha_labels, figsaver=figsaver, lim_bounds=[-5, 95], write_avg_dists=True)
             plot_stats(t1_stat2_history, sim_sigma_history, days*trials_per_day, labels=sigma_labels, figsaver=figsaver, write_avg_dists=True)

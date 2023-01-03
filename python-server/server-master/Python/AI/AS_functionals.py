@@ -17,25 +17,26 @@ PATH_FOR_C_ABLATION = ".\\AI\\precomputed_data\\PDEP\\C_ablation"
 PERFORM_ABLATION = False
 C = 100
 
-PATH_FOR_CONST = ".\\AI\\precomputed_data\\PDEP\\consts\\C.npy"
-
 STD_COMPUTATION = "ll" #can be "ll" for loglilkelihood, "basic" for fetched formula 
 
-#load constants from file
-filepath = os.path.join(PATH_FOR_C_ABLATION, "best_Cs.npy")
-BEST_CS : np.ndarray = np.load(filepath)
+if PERFORM_ABLATION == False:
+    PATH_FOR_CONST = ".\\AI\\precomputed_data\\PDEP\\consts\\C.npy"
 
-filepath = os.path.join(PATH_FOR_C_ABLATION, "configs.npy")
-CONFIGS : np.ndarray = np.load(filepath)
-CONFIGS[:, 0]/=90
-CONFIGS[:, 1]/=0.5
+    #load constants from file
+    filepath = os.path.join(PATH_FOR_C_ABLATION, "best_Cs.npy")
+    BEST_CS : np.ndarray = np.load(filepath)
+
+    filepath = os.path.join(PATH_FOR_C_ABLATION, "configs.npy")
+    CONFIGS : np.ndarray = np.load(filepath)
+    CONFIGS[:, 0]/=90
+    CONFIGS[:, 1]/=0.5
 
 
-filepath = os.path.join(PATH_FOR_C_ABLATION, "Cs.npy")
-CS : np.ndarray = np.load(filepath)
+    filepath = os.path.join(PATH_FOR_C_ABLATION, "Cs.npy")
+    CS : np.ndarray = np.load(filepath)
 
-filepath = os.path.join(PATH_FOR_C_ABLATION, "errors_by_Cs.npy")
-ERR_CS : np.ndarray = np.load(filepath)
+    filepath = os.path.join(PATH_FOR_C_ABLATION, "errors_by_Cs.npy")
+    ERR_CS : np.ndarray = np.load(filepath)
 
 def mirror_trials_list(trials: List[np.ndarray], predictions: List[bool]) -> Tuple[List[np.ndarray], List[bool]]:
     n_t = []
@@ -275,9 +276,11 @@ def denoise_data_OCSVM(trials: np.ndarray, predictions: np.ndarray) -> Tuple[Tup
     return (ret_t_safe, ret_p_safe), (ret_t_anomaly, ret_p_anomaly)
 
 
+def fetch_estimation_window(index: int, alpha_data: List[float], sigma_data: List[float], max_width: int) -> Tuple[int, int]:
+    return int(max_width/2), int(max_width/2)
 
 
-
+#unused
 def produce_estimate_denoising_OCSVM(trials: np.ndarray, predictions: np.ndarray)-> Tuple[float, float]:
     model = LinearSVC()
 
