@@ -76,7 +76,7 @@ public class DataManager : MonoBehaviour
 
         for (int i = 0; i < areasData.Length; i++)
         {
-            if(cowORchick == 1 && (areasData[0].sizeOfChicken > 5.5f && areasData[1].sizeOfChicken > 5.5f))
+            if(cowORchick == 1 && (areasData[0].sizeOfChicken >= 5f && areasData[1].sizeOfChicken >= 5f))
             {                
                 for (int j = 0; j < areasData[i].getNumberOfAnimals(); j++)
                 {
