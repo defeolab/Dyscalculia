@@ -206,7 +206,7 @@ if __name__ == "__main__":
     modes = ["filtering", "sharpening"]
 
     days =60
-    trials_per_day = 30
+    trials_per_day = 2
     interval = 15
 
     evaluator = "PDEP"
@@ -245,7 +245,7 @@ if __name__ == "__main__":
     save_ablation = False
     n_runs = 1
 
-    suite_name = "test_tables"
+    suite_name = "test_second_pass"
     sr = SimulationsRunner( days, trials_per_day, interval, evaluator, kids_ds, update_evaluator_stats, update_child, suite_name, 
                             target_prob, target_diff, mode, save_trials, save_plots, alphas[alpha_i], sigmas[sigma_i], mock, estimate_step,
                             target_C, make_plots, save_ablation, estimation_duration, 

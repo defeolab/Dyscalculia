@@ -65,18 +65,16 @@ class ASD_Estimator(Estimator_Interface):
         trials = np.array(self.trials[-n_samples:])
         predictions = np.array(self.predictions[-n_samples:])
 
-        print(f"second pass with {n_samples}")
-
         ret_alphas = []
         ret_sigmas = []
         ret_norms = []
 
         for i in range(0, n_samples):
             lower_bound, upper_bound = fetch_estimation_window(i, alpha_data, sigma_data, self.max_trials_to_consider)
-            target_trials = trials[i-lower_bound:i+upper_bound]
-            target_predictions = predictions[i-lower_bound:i+upper_bound]
+            target_trials = trials[lower_bound:upper_bound]
+            target_predictions = predictions[lower_bound:upper_bound]
 
-            print(f"target with shape {target_trials.shape}")
+            #print(f"target with shape {target_trials.shape}, max was {self.max_trials_to_consider}, maxL was {trials.shape}, i: {i}")
             if self.denoiser_type == "OneClassSVM":
                 (curr_alpha, curr_sigma, curr_norm) = produce_estimate_denoising_OCSVM(target_trials, target_predictions)
 

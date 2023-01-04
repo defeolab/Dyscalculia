@@ -65,7 +65,7 @@ class FigSaver:
         table_tex = tabulate(data, headers, tablefmt="latex")
 
         plain_file = os.path.join(root, f"{prefix}_plain.txt")
-        with open(plain_file, 'a') as f:
+        with open(plain_file, 'w') as f:
             f.write("\n")
             f.write(table_plain)
             f.write("\n")
@@ -167,7 +167,7 @@ def plot_trials(boundary_vector: np.ndarray,
         plt.show()
     else:
         figsaver.save_day()
-
+"""
 def plot_stats( local_accuracies: List[float], 
                 cumulative_accuracies: List[float], 
                 days: int, 
@@ -193,6 +193,39 @@ def plot_stats( local_accuracies: List[float],
 
     plt.ylim(lim_bounds)
     plt.grid(True)
+    if figsaver is None:
+        plt.show()
+    else:
+        figsaver.save_summary_stats(f"{labels[0]}-{labels[1]}")
+"""
+def plot_stats( statlist: List[List[float]], 
+                length: int,
+                labels: List[str] = ['local_accuracy', 'cumulative_accuracy'],
+                main_stat: str = "alpha",
+                figsaver: FigSaver = None,
+                lim_bounds: List[float] = [-0.1, 1.1]):
+    
+    if figsaver is None:
+        return
+
+    fig = plt.figure()
+    ax = fig.gca()
+    x = np.linspace(1, length, length)
+
+    colors = ["green", "red", "blue", "orange", "yellow"]
+
+    for i, dl in enumerate(statlist):
+        ax.plot(x, dl, color= colors[i], label=labels[i])
+
+    plt.title(f"Plot for {main_stat}")
+
+    ax.legend()
+
+    plt.xlabel("trial")
+
+    plt.ylim(lim_bounds)
+    plt.grid(True)
+    
     if figsaver is None:
         plt.show()
     else:

@@ -277,7 +277,9 @@ def denoise_data_OCSVM(trials: np.ndarray, predictions: np.ndarray) -> Tuple[Tup
 
 
 def fetch_estimation_window(index: int, alpha_data: List[float], sigma_data: List[float], max_width: int) -> Tuple[int, int]:
-    return int(max_width/2), int(max_width/2)
+    lower_bound = 0 if index - max_width/2 <0 else int(index - max_width/2)
+    upper_bound = len(alpha_data) if index + max_width/2 > len(alpha_data) else int(index + max_width/2) 
+    return lower_bound, upper_bound
 
 
 #unused
