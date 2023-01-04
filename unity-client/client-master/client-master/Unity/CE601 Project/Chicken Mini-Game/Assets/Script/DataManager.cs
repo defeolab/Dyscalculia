@@ -179,7 +179,7 @@ public class DataManager : MonoBehaviour
     {
         if (!animals.startWalk)
         {
-            yield return new WaitForSeconds(0.1f / animals.number);
+            yield return new WaitForSeconds(0.01f / animals.number);
             animals.startWalk = true;
         }
     }
