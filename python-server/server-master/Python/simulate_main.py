@@ -173,14 +173,6 @@ class SimulationsRunner(unittest.TestCase):
         print(f"best Cs:")
         print(best_Cs_by_config)
         print("-------------")
-            
-            
-            
-
-
-
-
-
 
     
 if __name__ == "__main__":
@@ -205,8 +197,8 @@ if __name__ == "__main__":
     diffs = [(0.1,0.1), (0.4, 0.4), (0.8, 0.8), (0.95,0.95)]
     modes = ["filtering", "sharpening"]
 
-    days =60
-    trials_per_day = 2
+    days =180
+    trials_per_day = 30
     interval = 15
 
     evaluator = "PDEP"
@@ -218,10 +210,10 @@ if __name__ == "__main__":
     update_child = True
     improver_parameters_options =   [
                                         [0.45, 0.003, 1],
-                                        [-1, -0.05, 1]
+                                        [-0.3, -0.002, 1]
                                     ]
 
-    pars_i = 0
+    pars_i = 1
     improver_type_options = ["normal", "linear"]
     improver_type = improver_type_options[pars_i]
 
@@ -245,7 +237,7 @@ if __name__ == "__main__":
     save_ablation = False
     n_runs = 1
 
-    suite_name = "test_second_pass"
+    suite_name = "precompute_improving"
     sr = SimulationsRunner( days, trials_per_day, interval, evaluator, kids_ds, update_evaluator_stats, update_child, suite_name, 
                             target_prob, target_diff, mode, save_trials, save_plots, alphas[alpha_i], sigmas[sigma_i], mock, estimate_step,
                             target_C, make_plots, save_ablation, estimation_duration, 

@@ -1,7 +1,7 @@
 from typing import Any, Dict, Tuple, List
 from AI.PlayerSimulator import PlayerSimulator
 from AI.ai_plot import plot_trials, plot_stats, FigSaver, plot_player_cycle3D, plot_monthly_stats, make_tables
-from AI.ai_utils import get_mock_trials
+from AI.ai_utils import get_mock_trials, save_npy
 import numpy as np
 from distributions import GaussianThreshold, UniformOutput
 import math
@@ -12,6 +12,7 @@ import time
 from AI.SimpleEvaluator import SimpleEvaluator
 from transform_matrix import TransformMatrix
 from AI.PDEP_Evaluator import PDEP_Evaluator
+import os
 
 from datetime import datetime
 
@@ -64,6 +65,9 @@ class SimulatedClient:
         self.player = PlayerSimulator(self.alpha, self.sigma, improver_type=improver_type, improver_parameters=improver_parameters)
         self.save_file = save_file
         self.evaluator = evaluator
+
+        if self.save_file is not None:
+            self.save_folder = os.path.relpath(os.path.join(self.save_file, os.pardir))
 
         if evaluator == "simple":
             self.player_evaluator = SimpleEvaluator(self.lookup_table, 1, 5, alt_mode_weight=0.5, kids_ds=kids_ds,)
@@ -222,7 +226,7 @@ class SimulatedClient:
             #plot_stats(local_accuracies, cumulative_accuracies, days, figsaver=figsaver)
             label1 = self.player_evaluator.get_labels_for_stats(0)
             if self.evaluator == "PDEP":
-                sp_alpha, sp_sigma, sp_nomrs = self.player_evaluator.second_pass_estimation(t1_stat1_history, t1_stat2_history)
+                sp_alpha, sp_sigma, sp_norms = self.player_evaluator.second_pass_estimation(t1_stat1_history, t1_stat2_history)
 
 
             for i in range(0, month_n-1):
@@ -251,6 +255,15 @@ class SimulatedClient:
             if self.evaluator == "PDEP":
                 plot_player_cycle3D(sim_boundary_vectors, e_bvs, sim_sigmas, e_sigmas, proposed_trials, corrects, trials_per_day, figsaver= figsaver)
         
+            if self.save_file is not None:
+                #save alpha and sigma estimations over time
+                save_npy(self.save_folder, t1_stat1_history, "fp_alpha")
+                save_npy(self.save_folder, sp_alpha, "sp_alpha")
+                save_npy(self.save_folder, sim_alpha_history, "sim_alpha")
+                save_npy(self.save_folder, t1_stat2_history, "fp_sigma")
+                save_npy(self.save_folder, sp_sigma, "sp_sigma")
+                save_npy(self.save_folder, sim_sigma_history, "sim_sigma")
+
         return (t1_stat1_history, t1_stat2_history), (sim_alpha_history, sim_sigma_history)
         
 

@@ -4,11 +4,17 @@ import numpy.random
 import scipy as sp
 from scipy import integrate
 from scipy.optimize import fmin_l_bfgs_b
+import os
 
 
 from typing import Callable, Tuple, List
 
 import warnings
+
+def save_npy(save_folder: str, array: List[float], name:str):
+    a = np.array(array)
+    sf = os.path.join(save_folder, name)
+    np.save(sf, a)
 
 def to_mock_trial(nd: float, nnd: float):
     return [-1,-1,-1,-1,-1,-1,-1,-1,nd, nnd]

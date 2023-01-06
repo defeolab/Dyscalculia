@@ -1,7 +1,8 @@
 import unittest
 from AI.ai_utils import *
 from AI.TrialAdapter import TrialAdapter
-from AI.ai_plot import plot_trials, FigSaver, plot_player_cycle3D, plot_ablation_C, plot_monthly_stats, make_tables
+from AI.ai_plot import plot_trials, FigSaver, plot_player_cycle3D, plot_ablation_C, plot_monthly_stats, make_tables, plot_stats
+from AI.ImprovementHandler import *
 from AI.PDEP_Evaluator import PDEP_Evaluator
 from dummy_client_handler import SimulatedClient
 from AI.PlayerSimulator import PlayerSimulator
@@ -12,6 +13,7 @@ import time
 import os
 import functools
 import scipy as sp
+import matplotlib.pyplot as plt
 
 
 import winsound
@@ -45,6 +47,34 @@ class TestAI(unittest.TestCase):
         self.ax = lambda x: x*self.a
 
         self.integral_bound = 5
+
+        prec_path = os.path.join(BASE_PATH_FOR_SAVING_TRIALS, "PDEP", "precompute_improving")
+
+        path = os.path.join(prec_path, "alpha_65_sigma_50.npy")
+        self.trial_data = np.load(path)
+
+        path = os.path.join(prec_path, "fp_alpha.npy")
+        self.fp_alpha = np.load(path)
+
+        path = os.path.join(prec_path, "sp_alpha.npy")
+        self.sp_alpha = np.load(path)
+        
+        path = os.path.join(prec_path, "sim_alpha.npy")
+        self.sim_alpha = np.load(path)
+        
+        path = os.path.join(prec_path, "fp_sigma.npy")
+        self.fp_sigma = np.load(path)
+        
+        path = os.path.join(prec_path, "sp_sigma.npy")
+        self.sp_sigma = np.load(path)
+        
+        path = os.path.join(prec_path, "sim_sigma.npy")
+        self.sim_sigma = np.load(path)
+
+
+
+
+
 
     def test_probability(self):
         trials = get_mock_trials(32, True)
@@ -353,7 +383,6 @@ class TestAI(unittest.TestCase):
 
         make_tables(main_stat, secondary_stats, tpd, n_months, main_label = main_label, secondary_labels=secondary_labels, figsaver=figsaver)
 
-
     def test_misc(self):
         sigma = 0.8
         nd_variable = -0.3
@@ -395,12 +424,46 @@ class TestAI(unittest.TestCase):
 
         print(p2d)
         print(p1d)
+
+    def test_improvement_1D(self):
+        n=180
+        a_slope = -0.3
+        a_c = 65
+        a_scale = 3
+
+        s_slope = -0.002
+        s_c = 0.5
+        s_scale = 0.03
+
+        mock_trials = [[t[0], t[1]] for t in self.trial_data]
+        mock_preds = [c == 1.0 for c in self.trial_data[2]]
+
+        e = ASD_Estimator(180, "simple")
         
+        data_x = np.linspace(1, n, n)
+        data_alpha = a_slope*data_x + a_c
+        data_sigma = s_slope*data_x + s_c
+
+        noisy_alpha = np.array([i+np.random.normal(scale=a_scale) for i in data_alpha])
+        noisy_sigma = np.array([i+np.random.normal(scale=s_scale) for i in data_sigma])
+
+        e.trials = mock_trials
+        e.predictions = mock_preds
+
+        e.second_pass_estimation(self.fp_alpha, self.fp_sigma)
+
+        plt.plot(data_x, data_alpha, color = "red")
+        plt.plot(data_x, noisy_alpha, color="orange")
+        plt.ylim([-5,95])
+        plt.show()
+
+        plt.plot(data_x, data_sigma, color="blue")
+        plt.plot(data_x, noisy_sigma, color="green")
+        plt.ylim([-0.1,0.7])
+        plt.show()
+
         
 
-
-    
-        
 
 if __name__ == "__main__":
     tc = TestAI()
@@ -422,7 +485,8 @@ if __name__ == "__main__":
     #tc.test_study_optimal_C()
     #tc.test_ASE()
     #tc.test_monthly_plot()
-    tc.test_table()
+    #tc.test_table()
+    tc.test_improvement_1D()
 
     duration = 1000  # milliseconds
     freq = 440  # Hz

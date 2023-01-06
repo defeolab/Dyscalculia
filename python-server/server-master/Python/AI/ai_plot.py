@@ -204,9 +204,6 @@ def plot_stats( statlist: List[List[float]],
                 main_stat: str = "alpha",
                 figsaver: FigSaver = None,
                 lim_bounds: List[float] = [-0.1, 1.1]):
-    
-    if figsaver is None:
-        return
 
     fig = plt.figure()
     ax = fig.gca()

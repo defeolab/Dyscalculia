@@ -2,7 +2,7 @@ import numpy as np
 from sklearn.model_selection import KFold
 from sklearn.svm import OneClassSVM
 from sklearn.svm import LinearSVC
-from typing import Tuple, List
+from typing import Tuple, List, Any
 from AI.AS_functionals import *
 from AI.ai_utils import *
 import math
@@ -231,10 +231,29 @@ def produce_estimate_simple_denoising(trials: np.ndarray, predictions: np.ndarra
 
 
 
-    return alpha, sigma, norm
+    return alpha, sigma, norm 
+
+def fetch_estimation_window(index: int, alpha_data: List[float], sigma_data: List[float], max_width: int) -> Tuple[int, int]:
+    lower_bound = 0 if index - max_width/2 <0 else int(index - max_width/2)
+    upper_bound = len(alpha_data) if index + max_width/2 > len(alpha_data) else int(index + max_width/2) 
+    return lower_bound, upper_bound
 
 
+#unused
+def produce_estimate_denoising_OCSVM(trials: np.ndarray, predictions: np.ndarray)-> Tuple[float, float]:
+    model = LinearSVC()
 
+    (safe_trials, safe_predictions), (anomaly_trials, anomaly_predictions) = denoise_data_OCSVM(trials, predictions)
+
+    e_trials, e_predictions = mirror_trials_list(safe_trials, safe_predictions)
+
+    model.fit(e_trials, e_predictions)
+
+    norm = unit_vector(np.array([-model.coef_[0][1], model.coef_[0][0]]))
+
+    angle =  math.degrees(angle_between(norm, np.array([0,1])))
+
+    return angle, 0.1
 
 def denoise_data_OCSVM(trials: np.ndarray, predictions: np.ndarray) -> Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
 
@@ -274,30 +293,5 @@ def denoise_data_OCSVM(trials: np.ndarray, predictions: np.ndarray) -> Tuple[Tup
 
 
     return (ret_t_safe, ret_p_safe), (ret_t_anomaly, ret_p_anomaly)
-
-
-def fetch_estimation_window(index: int, alpha_data: List[float], sigma_data: List[float], max_width: int) -> Tuple[int, int]:
-    lower_bound = 0 if index - max_width/2 <0 else int(index - max_width/2)
-    upper_bound = len(alpha_data) if index + max_width/2 > len(alpha_data) else int(index + max_width/2) 
-    return lower_bound, upper_bound
-
-
-#unused
-def produce_estimate_denoising_OCSVM(trials: np.ndarray, predictions: np.ndarray)-> Tuple[float, float]:
-    model = LinearSVC()
-
-    (safe_trials, safe_predictions), (anomaly_trials, anomaly_predictions) = denoise_data_OCSVM(trials, predictions)
-
-    e_trials, e_predictions = mirror_trials_list(safe_trials, safe_predictions)
-
-    model.fit(e_trials, e_predictions)
-
-    norm = unit_vector(np.array([-model.coef_[0][1], model.coef_[0][0]]))
-
-    angle =  math.degrees(angle_between(norm, np.array([0,1])))
-
-    return angle, 0.1
-
-
 
 

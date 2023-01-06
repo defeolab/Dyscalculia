@@ -5,6 +5,7 @@ from sklearn.svm import LinearSVC
 from typing import Tuple, List
 from AI.AS_functionals import *
 from AI.ai_utils import *
+from AI.ImprovementHandler import find_best_fit
 import math
 
 class Estimator_Interface:
@@ -64,6 +65,14 @@ class ASD_Estimator(Estimator_Interface):
         n_samples = len(alpha_data)
         trials = np.array(self.trials[-n_samples:])
         predictions = np.array(self.predictions[-n_samples:])
+
+        np_alpha_data = np.array(alpha_data)
+        np_sigma_data = np.array(sigma_data)
+
+        trial_n = np.linspace(1, n_samples, n_samples)
+
+        alpha_improve_pars, alpha_improve_type = find_best_fit(trial_n, np_alpha_data)
+        sigma_improve_pars, sigma_improve_type = find_best_fit(trial_n, np_sigma_data)
 
         ret_alphas = []
         ret_sigmas = []
