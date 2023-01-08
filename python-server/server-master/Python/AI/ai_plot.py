@@ -5,6 +5,7 @@ from AI.PlayerSimulator import PlayerSimulator
 from typing import List, Tuple, Any, Callable
 import matplotlib.pyplot as plt
 from AI.ai_utils import angle_between, unit_vector
+from AI.ai_consts import *
 import numpy as np
 import os
 from datetime import date
@@ -203,7 +204,7 @@ def plot_stats( statlist: List[List[float]],
                 labels: List[str] = ['local_accuracy', 'cumulative_accuracy'],
                 main_stat: str = "alpha",
                 figsaver: FigSaver = None,
-                lim_bounds: List[float] = [-0.1, 1.1]):
+                lim_bounds: List[float] = [-0.1, MAX_SIGMA+0.1]):
 
     fig = plt.figure()
     ax = fig.gca()
@@ -234,7 +235,7 @@ def plot_monthly_stats( statlist: List[List[float]],
                         days: int = 30,
                         labels: List[str] = ['local_accuracy', 'cumulative_accuracy'], 
                         figsaver: FigSaver = None,
-                        lim_bounds: List[float] = [-0.1, 1.1]):
+                        lim_bounds: List[float] = [-0.1, MAX_SIGMA+0.1]):
     
     if figsaver is None:
         return

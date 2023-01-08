@@ -1,0 +1,2 @@
+MAX_SIGMA = 0.5
+MAX_ALPHA = 90

@@ -12,6 +12,7 @@ import time
 from AI.SimpleEvaluator import SimpleEvaluator
 from transform_matrix import TransformMatrix
 from AI.PDEP_Evaluator import PDEP_Evaluator
+from AI.ai_consts import *
 import os
 
 from datetime import datetime
@@ -52,6 +53,7 @@ class SimulatedClient:
                     estimator_type: str = "ASD",
                     init_evaluator: bool = False,
                     estimator_max_trials: int = 180,
+                    estimator_min_trials: int = 30,
                     improver_type: str = "linear",
                     improver_parameters: List[float] = [1, 0.01, 5]):
 
@@ -75,7 +77,7 @@ class SimulatedClient:
         elif evaluator == "PDEP":
             init_alpha = self.alpha if init_evaluator else 45
             init_sigma = self.sigma if init_evaluator else 0.3
-            self.player_evaluator = PDEP_Evaluator(init_alpha, init_sigma, norm_feats=norm_feats,kids_ds=kids_ds, estimation_duration=estimation_duration, estimator_type=estimator_type, estimator_max_trials=estimator_max_trials)
+            self.player_evaluator = PDEP_Evaluator(init_alpha, init_sigma, norm_feats=norm_feats,kids_ds=kids_ds, estimation_duration=estimation_duration, estimator_type=estimator_type, estimator_max_trials=estimator_max_trials, estimation_min_trials=estimator_min_trials)
 
     def run(self, trials: int, plot: bool, history_size: int = 10) -> None:
 
@@ -155,8 +157,8 @@ class SimulatedClient:
         alpha_labels = [f"estimated {label1[0]}", f"actual {label1[0]}", f"second pass {label1[0]}"]
         sigma_labels = [f"estimated {label1[1]}", f"actual {label1[1]}", f"second pass {label1[1]}"]
         accuracy_labels = [f"Local accuracy", "Cumulative accuracy"]
-        alpha_bounds = [-5, 95]
-        sigma_bounds = [-0.1, 0.9]
+        alpha_bounds = [-5, MAX_ALPHA+5]
+        sigma_bounds = [-0.1, MAX_SIGMA+0.1]
 
         print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} starting run with starting parameters: {self.alpha}-{self.sigma}")
 
@@ -188,17 +190,15 @@ class SimulatedClient:
                 
                 if self.save_file is not None:
                     self.player_evaluator.save_trial(self.save_file, trial, correct, decision_time)
-            
+
+                if update_child:
+                    bv, sig = self.player.apply_improvement()
+
             if self.save_file is not None:
                 self.player_evaluator.save_trial(self.save_file, [], False, -1, commit= True)
 
-            if update_child:
-                bv, sig = self.player.apply_improvement()
-                sim_boundary_vectors.append(bv)
-                sim_sigmas.append(sig)
-            else:
-                sim_boundary_vectors.append(self.player.boundary_vector)
-                sim_sigmas.append(self.player.sigma)
+            sim_boundary_vectors.append(self.player.boundary_vector)
+            sim_sigmas.append(self.player.sigma)
 
             e_bvs.append(self.player_evaluator.boundary_vector)
             e_sigmas.append(self.player_evaluator.sigma)
@@ -264,7 +264,7 @@ class SimulatedClient:
                 save_npy(self.save_folder, sp_sigma, "sp_sigma")
                 save_npy(self.save_folder, sim_sigma_history, "sim_sigma")
 
-        return (t1_stat1_history, t1_stat2_history), (sim_alpha_history, sim_sigma_history)
+        return (t1_stat1_history, t1_stat2_history), (sim_alpha_history, sim_sigma_history), (self.player_evaluator.estimator.trials, self.player_evaluator.estimator.predictions)
         
 
 

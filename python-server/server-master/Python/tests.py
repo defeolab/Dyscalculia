@@ -14,7 +14,7 @@ import os
 import functools
 import scipy as sp
 import matplotlib.pyplot as plt
-
+from AI.ai_consts import *
 
 import winsound
 
@@ -426,44 +426,83 @@ class TestAI(unittest.TestCase):
         print(p1d)
 
     def test_improvement_1D(self):
-        n=180
-        a_slope = -0.3
-        a_c = 65
-        a_scale = 3
-
-        s_slope = -0.002
-        s_c = 0.5
-        s_scale = 0.03
 
         mock_trials = [[t[0], t[1]] for t in self.trial_data]
-        mock_preds = [c == 1.0 for c in self.trial_data[2]]
 
-        e = ASD_Estimator(180, "simple")
+        correct_to_lr = lambda x,y: (y==1) == (x >0)
+        mock_preds = [correct_to_lr(t[0], t[2]) for t in self.trial_data]
+
+        e = ASD_Estimator(180, 30, "simple_denoising")
         
-        data_x = np.linspace(1, n, n)
-        data_alpha = a_slope*data_x + a_c
-        data_sigma = s_slope*data_x + s_c
-
-        noisy_alpha = np.array([i+np.random.normal(scale=a_scale) for i in data_alpha])
-        noisy_sigma = np.array([i+np.random.normal(scale=s_scale) for i in data_sigma])
+        data_x = np.linspace(1, self.fp_alpha.shape[0], self.fp_alpha.shape[0])
 
         e.trials = mock_trials
         e.predictions = mock_preds
 
-        e.second_pass_estimation(self.fp_alpha, self.fp_sigma)
+        e.max_trials_to_consider = 90
 
-        plt.plot(data_x, data_alpha, color = "red")
-        plt.plot(data_x, noisy_alpha, color="orange")
+        ad, sd, sn = e.second_pass_estimation(self.fp_alpha, self.fp_sigma)
+
+        #assert True == False
+
+        plt.plot(data_x, self.sim_alpha, color = "red")
+        plt.plot(data_x, self.fp_alpha, color="orange")
+        plt.plot(data_x, ad, color="blue")
         plt.ylim([-5,95])
         plt.show()
 
-        plt.plot(data_x, data_sigma, color="blue")
-        plt.plot(data_x, noisy_sigma, color="green")
+        plt.plot(data_x, self.sim_sigma, color="blue")
+        plt.plot(data_x, self.fp_sigma, color="green")
+        plt.plot(data_x, sd, color="purple")
         plt.ylim([-0.1,0.7])
         plt.show()
+    
+    def test_slopes(self):
+        n = 5400
+        data_x = np.linspace(1, n, n)
+        norm_slope = -0.0001/30
+        alpha_slope = norm_slope*MAX_ALPHA
+        sigma_slope = norm_slope*MAX_SIGMA
+
+        data_alpha = np.clip(data_x*alpha_slope + MAX_ALPHA, 0, 1000)
+        data_sigma = np.clip(data_x*sigma_slope + MAX_SIGMA, 0, 1000)
+
+        plt.plot(data_x, data_alpha, color="red")
+        plt.ylim([-5,MAX_ALPHA+5])
+        plt.show()
+        
+        plt.plot(data_x, data_sigma, color="green")
+        plt.ylim([-0.1,MAX_SIGMA+0.1])
+        plt.show()
+
+        data_alpha = data_alpha/MAX_ALPHA
+        data_sigma = data_sigma/MAX_SIGMA
+
+        plt.plot(data_x, data_alpha, color="red")
+        plt.plot(data_x, data_sigma, color="green")
+        plt.show()
+        
+    def test_best_Ns(self):
+        print("---------")
+        print(BEST_N_INDEXES)
+        print("---------")
+        print(BEST_NS)
+        print("---------")
+        print(SLOPE_CONFIGS)
+        print("---------")
+        print(N_TRIALS)
+        print("---------")
+        print(ERR_A_NS[0])
+        print("---------")
+        print(ERR_S_NS[0])
 
         
-
+        filepath = os.path.join(PATH_FOR_N_ABLATION, "n_trials.npy")
+        nv = np.array([ 100,  200,  300,  400,  500,  600,  700,  800,  900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800])
+        #np.save(filepath, nv)
+        filepath = os.path.join(PATH_FOR_N_ABLATION, "best_n_trials_index.npy")
+        nv = np.array([17,17,17, 13, 9, 6, 4, 1, 0])
+        #np.save(filepath, nv)
 
 if __name__ == "__main__":
     tc = TestAI()
@@ -486,7 +525,9 @@ if __name__ == "__main__":
     #tc.test_ASE()
     #tc.test_monthly_plot()
     #tc.test_table()
-    tc.test_improvement_1D()
+    #tc.test_improvement_1D()
+    #tc.test_slopes()
+    tc.test_best_Ns()
 
     duration = 1000  # milliseconds
     freq = 440  # Hz

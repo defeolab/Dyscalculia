@@ -43,8 +43,8 @@ class Normal_IH(ImprovementHandler):
 
 #utility functions for other files
 def find_best_fit(data_x: np.ndarray, data_y: np.ndarray) -> Tuple[Any, str]:
-    target_funcs = [_fit_poly_1D, _fit_poly_2D]
-    func_label = ["poly_1D", "poly_2D"]
+    target_funcs = [_fit_poly_1D]
+    func_label = ["poly_1D"]
 
     pars_list = []
     qualities = np.zeros(len(target_funcs))

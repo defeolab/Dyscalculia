@@ -74,7 +74,7 @@ class PDEP_Evaluator(PlayerEvaluator):
 
         if estimator_type == "ASD":
             print("using ASD")
-            self.estimator = ASD_Estimator(max_trials_to_consider=estimator_max_trials, denoiser_type="simple_denoising")
+            self.estimator = ASD_Estimator(max_trials_to_consider=estimator_max_trials, min_trials_to_consider=self.estimation_min_trials, denoiser_type="simple_denoising")
         else:
             print("using ASE")
             self.estimator = ASE_Estimator(n_trials_per_cycle=estimation_duration, max_trials_to_consider=estimator_max_trials)
