@@ -42,21 +42,23 @@ if PERFORM_ABLATION_C == False:
     ERR_CS : np.ndarray = np.load(filepath)
 
 if PERFORM_ABLATION_N_TRIALS == False:
-    filepath = os.path.join(PATH_FOR_N_ABLATION, "best_n_trials_index.npy")
-    BEST_N_INDEXES = np.load(filepath)
+    #filepath = os.path.join(PATH_FOR_N_ABLATION, "best_n_trials_index.npy")
+    #BEST_N_INDEXES = np.load(filepath)
 
     filepath = os.path.join(PATH_FOR_N_ABLATION, "slope_configs.npy")
     SLOPE_CONFIGS = np.load(filepath)
 
     filepath = os.path.join(PATH_FOR_N_ABLATION, "n_trials.npy")
     N_TRIALS = np.load(filepath)
-    BEST_NS = N_TRIALS[BEST_N_INDEXES]
 
     filepath = os.path.join(PATH_FOR_N_ABLATION, "alpha_errors_by_Ns.npy")
     ERR_A_NS = np.load(filepath)
 
     filepath = os.path.join(PATH_FOR_N_ABLATION, "sigma_errors_by_Ns.npy")
     ERR_S_NS = np.load(filepath)
+
+    BEST_N_INDEXES = np.argmin(ERR_A_NS, axis=1)
+    BEST_NS = N_TRIALS[BEST_N_INDEXES]
 
 def mirror_trials_list(trials: List[np.ndarray], predictions: List[bool]) -> Tuple[List[np.ndarray], List[bool]]:
     n_t = []
@@ -120,7 +122,7 @@ def compute_sharpening_std_loglikelihood(c_trials: np.ndarray, c_predictions: np
     w_dists = np.dot(transform_mat, w_trials.T)[1, :] if w_trials.shape[0] >0 else np.array([])
 
 
-    n_sigmas = 20
+    n_sigmas = 40
     considered_sigmas = np.linspace(0.05, MAX_SIGMA+0.1, n_sigmas)
     lls = np.ones(n_sigmas)
 

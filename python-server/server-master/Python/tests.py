@@ -492,17 +492,34 @@ class TestAI(unittest.TestCase):
         print("---------")
         print(N_TRIALS)
         print("---------")
-        print(ERR_A_NS[0])
+        alphamins=np.argmin(ERR_A_NS, axis=1)
+        sigmamins = np.argmin(ERR_S_NS, axis=1)
+        print(alphamins)
+        print(sigmamins)
         print("---------")
-        print(ERR_S_NS[0])
+        #print(ERR_S_NS[9])
 
         
-        filepath = os.path.join(PATH_FOR_N_ABLATION, "n_trials.npy")
-        nv = np.array([ 100,  200,  300,  400,  500,  600,  700,  800,  900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800])
+        #filepath = os.path.join(PATH_FOR_N_ABLATION, "n_trials.npy")
+        #nv = np.array([ 100,  200,  300,  400,  500,  600,  700,  800,  900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800])
         #np.save(filepath, nv)
-        filepath = os.path.join(PATH_FOR_N_ABLATION, "best_n_trials_index.npy")
-        nv = np.array([17,17,17, 13, 9, 6, 4, 1, 0])
+        #filepath = os.path.join(PATH_FOR_N_ABLATION, "best_n_trials_index.npy")
+        #nv = np.array([17,17,17, 13, 9, 9, 6, 4, 1, 0])
         #np.save(filepath, nv)
+
+        x = SLOPE_CONFIGS[0]
+        y = N_TRIALS[BEST_N_INDEXES]
+
+
+        #fig = plt.figure()
+        #ax = fig.gca()
+        #ax.set_xscale("log")
+        plt.scatter(x, y, color = "red")
+        plt.plot(x, y, color = "blue")
+        plt.xlabel("slopes (unit/trial)")
+        plt.ylabel("window width (number of trials)")
+
+        plt.show()
 
 if __name__ == "__main__":
     tc = TestAI()

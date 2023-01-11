@@ -72,7 +72,7 @@ class FigSaver:
             f.write("\n")
         
         tex_file = os.path.join(root, f"{prefix}_tex.tex")
-        with open(tex_file, 'a') as f:
+        with open(tex_file, 'w') as f:
             f.write("\n")
             f.write(table_tex)
             f.write("\n")
@@ -220,6 +220,12 @@ def plot_stats( statlist: List[List[float]],
     ax.legend()
 
     plt.xlabel("trial")
+    if main_stat == "alpha":
+        plt.ylabel("alpha (degrees)")
+    elif main_stat == "sigma":
+        plt.ylabel("sigma (ND-NND units)")
+    else: 
+        plt.ylabel("accuracy")
 
     plt.ylim(lim_bounds)
     plt.grid(True)
@@ -233,9 +239,11 @@ def plot_monthly_stats( statlist: List[List[float]],
                         tpd: int,
                         month_n: int,
                         days: int = 30,
+                        main_stat = "alpha",
                         labels: List[str] = ['local_accuracy', 'cumulative_accuracy'], 
                         figsaver: FigSaver = None,
-                        lim_bounds: List[float] = [-0.1, MAX_SIGMA+0.1]):
+                        lim_bounds: List[float] = [-0.1, MAX_SIGMA+0.1],
+                        length: int = -1):
     
     if figsaver is None:
         return
@@ -243,8 +251,10 @@ def plot_monthly_stats( statlist: List[List[float]],
     fig = plt.figure()
     ax = fig.gca()
     daily_statlist = []
-
-    x = np.linspace(1, days, days)
+    if month_n>=0:
+        x = np.linspace(1, days, days)
+    else:
+        x = np.linspace(1, length, length)
 
     for l in statlist:
         daily_stat = vec_reshape_by_day(l, tpd)
@@ -258,11 +268,21 @@ def plot_monthly_stats( statlist: List[List[float]],
     for i, dl in enumerate(daily_statlist):
         ax.plot(x, dl, color= colors[i], label=labels[i])
 
-    plt.title(f"Month n° {month_n}")
+    if month_n >= 0:
+        plt.title(f"Month n° {month_n}")
+    else:
+        plt.title(f"Whole simulation")
+        month_n = "All"
 
     ax.legend()
 
     plt.xlabel("day")
+    if main_stat == "alpha":
+        plt.ylabel("alpha (degrees)")
+    elif main_stat == "sigma":
+        plt.ylabel("sigma (ND-NND units)")
+    else: 
+        plt.ylabel("accuracy")
 
     plt.ylim(lim_bounds)
     plt.grid(True)

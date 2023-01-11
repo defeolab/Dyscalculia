@@ -77,6 +77,9 @@ class ASD_Estimator(Estimator_Interface):
         sigma_improve_pars, sigma_improve_type = find_best_fit(trial_n, np_sigma_data[self.min_trials_to_consider:])
 
         restraining_slope = -max(abs(alpha_improve_pars[0]), abs(sigma_improve_pars[0]))
+        lb, ind = fetch_estimation_window_ia(5000, np_alpha_data, np_sigma_data, self.max_trials_to_consider, restraining_slope)
+        print(f"second pass found slopes: {alpha_improve_pars[0]} for alpha and {sigma_improve_pars[0]} for sigma")
+        print(f"second pass considering {ind-lb} trials")
         #print(restraining_slope)
         #assert True == False
 

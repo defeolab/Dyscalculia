@@ -10,6 +10,7 @@ from typing import List, Any, Tuple
 import numpy as np
 import math
 
+
 class PDEP_Evaluator(PlayerEvaluator):
     """
         Perceived-Difficulty-Error-Probability Evaluator: 
@@ -35,9 +36,10 @@ class PDEP_Evaluator(PlayerEvaluator):
                     init_prob: float = 0.10, 
                     init_perceived_diff: float = 0.1, 
                     norm_feats: bool=True, 
-                    update_step: int=5, 
+                    update_step: int=10, 
                     mock: bool = False, 
                     kids_ds: bool = False, 
+                    difficulty: str = "easy",
                     estimate_step: int = 1, 
                     estimation_min_trials: int = 30,
                     estimator_type: str = "ASD",
@@ -63,10 +65,10 @@ class PDEP_Evaluator(PlayerEvaluator):
         self.update_step = update_step
         self.history = np.array(([False for i in range(0, update_step)]))
 
-        self.memory = 6
+        self.memory = 6 if difficulty == "regular" else 14
         self.prob_choice_iteration = 0
         self.prob_history = np.array([3 for i in range(0, self.memory)])
-        self.target_probs = np.array([0.1, 0.2, 0.3, 0.4, 0.6, 0.7, 0.8, 0.9])
+        self.target_probs = np.array([0.1, 0.2, 0.3, 0.4, 0.6, 0.7, 0.8, 0.9]) if difficulty == "regular" else np.array([0.1, 0.1, 0.1, 0.1,0.1, 0.2, 0.2, 0.2,0.2,0.2, 0.3,0.3, 0.3, 0.4,0.4, 0.6, 0.7, 0.8])
         self.trials = []
         self.estimate_step = estimate_step
         self.estimator_type = estimator_type

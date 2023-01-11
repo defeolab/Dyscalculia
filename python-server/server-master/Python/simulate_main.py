@@ -276,7 +276,7 @@ if __name__ == "__main__":
     diffs = [(0.1,0.1), (0.4, 0.4), (0.8, 0.8), (0.95,0.95)]
     modes = ["filtering", "sharpening"]
 
-    days =180
+    days =60
     trials_per_day = 30
     interval = 15
 
@@ -286,24 +286,13 @@ if __name__ == "__main__":
     update_evaluator_stats = True
     init_evaluator_stats = False
 
-    update_child = True
-    improver_parameters_options =   [
-                                        [0.45, 0.003, 1],
-                                        [-0.3/trials_per_day, -0.002/trials_per_day, 1],
-                                        [-0.05/trials_per_day, -0.0002/trials_per_day, 1]
-                                    ]
-
-    pars_i = 2
-    improver_type_options = ["normal", "linear", "linear"]
-    improver_type = improver_type_options[pars_i]
-
     target_prob = probs[2]
     target_diff = diffs[0]
     mode = modes[0]
     save_trials = False
     save_plots = True
     alpha_i = 2
-    sigma_i = 2
+    sigma_i = 5
     mock = True
     estimate_step = 1
     target_C = np.logspace(-2, 3, 6, base=10)
@@ -311,6 +300,21 @@ if __name__ == "__main__":
 
     target_n_trials = np.linspace(100, 1800, 18)
     target_slopes = -np.logspace(-4, -2, 10, base=10)/trials_per_day
+    local_target_slope = target_slopes[8]
+
+    update_child = False
+    improver_parameters_options =   [
+                                        [0.45, 0.003, 1],
+                                        [-0.3/trials_per_day, -0.002/trials_per_day, 1],
+                                        [-0.05/trials_per_day, -0.0002/trials_per_day, 1],
+                                        [-0.7/trials_per_day, -0.005/trials_per_day, 1],
+                                        [local_target_slope*MAX_ALPHA, local_target_slope*MAX_SIGMA, 1]                                  
+                                    ]
+
+    pars_i = 4
+    improver_type_options = ["normal", "linear", "linear", "linear", "linear"]
+    improver_type = improver_type_options[pars_i]
+
 
     estimation_duration = 1
     estimator_type = "ASD"
@@ -320,7 +324,7 @@ if __name__ == "__main__":
     make_plots = True
     save_ablation = False
     n_runs = 2
-    suite_name = "post_N_ablation_v3"
+    suite_name = "test_feedbacks"
     sr = SimulationsRunner( days, trials_per_day, interval, evaluator, kids_ds, update_evaluator_stats, update_child, suite_name, 
                             target_prob, target_diff, mode, save_trials, save_plots, alphas[alpha_i], sigmas[sigma_i], mock, estimate_step,
                             target_C, make_plots, save_ablation, estimation_duration, 
