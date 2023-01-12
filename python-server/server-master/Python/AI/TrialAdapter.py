@@ -11,11 +11,12 @@ class TrialAdapter:
     """
 
 
-    def __init__(self, mock: bool, use_table: bool = True, norm_feats: bool = True, kids_ds: bool = False):
+    def __init__(self, mock: bool, use_table: bool = True, norm_feats: bool = True, kids_ds: bool = False, memory: int = 30):
         self.mock = mock
         self.use_table = use_table
         self.norm_feats = norm_feats
         self.recent_ids = [1]
+        self.memory = memory
 
         if kids_ds:
             print(f">>>>>>>using kids_ds")
@@ -35,8 +36,15 @@ class TrialAdapter:
         
         self.lookup_table["DistanceFromTarget"] = (((self.lookup_table["nd_LogRatio"])-target_nd_coord)**2) + (((self.lookup_table["nnd_LogRatio"])-target_nnd_coord)**2)
 
-        r = self.lookup_table.sort_values(by=['DistanceFromTarget']).iloc[0]
-
+        okay = False
+        i = 0
+        while okay == False:
+            r = self.lookup_table.sort_values(by=['DistanceFromTarget']).iloc[i]
+            id = int(r[0])
+            i+=1
+            if id not in self.recent_ids[-self.memory:] and id +1 not in self.recent_ids[-self.memory:] and id-1 not in self.recent_ids[-self.memory:]:
+                okay = True  
+        print(int(r[0]))
         #print(f"{target_nd_coord} - {closest_trial['nd_LogRatio']} : {target_nnd_coord} - {closest_trial['nnd_LogRatio']}")
 
         if self.mock == False:
