@@ -26,6 +26,7 @@ public class DataManager : MonoBehaviour
     //control variables
     private float allAnimalsArrived;
     private bool fences_open;
+    public int cowORchick;
 
     void Start()
     {
@@ -71,11 +72,12 @@ public class DataManager : MonoBehaviour
         this.OpenFence(true);
 
         //Initialize Animals
+        cowORchick = Random.Range(0, 2);
+
         for (int i = 0; i < areasData.Length; i++)
         {
-            if(areasData[i].getSizeOfAnimal() > 7 && 
-                Mathf.Abs(areasData[0].getSizeOfAnimal() - areasData[1].getSizeOfAnimal()) > 1.5f)
-            {
+            if(cowORchick == 1 && (areasData[0].sizeOfChicken >= 5f && areasData[1].sizeOfChicken >= 5f))
+            {                
                 for (int j = 0; j < areasData[i].getNumberOfAnimals(); j++)
                 {
                     GameObject newAnimal = Instantiate(cows_generators[i]);
@@ -179,7 +181,7 @@ public class DataManager : MonoBehaviour
     {
         if (!animals.startWalk)
         {
-            yield return new WaitForSeconds(0.1f / animals.number);
+            yield return new WaitForSeconds(0.01f / animals.number);
             animals.startWalk = true;
         }
     }

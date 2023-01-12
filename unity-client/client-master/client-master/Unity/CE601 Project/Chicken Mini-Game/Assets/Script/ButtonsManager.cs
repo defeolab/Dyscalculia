@@ -12,7 +12,8 @@ public class ButtonsManager : MonoBehaviour
 {
     public Button area1Button, area2Button;
     public Text gameText;
-    public GameObject UIImageCorrect, UIImageIncorrect, UIImageTimeOut, UIImageWhy, UIImageErrorRight, UIImageErrorWrong; 
+    public GameObject[] UIImageCorrect;
+    public GameObject UIImageIncorrect, UIImageTimeOut, UIImageWhy, UIImageErrorRight, UIImageErrorWrong; 
     public GameObject menu, pauseButton;
     private Stopwatch stopwatch;
     private TrialData trialData;
@@ -29,7 +30,7 @@ public class ButtonsManager : MonoBehaviour
 
         this.Buttons(false);
         menu.SetActive(false);
-        UIImageCorrect.SetActive(false);
+        foreach (GameObject c in UIImageCorrect) c.SetActive(false);
         UIImageIncorrect.SetActive(false);
         UIImageTimeOut.SetActive(false);
         UIImageWhy.SetActive(false);
@@ -158,11 +159,14 @@ public class ButtonsManager : MonoBehaviour
 
     private void HandleWin()
     {
-        UIImageCorrect.SetActive(true);
-        UIImageCorrect.GetComponent<AudioSource>().Play();
+        Random.InitState((int)System.DateTime.Now.Ticks);
+        int i = Random.Range(0, UIImageCorrect.Length);
+
+        UIImageCorrect[i].SetActive(true);
+        UIImageCorrect[i].GetComponent<AudioSource>().Play();
         TrialsManager.instance.correctCount += 1;
         
-        StartCoroutine(NewTrial(UIImageCorrect.GetComponent<AudioSource>().clip.length));
+        StartCoroutine(NewTrial(UIImageCorrect[i].GetComponent<AudioSource>().clip.length));
         isCoroutine = true;
     }
 
@@ -354,7 +358,7 @@ public class ButtonsManager : MonoBehaviour
         foreach (GameObject f in istance_DataManager.fences) f.SetActive(true);
         foreach (GameObject a in istance_DataManager.areas) a.SetActive(true);
 
-        UIImageCorrect.SetActive(false);
+        foreach (GameObject c in UIImageCorrect) c.SetActive(false);
         UIImageIncorrect.SetActive(false);
         UIImageTimeOut.SetActive(false);
         UIImageWhy.SetActive(false);

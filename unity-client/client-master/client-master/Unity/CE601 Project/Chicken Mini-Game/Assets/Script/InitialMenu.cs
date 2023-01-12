@@ -1,11 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI;
 using UnityEngine;
+using System;
 
 public class InitialMenu : MonoBehaviour
 {
-    public GameObject videoTutorial;
-    public GameObject menu;
+    public GameObject videoTutorial, menu, menuIP;        
 
     public void EnableVideo(bool active)
     {
@@ -17,6 +18,12 @@ public class InitialMenu : MonoBehaviour
     public void ExitGame()
     {
         Application.Quit();
+    }
+
+    public void switchMenu(bool flag)
+    {
+        menu.SetActive(!flag);
+        menuIP.SetActive(flag);
     }
 }
 
