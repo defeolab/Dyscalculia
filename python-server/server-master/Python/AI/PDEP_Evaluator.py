@@ -44,7 +44,7 @@ class PDEP_Evaluator(PlayerEvaluator):
                     kids_ds: bool = False, 
                     difficulty: str = "regular",
                     estimate_step: int = 1, 
-                    estimation_min_trials: int = 30,
+                    estimation_min_trials: int = 50,
                     estimator_type: str = "ASD",
                     estimator_max_trials: int = 180,
                     estimation_duration: int = 10):

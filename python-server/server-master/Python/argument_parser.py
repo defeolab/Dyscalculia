@@ -21,7 +21,7 @@ def parse_arguments(args_list: List[str]) -> Namespace:
 
     parser.add_argument("--evaluator", choices=["PDEP", "simple"], default="simple", help="the evaluator that should be used")
 
-    #arguments for simulated child
+    #arguments for simulated child (unused, simulation has been moved to simulate_main.py)
     parser.add_argument("--sim_child", help="specify that you are not expecting a client connection and just want to use the simulated child",
                         action="store_true")
 
@@ -48,6 +48,10 @@ def parse_arguments(args_list: List[str]) -> Namespace:
 
     parser.add_argument("--kids_dataset", help="use the reduced lookup table with more balanced values for kids",
                         action="store_true")
+
+    parser.add_argument("--difficulty", choices=["regular", "easy"], default="easy", help="difficulty balance for PDEP evaluator. Should converge to an accuracy of around 65 percent for easy and 50 percent for regular")
+
+    
 
     args = parser.parse_args(args_list)
 
