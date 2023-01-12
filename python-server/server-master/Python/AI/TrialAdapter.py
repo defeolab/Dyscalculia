@@ -15,6 +15,7 @@ class TrialAdapter:
         self.mock = mock
         self.use_table = use_table
         self.norm_feats = norm_feats
+        self.recent_ids = [1]
 
         if kids_ds:
             print(f">>>>>>>using kids_ds")

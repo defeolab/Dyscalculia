@@ -239,6 +239,51 @@ class DBConnector:
 
         cursor.close()
         return results
+    
+    def PDEP_fetch_trials_history(self, player_id: int) -> List[Any]:
+        cursor = self.cnx.cursor()
+        query = ("SELECT trial_result_id, correct, prediction, decision_time, ND, NND, id_in_lookup_table, target_error_probability, target_perceived_difficulty, estimated_alpha, estimated_sigma, chicken_show_time FROM PDEP_trial_result "
+                 "WHERE player_id = {} "
+                 "ORDER BY created DESC".format(player_id))
+        cursor.execute(query)
+        results = []
+
+        for (trial_result_id, correct, prediction, decision_time, nd,nnd,id_in_lookup_table, target_error_probability, target_perceived_difficulty, estimated_alpha, estimated_sigma, show_time) in cursor:
+            results.append([float(nd), float(nnd), prediction==1, float(target_error_probability), float(target_perceived_difficulty), float(estimated_alpha), float(estimated_sigma)])
+
+        cursor.close()
+        return results
+    
+    def PDEP_add_result(self, player_id: int, result:TrialResult, prediction: bool, nd: float, nnd: float, lt_id: int, t_ep: float, t_pd: float, e_a:float, e_s:float):
+        cursor = self.cnx.cursor()
+        now = datetime.now()
+        add_result = ("INSERT INTO PDEP_trial_result (player_id, correct, prediction, decision_time, "
+                      "area_1_circle_radius, area_1_size_of_chicken, area_1_average_space_between, "
+                      "area_1_number_of_chickens, area_2_circle_radius, area_2_size_of_chicken, "
+                      "area_2_average_space_between, area_2_number_of_chickens, chicken_show_time, created, "
+                      "ND, NND, id_in_lookup_table, target_error_probability, target_perceived_difficulty, "
+                      "estimated_alpha, estimated_sigma ) "
+                      "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
+
+        result_trial_data = result.trial_data
+        
+        area_1_data = result_trial_data.area1Data
+        area_2_data = result_trial_data.area2Data
+        
+        data_result = (player_id, result.correct, prediction, result.decision_time, area_1_data.circleRadius, 
+                       area_1_data.sizeOfChicken, area_1_data.averageSpaceBetween, 
+                       area_1_data.numberOfChickens, area_2_data.circleRadius, 
+                       area_2_data.sizeOfChicken, area_2_data.averageSpaceBetween, 
+                       area_2_data.numberOfChickens, 
+                       result_trial_data.chickenShowTime, now,
+                       nd, nnd, lt_id, t_ep, t_pd, e_a, e_s)
+        
+
+        cursor.execute(add_result, data_result)
+
+        self.cnx.commit()
+
+        cursor.close()
 
     def close(self):
         self.cnx.close()

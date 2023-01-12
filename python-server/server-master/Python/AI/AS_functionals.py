@@ -257,18 +257,16 @@ def produce_estimate_simple_denoising(trials: np.ndarray, predictions: np.ndarra
 def fetch_estimation_window_ia(index: int, alpha_data: np.ndarray, sigma_data: np.ndarray, max_width: int, restraining_slope) -> Tuple[int, int]:
     if PERFORM_ABLATION_N_TRIALS:
         lower_bound = 0 if index - max_width <0 else int(index - max_width)
-        #upper_bound = len(alpha_data) if index + max_width > len(alpha_data) else int(index + max_width) 
         return lower_bound, index
     else:
         dists = ((SLOPE_CONFIGS - restraining_slope)**2)
         curr_config_i = np.argmin(dists)
-        #print(dists)
-        #print(curr_config_i)
 
         lower_bound = 0 if index - N_TRIALS[BEST_N_INDEXES[curr_config_i]]<0 else int(index - N_TRIALS[BEST_N_INDEXES[curr_config_i]]) 
 
         return lower_bound, index
 
+#unused, generated data is often too noisy to do it
 def compute_assumption_validity_window(data_x: np.ndarray, data_y: np.ndarray, index: int) -> int:
     #starting from the index, compute the interval where the assumption is reasonably valid
     incr_interval = 5

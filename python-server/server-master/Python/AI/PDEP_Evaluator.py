@@ -3,6 +3,9 @@ from AI.ai_utils import unit_vector
 from AI.PDEP_functionals import PDEP_find_trial
 from typing import Any
 from AI.AS_Estimate import ASD_Estimator, ASE_Estimator
+from trial_result import TrialResult
+
+from db.db_connector import DBConnector
 
 from AI.TrialAdapter import TrialAdapter
 from typing import List, Any, Tuple
@@ -36,10 +39,10 @@ class PDEP_Evaluator(PlayerEvaluator):
                     init_prob: float = 0.10, 
                     init_perceived_diff: float = 0.1, 
                     norm_feats: bool=True, 
-                    update_step: int=10, 
+                    update_step: int=5, 
                     mock: bool = False, 
                     kids_ds: bool = False, 
-                    difficulty: str = "easy",
+                    difficulty: str = "regular",
                     estimate_step: int = 1, 
                     estimation_min_trials: int = 30,
                     estimator_type: str = "ASD",
@@ -143,6 +146,8 @@ class PDEP_Evaluator(PlayerEvaluator):
         self.iteration+=1
         self.history[self.iteration%self.update_step] = correct
 
+        self.prev_stats = [self.target_error_prob, self.target_perceived_diff]
+
         #set the prediction in the estimator
         #print(self.estimator.trials)
         nd = self.estimator.trials[-1][0]
@@ -161,27 +166,6 @@ class PDEP_Evaluator(PlayerEvaluator):
 
             self.prob_history[self.prob_choice_iteration%self.memory] = next_prob_i
             self.target_error_prob = self.target_probs[next_prob_i]
-
-            #print("-----")
-            #print(self.target_probs)
-            #print(unused_probs_i)
-            #print(next_prob_i)
-            #print(self.target_error_prob)
-            #print("-----")
-
-            """
-            #after a set number of trials, check the accuracy
-            avg = np.average(self.history)
-            #print(f"avg was {avg}")
-
-            #if accuracy was lower than expected, lower target error prob
-            self.target_error_prob += 0.05 if avg>self.target_error_prob else -0.05
-
-            #eliminate the 0.5 error probability as its perceived difficulty is too high (trials exactly on decision boundary)
-            if np.abs(self.target_error_prob-0.5) <0.02:
-                print("wut")
-                self.target_error_prob = 0.55 if avg> 0.5 else 0.45
-            """
             
         if (self.iteration%self.estimate_step ==0 or self.mode == "estimate") and self.iteration > self.estimation_min_trials:
             self.mode = "estimate"
@@ -206,7 +190,39 @@ class PDEP_Evaluator(PlayerEvaluator):
             t=np.array([nd,nnd, sc, decision_time])
             self.trials.append(t)
 
+    def db_set_running_results(self, db: DBConnector, player_id: int) -> None:
+        """
+            fetch:
+                list of trials and predictions for the estimator
+                current alpha and sigma
+                current target error probability/perceived difficulty and a reasonable history for it
+
+        """
+        trials_query = db.PDEP_fetch_trials_history(player_id)
+        prob_window_n = self.memory-1
+
+        for i, t in enumerate(trials_query):
+            if i == 0:
+                self.alpha, self.sigma = t[5], t[6]
+                self.boundary_vector = unit_vector(np.array([-math.sin(math.radians(self.alpha)), math.cos(math.radians(self.alpha))]))
+
+            self.estimator.append_trial([t[0], t[1]], "")
+            self.estimator.append_prediction(t[2])
+
+            if i % self.update_step == 0 and prob_window_n>=0:
+                self.prob_history[prob_window_n] = np.argmin(np.abs(self.target_probs-t[3]))
+                prob_window_n-=1
         
+        self.target_error_prob = self.target_probs[self.prob_history[self.memory-1]]
+        self.prob_choice_iteration = self.memory
+        self.iteration = len(self.estimator.predictions)
+        self.estimator.trials.reverse()
+        self.estimator.predictions.reverse()
+
+        
+    def db_update(self, db: DBConnector, player_id: int, results_to_add: List[TrialResult]):
+        db.PDEP_add_result( player_id, results_to_add[0], self.estimator.predictions[-1], self.estimator.trials[-1][0], self.estimator.trials[-1][1],
+                            self.trial_adapter.recent_ids[-1], self.prev_stats[0], self.prev_stats[1], self.alpha, self.sigma)
 
 
 if __name__ == "__main__":

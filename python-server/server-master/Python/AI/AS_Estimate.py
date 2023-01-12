@@ -17,10 +17,10 @@ class Estimator_Interface:
     def get_trial(self) -> Tuple[np.ndarray, float]:
         pass
 
-    def append_trial(self, trial: List[float], mode: str) -> None:
+    def append_trial(self, trial: List[float], mode: str = "") -> None:
         self.trials.append(trial)
 
-    def append_prediction(self, predicted_right: bool, mode: str) -> None:
+    def append_prediction(self, predicted_right: bool, mode: str = "") -> None:
         self.predictions.append(predicted_right)
 
     def produce_estimate(self, prev_norm: np.ndarray, prev_sigma: np.ndarray) -> Tuple[float, float, np.ndarray, str]:
@@ -39,7 +39,7 @@ class ASD_Estimator(Estimator_Interface):
     """
 
 
-    def __init__(self, max_trials_to_consider: int = 50, min_trials_to_consider:int = 30, denoiser_type: str = "OneClassSVM"):
+    def __init__(self, max_trials_to_consider: int = 50, min_trials_to_consider:int = 30, denoiser_type: str = "simple_denoising"):
         super().__init__()
         self.max_trials_to_consider = max_trials_to_consider
         self.denoiser_type = denoiser_type
