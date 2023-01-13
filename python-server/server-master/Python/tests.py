@@ -9,6 +9,7 @@ from AI.PlayerSimulator import PlayerSimulator
 from AI.AS_Estimate import ASD_Estimator, ASE_Estimator
 from AI.PDEP_functionals import PDEP_find_trial, compute_error_probability_2d
 from AI.AS_functionals import *
+from sklearn.svm import LinearSVC
 import time
 import os
 import functools
@@ -341,7 +342,7 @@ class TestAI(unittest.TestCase):
         #print(CS)
         #print(ERR_CS)
 
-        #plot_ablation_C(CONFIGS, CS, BEST_CS)
+        plot_ablation_C(CONFIGS, CS, BEST_CS)
 
     
     def test_ASE(self):
@@ -520,6 +521,54 @@ class TestAI(unittest.TestCase):
         plt.ylabel("window width (number of trials)")
 
         plt.show()
+    
+    def test_trial_mirroring(self):
+        n_trials_to_consider = 180
+        mock_trials = [np.array([t[0], t[1]]) for t in self.trial_data[-n_trials_to_consider:]]
+        correct_to_lr = lambda x,y: (y==1) == (x >0)
+        mock_preds = [correct_to_lr(t[0], t[2]) for t in self.trial_data[-n_trials_to_consider:]]
+
+        mirror_trials, mirror_preds = mirror_trials_list(mock_trials, mock_preds)
+        model = LinearSVC(dual=False, C= 100)
+        model.fit(mock_trials, mock_preds)
+        norm1 = unit_vector(np.array([-model.coef_[0][1], model.coef_[0][0]]))
+
+        print("regular")
+        print(norm1)
+        print(model.intercept_)
+
+        model = LinearSVC(dual=False, C= 100)
+        model.fit(mirror_trials, mirror_preds)
+        norm2 = unit_vector(np.array([-model.coef_[0][1], model.coef_[0][0]]))
+
+        print("mirror")
+        print(norm2)
+        print(model.intercept_)
+
+        model = LinearSVC(dual=False, C= 100, fit_intercept=False)
+        model.fit(mock_trials, mock_preds)
+        norm3 = unit_vector(np.array([-model.coef_[0][1], model.coef_[0][0]]))
+
+        print("no fit no mirror")
+        print(norm3)
+        print(model.intercept_)
+
+        model = LinearSVC(dual=False, C= 100, fit_intercept=False)
+        model.fit(mirror_trials, mirror_preds)
+        norm4 = unit_vector(np.array([-model.coef_[0][1], model.coef_[0][0]]))
+
+        print("no fit with mirror")
+        print(norm4)
+        print(model.intercept_)
+
+        n_t = n_trials_to_consider
+        t,c,a = return_plottable_list(mock_trials[0:n_t], mock_preds[0: n_t])
+        plot_trials(norm1, t, c, a, ann_str=True, estimated_boundary=norm3)
+        
+        t,c,a = return_plottable_list(mirror_trials[0: n_t], mirror_preds[0: n_t])
+        plot_trials(norm2, t, c, a, ann_str=True, estimated_boundary=norm4)
+        
+                
 
 if __name__ == "__main__":
     tc = TestAI()
@@ -538,13 +587,14 @@ if __name__ == "__main__":
     #tc.test_misc()
     #tc.test_PDEP_update()
     #tc.test_std_loglikelihood()
-    #tc.test_study_optimal_C()
+    tc.test_study_optimal_C()
     #tc.test_ASE()
     #tc.test_monthly_plot()
     #tc.test_table()
     #tc.test_improvement_1D()
     #tc.test_slopes()
-    tc.test_best_Ns()
+    #tc.test_best_Ns()
+    #tc.test_trial_mirroring()
 
     duration = 1000  # milliseconds
     freq = 440  # Hz

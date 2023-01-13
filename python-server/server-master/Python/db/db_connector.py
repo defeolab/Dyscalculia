@@ -1,5 +1,4 @@
 from typing import Any, Dict, List, Tuple
-from click import launch
 import mysql.connector
 from datetime import datetime
 from trial import Trial

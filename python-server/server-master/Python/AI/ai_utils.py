@@ -81,3 +81,6 @@ def compute_nd_nnd_coords(trial_left: List[float], trial_right: List[float]) -> 
 
 def vcol(vec: np.ndarray) -> np.ndarray:
     return vec.reshape((vec.size,1))
+
+def compute_norm_from_angle(angle:float) -> np.ndarray:
+    return np.array([-1,1])

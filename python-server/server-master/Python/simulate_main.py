@@ -147,9 +147,10 @@ class SimulationsRunner(unittest.TestCase):
         for i_c, c in zip(i_C, target_C):
             np.save(PATH_FOR_CONST, np.array([c]))
             print(f">>> Making run with C = {c}")
-            for n in range(0,n_runs):
+            for _ in range(0,n_runs):
                 (e_a_h, e_s_h), (s_a_h, s_s_h), _ = self.simulation_suite()
                 e_a_h = np.array(e_a_h)[:, -last_n_days:]
+                print(e_a_h.shape)
                 e_s_h = np.array(e_s_h)[:, -last_n_days:]
                 s_a_h = np.array(s_a_h)[:, -last_n_days:]
                 s_s_h = np.array(s_s_h)[:, -last_n_days:]
@@ -166,7 +167,7 @@ class SimulationsRunner(unittest.TestCase):
         alpha_errors_by_config = alpha_errors_by_config/MAX_ALPHA
         sigma_errors_by_config = sigma_errors_by_config/MAX_SIGMA
 
-        best_Cs_by_config = np.argmin(alpha_errors_by_config + sigma_errors_by_config, axis=1)
+        best_Cs_by_config = np.argmin(alpha_errors_by_config, axis=1)
 
         if self.save_ablation:
             save_file = os.path.join(self.save_root, "best_Cs.npy")
@@ -276,7 +277,7 @@ if __name__ == "__main__":
     diffs = [(0.1,0.1), (0.4, 0.4), (0.8, 0.8), (0.95,0.95)]
     modes = ["filtering", "sharpening"]
 
-    days =60
+    days =30
     trials_per_day = 30
     interval = 15
 
@@ -291,12 +292,12 @@ if __name__ == "__main__":
     mode = modes[0]
     save_trials = False
     save_plots = True
-    alpha_i = 2
-    sigma_i = 5
+    alpha_i = 3
+    sigma_i = 1
     mock = True
     estimate_step = 1
     target_C = np.logspace(-2, 3, 6, base=10)
-    last_n_days = 200
+    last_n_days = 500
 
     target_n_trials = np.linspace(100, 1800, 18)
     target_slopes = -np.logspace(-4, -2, 10, base=10)/trials_per_day
@@ -322,9 +323,9 @@ if __name__ == "__main__":
     estimator_min_trials = 50
 
     make_plots = True
-    save_ablation = False
+    save_ablation = True
     n_runs = 2
-    suite_name = "test_feedbacks"
+    suite_name = "C_ablation5"
     sr = SimulationsRunner( days, trials_per_day, interval, evaluator, kids_ds, update_evaluator_stats, update_child, suite_name, 
                             target_prob, target_diff, mode, save_trials, save_plots, alphas[alpha_i], sigmas[sigma_i], mock, estimate_step,
                             target_C, make_plots, save_ablation, estimation_duration, 
@@ -332,8 +333,8 @@ if __name__ == "__main__":
 
     start_time = time.time()
 
-    sr.simulation_suite()
-    #sr.ablation_sim(last_n_days, n_runs)
+    #sr.simulation_suite()
+    sr.ablation_C(last_n_days, n_runs)
     #sr.ablation_n_trials(target_slopes, target_n_trials, n_runs)
 
 

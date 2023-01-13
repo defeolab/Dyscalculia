@@ -64,6 +64,8 @@ class ASD_Estimator(Estimator_Interface):
         return 45.0, 0.1, unit_vector(np.array([-1,1])), "support"        
 
     def second_pass_estimation(self, alpha_data: List[float], sigma_data: List[float], improve_assumption: bool = True)-> Tuple[List[float], List[float], List[np.ndarray]]:
+        if PERFORM_ABLATION_C:
+            return alpha_data, sigma_data, make_norms_list(alpha_data, sigma_data)
         n_samples = len(alpha_data)
         trials = np.array(self.trials[-n_samples:])
         predictions = np.array(self.predictions[-n_samples:])
@@ -96,9 +98,9 @@ class ASD_Estimator(Estimator_Interface):
 
             lower_bound, upper_bound = fetch_estimation_window_ia(i, np_alpha_data, np_sigma_data, self.max_trials_to_consider, restraining_slope)
             
-            
             target_trials = trials[lower_bound:upper_bound]
             target_predictions = predictions[lower_bound:upper_bound]
+
 
             #print(f"target with shape {target_trials.shape}, max was {self.max_trials_to_consider}, maxL was {trials.shape}, i: {i}")
             if self.denoiser_type == "OneClassSVM":

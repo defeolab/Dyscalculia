@@ -15,7 +15,7 @@ from AI.ai_consts import *
 DEBUG_D = False
 DEBUG_S = False
 DEBUG_PC = False
-PATH_FOR_C_ABLATION = ".\\AI\\precomputed_data\\PDEP\\C_ablation"
+PATH_FOR_C_ABLATION = ".\\AI\\precomputed_data\\PDEP\\C_ablation5"
 PATH_FOR_N_ABLATION = ".\\AI\\precomputed_data\\PDEP\\N_trials_ablation_fixed"
 PERFORM_ABLATION_C = False
 PERFORM_ABLATION_N_TRIALS = False
@@ -38,8 +38,11 @@ if PERFORM_ABLATION_C == False:
     filepath = os.path.join(PATH_FOR_C_ABLATION, "Cs.npy")
     CS : np.ndarray = np.load(filepath)
 
-    filepath = os.path.join(PATH_FOR_C_ABLATION, "errors_by_Cs.npy")
-    ERR_CS : np.ndarray = np.load(filepath)
+    filepath = os.path.join(PATH_FOR_C_ABLATION, "alpha_errors_by_Cs.npy")
+    ERR_A_CS : np.ndarray = np.load(filepath)
+
+    filepath = os.path.join(PATH_FOR_C_ABLATION, "sigma_errors_by_Cs.npy")
+    ERR_S_CS : np.ndarray = np.load(filepath)
 
 if PERFORM_ABLATION_N_TRIALS == False:
     #filepath = os.path.join(PATH_FOR_N_ABLATION, "best_n_trials_index.npy")
@@ -157,7 +160,7 @@ def simple_denoising_clean_trials(trials: np.ndarray, predictions: np.ndarray, i
     model = None
     target_C = find_expected_optimal_C(prev_norm, prev_sigma)
     for i in range(0, iterations):
-        model = LinearSVC(dual=False, C= target_C)
+        model = LinearSVC(dual=False, C= target_C, fit_intercept=False)
         model.fit(c_trials, c_predictions)
 
         lw_indexes = model.predict(c_trials) != c_predictions
@@ -177,7 +180,7 @@ def simple_denoising_clean_trials(trials: np.ndarray, predictions: np.ndarray, i
 
     w_trials = np.array(w_trials)
     w_predictions = np.array(w_predictions)
-    model = LinearSVC(dual=False, C= target_C)
+    model = LinearSVC(dual=False, C= target_C, fit_intercept=False)
     model.fit(c_trials, c_predictions)
     norm = unit_vector(np.array([-model.coef_[0][1], model.coef_[0][0]]))
 
@@ -198,6 +201,7 @@ def simple_denoising_clean_trials(trials: np.ndarray, predictions: np.ndarray, i
 
 def simple_denoising_fixed_boundary(trials: np.ndarray, predictions: np.ndarray, norm: np.ndarray) -> Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
     transform_mat=np.linalg.inv(np.array([[norm[0], norm[1]], [norm[1], -norm[0]]]))
+    
     dists = np.dot(transform_mat, trials.T)[1, :]
 
     denoising_pred = (dists > 0) == predictions
@@ -217,7 +221,6 @@ def produce_estimate_simple_denoising(trials: np.ndarray, predictions: np.ndarra
     if np.all(predictions) or np.all(predictions == False):
         #the recent trials contain only predictions for either left or right, data is not good enough to estimate boundary
         #Last detected boundary is reproposed instead
-
         norm = prev_norm
         (c_trials, c_predictions), (w_trials, w_predictions) = simple_denoising_fixed_boundary(e_trials, e_predictions, norm)
     else:
@@ -255,7 +258,7 @@ def produce_estimate_simple_denoising(trials: np.ndarray, predictions: np.ndarra
 
 #improve assumption: the player improves in a linear way
 def fetch_estimation_window_ia(index: int, alpha_data: np.ndarray, sigma_data: np.ndarray, max_width: int, restraining_slope) -> Tuple[int, int]:
-    if PERFORM_ABLATION_N_TRIALS:
+    if PERFORM_ABLATION_N_TRIALS or PERFORM_ABLATION_C:
         lower_bound = 0 if index - max_width <0 else int(index - max_width)
         return lower_bound, index
     else:
@@ -291,6 +294,11 @@ def compute_assumption_validity_window(data_x: np.ndarray, data_y: np.ndarray, i
 
     return lower_bound
 
+def make_norms_list(alpha_data: List[float], sigma_data: List[float]) -> List[np.ndarray]:
+    ret = []
+    for a, s in zip(alpha_data, sigma_data):
+        ret.append(compute_norm_from_angle(a))
+    return ret
 
 #unused
 def produce_estimate_denoising_OCSVM(trials: np.ndarray, predictions: np.ndarray)-> Tuple[float, float]:

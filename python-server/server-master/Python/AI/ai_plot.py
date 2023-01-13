@@ -522,5 +522,7 @@ def plot_ablation_C(configs: np.ndarray, Cs: np.ndarray, best_Cs: np.ndarray):
 
 
     surf = ax.plot_trisurf(X, Y, Z)
-
+    ax.set_xlabel('alpha', fontsize=20, rotation=150)
+    ax.set_ylabel('sigma', fontsize=20, rotation=150)
+    ax.set_zlabel('best C', fontsize=20, rotation=150)
     plt.show()

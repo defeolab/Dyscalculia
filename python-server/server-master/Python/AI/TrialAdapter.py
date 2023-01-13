@@ -44,7 +44,7 @@ class TrialAdapter:
             i+=1
             if id not in self.recent_ids[-self.memory:] and id +1 not in self.recent_ids[-self.memory:] and id-1 not in self.recent_ids[-self.memory:]:
                 okay = True  
-        print(int(r[0]))
+        #print(int(r[0]))
         #print(f"{target_nd_coord} - {closest_trial['nd_LogRatio']} : {target_nnd_coord} - {closest_trial['nnd_LogRatio']}")
 
         if self.mock == False:
