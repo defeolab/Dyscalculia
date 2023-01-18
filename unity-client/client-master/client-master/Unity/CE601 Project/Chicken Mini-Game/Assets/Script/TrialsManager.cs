@@ -29,6 +29,7 @@ public class TrialsManager : MonoBehaviour
     
     //For now they're used to check if the connection's established and when the trials're finished
     public GameObject errorImage, finishImage;
+    public Text AnswersText;
 
     public bool remote;
     public bool useLan;
@@ -118,7 +119,8 @@ public class TrialsManager : MonoBehaviour
             client.Dispose();
             finishImage.SetActive(true);
             finishImage.GetComponent<AudioSource>().Play();
-            StartCoroutine(ReturnHome(finishImage.GetComponent<AudioSource>().clip.length));
+            AnswersText.text = "Correct Answers: " + correctCount + "\nIncorrect Answers: " + incorrectCount;
+            StartCoroutine(ReturnHome(finishImage.GetComponent<AudioSource>().clip.length+2f));
         }
         else
         {

@@ -3262,6 +3262,7 @@ MonoBehaviour:
   maxTrialsNum: 50
   errorImage: {fileID: 1928544760}
   finishImage: {fileID: 1963950028}
+  AnswersText: {fileID: 2144617190}
   remote: 0
   useLan: 1
   ip: 
@@ -3318,6 +3319,7 @@ MonoBehaviour:
     chickenShowTime: 0
     maxTrialTime: 0
   flowers: {fileID: 0}
+  cowORchick: 0
 --- !u!114 &480365267
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13308,6 +13310,7 @@ RectTransform:
   m_Children:
   - {fileID: 1630987117}
   - {fileID: 2061291817}
+  - {fileID: 2144617189}
   m_Father: {fileID: 1871504095}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -14622,6 +14625,87 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!1 &2144617188
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2144617189}
+  - component: {fileID: 2144617191}
+  - component: {fileID: 2144617190}
+  m_Layer: 5
+  m_Name: AnswersText
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &2144617189
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2144617188}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1963950029}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 103.72, y: 195.3}
+  m_SizeDelta: {x: 492.72406, y: 72.949295}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &2144617190
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2144617188}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_FontData:
+    m_Font: {fileID: 12800000, guid: 561cd1e7ad408b04aaff15e4b3609b84, type: 3}
+    m_FontSize: 21
+    m_FontStyle: 0
+    m_BestFit: 1
+    m_MinSize: 3
+    m_MaxSize: 49
+    m_Alignment: 4
+    m_AlignByGeometry: 0
+    m_RichText: 1
+    m_HorizontalOverflow: 0
+    m_VerticalOverflow: 0
+    m_LineSpacing: 1
+  m_Text: 'Correct Answers:
+
+    Incorrect Answers:'
+--- !u!222 &2144617191
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2144617188}
+  m_CullTransparentMesh: 0
 --- !u!1001 &1413222485726283617
 PrefabInstance:
   m_ObjectHideFlags: 0
