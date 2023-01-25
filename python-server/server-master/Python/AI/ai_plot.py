@@ -5,17 +5,21 @@ from AI.PlayerSimulator import PlayerSimulator
 from typing import List, Tuple, Any, Callable
 import matplotlib.pyplot as plt
 from AI.ai_utils import angle_between, unit_vector
+from AI.ai_consts import *
 import numpy as np
 import os
 from datetime import date
 from mpl_toolkits import mplot3d
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator
+from tabulate import tabulate
+
 
 
 class FigSaver:
     def __init__(self, base_root: str,exp_name: str, add_date:bool=False, interval: int=5, figname: str = None) -> None:
         self.root = os.path.join(base_root, exp_name) if figname is None else base_root
+        self.monthly_root = os.path.join(self.root, "monthly")
         self.figname = figname
         if add_date:
             today = date.today()
@@ -23,6 +27,9 @@ class FigSaver:
 
         if os.path.exists(self.root) == False and figname is None:
             os.mkdir(self.root)
+            if os.path.exists(self.monthly_root) == False:
+                os.mkdir(self.monthly_root)
+
         self.interval = interval
         self.i = 0
 
@@ -35,11 +42,12 @@ class FigSaver:
             plt.close()
         self.i+=1
 
-    def save_summary_stats(self, name: str):
-        figpath = os.path.join(self.root, f"{name}.png")
+    def save_summary_stats(self, name: str, root_type: str = "main"):
+        root = self.root if root_type == "main" else self.monthly_root
+        figpath = os.path.join(root, f"{name}.png")
         plt.savefig(figpath, format= "png")
         plt.close()
-    
+
     def save_player_cycle_3D(self, ax):
         elev = [0, 60, 90]
         az = [10, 45, 75]
@@ -51,6 +59,26 @@ class FigSaver:
                 ax.view_init(e,a)
                 plt.savefig(figpath, format = "png")
         plt.close()
+    
+    def save_table(self, data: List[Any], headers: List[str], prefix: str, root_type: str = "main"):
+        root = self.root if root_type == "main" else self.monthly_root
+        table_plain = tabulate(data, headers, tablefmt="grid")
+        table_tex = tabulate(data, headers, tablefmt="latex")
+
+        plain_file = os.path.join(root, f"{prefix}_plain.txt")
+        with open(plain_file, 'w') as f:
+            f.write("\n")
+            f.write(table_plain)
+            f.write("\n")
+        
+        tex_file = os.path.join(root, f"{prefix}_tex.tex")
+        with open(tex_file, 'w') as f:
+            f.write("\n")
+            f.write(table_tex)
+            f.write("\n")
+
+
+
         
 
 
@@ -140,7 +168,7 @@ def plot_trials(boundary_vector: np.ndarray,
         plt.show()
     else:
         figsaver.save_day()
-
+"""
 def plot_stats( local_accuracies: List[float], 
                 cumulative_accuracies: List[float], 
                 days: int, 
@@ -170,6 +198,169 @@ def plot_stats( local_accuracies: List[float],
         plt.show()
     else:
         figsaver.save_summary_stats(f"{labels[0]}-{labels[1]}")
+"""
+def plot_stats( statlist: List[List[float]], 
+                length: int,
+                labels: List[str] = ['local_accuracy', 'cumulative_accuracy'],
+                main_stat: str = "alpha",
+                figsaver: FigSaver = None,
+                lim_bounds: List[float] = [-0.1, MAX_SIGMA+0.1]):
+
+    fig = plt.figure()
+    ax = fig.gca()
+    x = np.linspace(1, length, length)
+
+    colors = ["green", "red", "blue", "orange", "yellow"]
+
+    for i, dl in enumerate(statlist):
+        ax.plot(x, dl, color= colors[i], label=labels[i])
+
+    plt.title(f"Plot for {main_stat}")
+
+    ax.legend()
+
+    plt.xlabel("trial")
+    if main_stat == "alpha":
+        plt.ylabel("alpha (degrees)")
+    elif main_stat == "sigma":
+        plt.ylabel("sigma (ND-NND units)")
+    else: 
+        plt.ylabel("accuracy")
+
+    plt.ylim(lim_bounds)
+    plt.grid(True)
+    
+    if figsaver is None:
+        plt.show()
+    else:
+        figsaver.save_summary_stats(f"{labels[0]}-{labels[1]}")
+
+def plot_monthly_stats( statlist: List[List[float]], 
+                        tpd: int,
+                        month_n: int,
+                        days: int = 30,
+                        main_stat = "alpha",
+                        labels: List[str] = ['local_accuracy', 'cumulative_accuracy'], 
+                        figsaver: FigSaver = None,
+                        lim_bounds: List[float] = [-0.1, MAX_SIGMA+0.1],
+                        length: int = -1):
+    
+    if figsaver is None:
+        return
+
+    fig = plt.figure()
+    ax = fig.gca()
+    daily_statlist = []
+    if month_n>=0:
+        x = np.linspace(1, days, days)
+    else:
+        x = np.linspace(1, length, length)
+
+    for l in statlist:
+        daily_stat = vec_reshape_by_day(l, tpd)
+        reduced = []
+        for ds in daily_stat:
+            reduced.append(sum(ds)/tpd)
+        daily_statlist.append(reduced)
+    
+    colors = ["green", "red", "blue", "orange", "yellow"]
+
+    for i, dl in enumerate(daily_statlist):
+        ax.plot(x, dl, color= colors[i], label=labels[i])
+
+    if month_n >= 0:
+        plt.title(f"Month n° {month_n}")
+    else:
+        plt.title(f"Whole simulation")
+        month_n = "All"
+
+    ax.legend()
+
+    plt.xlabel("day")
+    if main_stat == "alpha":
+        plt.ylabel("alpha (degrees)")
+    elif main_stat == "sigma":
+        plt.ylabel("sigma (ND-NND units)")
+    else: 
+        plt.ylabel("accuracy")
+
+    plt.ylim(lim_bounds)
+    plt.grid(True)
+    
+    figsaver.save_summary_stats(f"{month_n}-{labels[0]}-{labels[1]}", "monthly")
+
+def vec_reshape_by_day(vec: List[Any], trials_per_day: int):
+    ret = []
+    for i in range(0, int(len(vec)/trials_per_day)):
+        to_add = []
+        for j in range(0, trials_per_day):
+            to_add.append(vec[i*trials_per_day + j])
+        ret.append(to_add)
+    return ret
+
+def make_tables( main_stat: List[float],
+                secondary_stats: List[List[float]],
+                tpd: int,
+                n_months: int,
+                days: int = 30,
+                main_label: str = "alpha",
+                secondary_labels: List[str] = ['local accuracy', 'cumulative accuracy'], 
+                figsaver: FigSaver = None):
+
+    main_monthly_stat = vec_reshape_by_day(main_stat, days*tpd)
+
+    secondary_monthly_stats = []
+
+    for stat in secondary_stats:
+        secondary_monthly_stat = vec_reshape_by_day(stat, days*tpd)
+        secondary_monthly_stats.append(secondary_monthly_stat)
+
+    data = []
+    main_monthly_stat = np.array(main_monthly_stat)
+    secondary_monthly_stats = np.array(secondary_monthly_stats)
+    for i in range(0, n_months):
+        monthly_data = [i+1]
+        #print(main_monthly_stat[i])
+        for stat in secondary_monthly_stats:
+            #print(stat[i])
+            dist = np.abs(main_monthly_stat[i]-stat[i])
+            avg_dist = np.average(dist)
+            dist_std = np.std(dist)
+            max_dist = np.max(dist)
+            monthly_data.append(avg_dist)
+            monthly_data.append(dist_std)
+            monthly_data.append(max_dist)
+        
+        data.append(monthly_data)
+
+    last_row = ["All"]
+
+    main_all_data = np.array(main_stat)
+    secondary_all_data = np.array(secondary_stats)
+    for stat in secondary_all_data:
+        dist = np.abs(main_all_data-stat)
+        avg_dist = np.average(dist)
+        dist_std = np.std(dist)
+        max_dist = np.max(dist)
+        last_row.append(avg_dist)
+        last_row.append(dist_std)
+        last_row.append(max_dist)
+
+    data.append(last_row)
+    
+    header = ["Month"]
+
+    header_additions = ["Avg Dist", "Dist Std", "Max Dist"]
+    for i, stat in enumerate(secondary_monthly_stats):
+        for addition in header_additions:
+            header.append(secondary_labels[i] + " "+ addition)
+
+    if figsaver is not None:
+        figsaver.save_table(data, header, main_label,root_type = "monthly")
+    else:
+        print(tabulate(data, header, tablefmt="fancy_grid"))
+
+
 
 def separate_by_day(vec: List[Any], trials_per_day: int):
     i=0
@@ -331,5 +522,7 @@ def plot_ablation_C(configs: np.ndarray, Cs: np.ndarray, best_Cs: np.ndarray):
 
 
     surf = ax.plot_trisurf(X, Y, Z)
-
+    ax.set_xlabel('alpha', fontsize=20, rotation=150)
+    ax.set_ylabel('sigma', fontsize=20, rotation=150)
+    ax.set_zlabel('best C', fontsize=20, rotation=150)
     plt.show()

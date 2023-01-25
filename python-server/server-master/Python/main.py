@@ -83,7 +83,7 @@ if args.sim_child:
                                 evaluator=args.evaluator)
     client.run(args.sim_n_trials, args.sim_plot)
 else:
-    game = GameServer(server_socket, args.host, args.port, db, args.disable_shutdown, args.always_new_player, args.evaluator, args.kids_dataset)
+    game = GameServer(server_socket, args.host, args.port, db, args.disable_shutdown, args.always_new_player, args.evaluator, args.kids_dataset, args.difficulty)
     game.run()
 # game = Create_Game(trials_matrix)
 # response_vector = game.run(simulation_on, nnd_selector, alpha, sigma, ServerSocket, host, port, DB, ThreadCount)

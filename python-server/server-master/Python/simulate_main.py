@@ -4,14 +4,25 @@ from AI.TrialAdapter import TrialAdapter
 from AI.ai_plot import plot_trials, FigSaver
 from AI.PDEP_Evaluator import PDEP_Evaluator
 from AI.AS_functionals import *
+from AI.ai_consts import *
+from AI.AS_Estimate import ASD_Estimator
 from dummy_client_handler import SimulatedClient
 import time
 import os
 import winsound
 
-BASE_PATH_FOR_PICS = "C:\\Users\\fblan\\Desktop\\thesis_pics"
-BASE_PATH_FOR_SAVING_TRIALS = "C:\\Users\\fblan\\Dyscalculia\\python-server\\server-master\\Python\\AI\\precomputed_data"
-PATH_FOR_CONST = "C:\\Users\\fblan\\Dyscalculia\\python-server\\server-master\\Python\\AI\\precomputed_data\\PDEP\\consts\\C.npy"
+BASE_PATH_FOR_PICS = ".\\experiments"
+BASE_PATH_FOR_SAVING_TRIALS = ".\\AI\\precomputed_data"
+PATH_FOR_CONST = ".\\AI\\precomputed_data\\PDEP\\consts\\C.npy"
+
+if os.path.exists(BASE_PATH_FOR_PICS) == False:
+    os.mkdir(BASE_PATH_FOR_PICS)
+    pdep = os.path.join(BASE_PATH_FOR_PICS, "PDEP")
+    default = os.path.join(BASE_PATH_FOR_PICS, "simple")
+
+    os.mkdir(pdep)
+    os.mkdir(default)
+
 
 class SimulationsRunner(unittest.TestCase):
     def __init__(   self, 
@@ -32,16 +43,16 @@ class SimulationsRunner(unittest.TestCase):
                     sigmas: List[float], 
                     mock: bool, 
                     estimate_step: int, 
-                    child_alpha_std: float,
-                    child_sigma_std: float, 
-                    child_improve_step: int, 
                     target_Cs: np.ndarray,
                     make_plots: bool, 
                     save_ablation: bool,
                     estimation_duration: int,
                     estimator_type: str,
                     init_evaluator_stats: bool,
-                    estimator_max_trials: int):
+                    estimator_max_trials: int,
+                    estimator_min_trials: int,
+                    improver_type: str,
+                    improver_parameters: List[float]):
         
         self.days = days
         self.trials_per_day = trials_per_day
@@ -60,9 +71,6 @@ class SimulationsRunner(unittest.TestCase):
         self.sigmas = sigmas
         self.mock = mock
         self.estimate_step = estimate_step
-        self.child_alpha_std = child_alpha_std
-        self.child_sigma_std = child_sigma_std
-        self.child_improve_step = child_improve_step
         self.target_C = target_Cs
         self.make_plots = make_plots
         self.save_ablation = save_ablation
@@ -70,6 +78,9 @@ class SimulationsRunner(unittest.TestCase):
         self.estimator_type = estimator_type
         self.init_evaluator_stats = init_evaluator_stats
         self.estimator_max_trials = estimator_max_trials
+        self.improver_type = improver_type
+        self.improver_parameters = improver_parameters
+        self.estimator_min_trials = estimator_min_trials
 
         self.base_root = os.path.join(BASE_PATH_FOR_PICS, self.evaluator)
         self.base_root = os.path.join(self.base_root, suite_name)
@@ -87,6 +98,8 @@ class SimulationsRunner(unittest.TestCase):
         sim_sigma_hist = []
         e_alpha_hist = []
         e_sigma_hist = []
+        trials = []
+        preds = []
         for alpha in self.alphas:
             for sigma in self.sigmas:
                 exp_name = f"alpha_{alpha}_sigma_{int(sigma*100)}"
@@ -94,11 +107,8 @@ class SimulationsRunner(unittest.TestCase):
                 handler = SimulatedClient(  0.5,0.5, alpha=alpha, sigma=sigma, evaluator=self.evaluator, kids_ds=kids_ds, 
                                             save_file=save_file, estimation_duration=self.estimation_duration, 
                                             estimator_type=self.estimator_type, init_evaluator=self.init_evaluator_stats,
-                                            estimator_max_trials=self.estimator_max_trials)
-                
-                handler.player.improve_alpha_std = self.child_alpha_std
-                handler.player.improve_sigma_std = self.child_sigma_std
-                handler.player.improve_interval = self.child_improve_step
+                                            estimator_max_trials=self.estimator_max_trials, estimator_min_trials=self.estimator_min_trials,
+                                            improver_type=self.improver_type, improver_parameters=self.improver_parameters)
                 
                 if self.evaluator == "PDEP":
                     handler.player_evaluator.target_error_prob = self.target_prob
@@ -110,19 +120,24 @@ class SimulationsRunner(unittest.TestCase):
                     handler.player_evaluator.mode = mode
                     handler.player_evaluator.always_update_step = True
                 figsaver = FigSaver(self.base_root, exp_name, interval=self.interval) if self.save_plots else None
-                (ea, es), (sa, ss) = handler.simulate_player_cycle(self.days, self.trials_per_day, False, self.update_evaluator_stats,self.update_child, figsaver=figsaver, make_plots=self.make_plots)
+                (ea, es), (sa, ss),(ts, pds) = handler.simulate_player_cycle(self.days, self.trials_per_day, False, self.update_evaluator_stats,self.update_child, figsaver=figsaver, make_plots=self.make_plots)
                 sim_alpha_hist.append(sa)
                 sim_sigma_hist.append(ss)
                 e_alpha_hist.append(ea)
                 e_sigma_hist.append(es)
-        
-        return (e_alpha_hist, e_sigma_hist), (sim_alpha_hist, sim_sigma_hist)
+                trials.append(ts)
+                preds.append(pds)
 
-    def ablation_sim(self, last_n_days: int, n_runs: int):
+        
+        return (e_alpha_hist, e_sigma_hist), (sim_alpha_hist, sim_sigma_hist), (trials, preds)
+
+    def ablation_C(self, last_n_days: int, n_runs: int):
         target_C = np.array(self.target_C)
         i_C = np.arange(target_C.shape[0])
 
-        errors_by_config = np.zeros((2, len(self.alphas)*len(self.sigmas), target_C.shape[0]))
+        alpha_errors_by_config = np.zeros((len(self.alphas)*len(self.sigmas), target_C.shape[0]))
+        sigma_errors_by_config = np.zeros((len(self.alphas)*len(self.sigmas), target_C.shape[0]))
+
         configs = np.array([[alpha, sigma] for alpha in self.alphas for sigma in self.sigmas])
         i_configs = [i for i in range(0, len(configs))]
         
@@ -132,9 +147,10 @@ class SimulationsRunner(unittest.TestCase):
         for i_c, c in zip(i_C, target_C):
             np.save(PATH_FOR_CONST, np.array([c]))
             print(f">>> Making run with C = {c}")
-            for n in range(0,n_runs):
-                (e_a_h, e_s_h), (s_a_h, s_s_h) = self.simulation_suite()
+            for _ in range(0,n_runs):
+                (e_a_h, e_s_h), (s_a_h, s_s_h), _ = self.simulation_suite()
                 e_a_h = np.array(e_a_h)[:, -last_n_days:]
+                print(e_a_h.shape)
                 e_s_h = np.array(e_s_h)[:, -last_n_days:]
                 s_a_h = np.array(s_a_h)[:, -last_n_days:]
                 s_s_h = np.array(s_s_h)[:, -last_n_days:]
@@ -143,15 +159,15 @@ class SimulationsRunner(unittest.TestCase):
                 avg_error_s = np.abs(e_s_h - s_s_h).sum(axis=1)/last_n_days
 
                 for i, error_for_config in enumerate(avg_error_a):
-                    errors_by_config[0, i, i_c] += error_for_config
+                    alpha_errors_by_config[i, i_c] += error_for_config
             
                 for i, error_for_config in enumerate(avg_error_s):
-                    errors_by_config[1, i, i_c] += error_for_config
+                    sigma_errors_by_config[i, i_c] += error_for_config
 
-        errors_by_config[0, :, :] = errors_by_config[0, :, :]/90
-        errors_by_config[1, :, :] = errors_by_config[0, :, :]/0.5
+        alpha_errors_by_config = alpha_errors_by_config/MAX_ALPHA
+        sigma_errors_by_config = sigma_errors_by_config/MAX_SIGMA
 
-        best_Cs_by_config = np.argmin(errors_by_config.sum(axis=0), axis=1)
+        best_Cs_by_config = np.argmin(alpha_errors_by_config, axis=1)
 
         if self.save_ablation:
             save_file = os.path.join(self.save_root, "best_Cs.npy")
@@ -163,21 +179,79 @@ class SimulationsRunner(unittest.TestCase):
             save_file = os.path.join(self.save_root, "Cs.npy")
             np.save(save_file, target_C)
 
-            save_file = os.path.join(self.save_root, "errors_by_Cs.npy")
-            np.save(save_file, errors_by_config)
+            save_file = os.path.join(self.save_root, "alpha_errors_by_Cs.npy")
+            np.save(save_file, alpha_errors_by_config)
+
+            save_file = os.path.join(self.save_root, "sigma_errors_by_Cs.npy")
+            np.save(save_file, sigma_errors_by_config)
 
         print(f"best Cs:")
         print(best_Cs_by_config)
         print("-------------")
-            
-            
-            
 
+    def ablation_n_trials(self, target_slopes: List[float], target_max_ns: List[float], n_runs:int):
+        print(target_slopes)
+        print(target_max_ns)
+        
+        target_slopes=np.array(target_slopes)
+        target_max_ns = np.array(target_max_ns)
+        alpha_errors_by_config = np.zeros((len(target_slopes), len(target_max_ns)))
+        sigma_errors_by_config = np.zeros((len(target_slopes), len(target_max_ns)))
+        configs = np.array([target_slopes])
+        i_configs = [i for i in range(0, len(configs))]
 
+        for i, ts in enumerate(target_slopes):
+            self.improver_parameters = [ts*MAX_ALPHA, ts*MAX_SIGMA, 1]
+            self.estimator_max_trials = 180
+            print(f">>> Making run with slope = {ts}")
+            for _ in range(0, n_runs):
+                (e_a_h, e_s_h), (s_a_h, s_s_h), (gen_trials, gen_preds) = self.simulation_suite()
 
+                s_a_h = np.array(s_a_h)
+                s_s_h = np.array(s_s_h)
 
+                for j, max_n in enumerate(target_max_ns):
+                    estimator = ASD_Estimator(max_n, denoiser_type="simple_denoising")
+                    estimator.trials = gen_trials[0]
+                    estimator.predictions = gen_preds[0]
 
+                    sp_a, sp_s, _ = estimator.second_pass_estimation(e_a_h[0], e_s_h[0])
 
+                    avg_error_a = np.average(np.abs(sp_a-s_a_h[0]))
+                    avg_error_s = np.average(np.abs(sp_s-s_s_h[0]))
+
+                    alpha_errors_by_config[i, j] += avg_error_a
+                    sigma_errors_by_config[i, j] += avg_error_s
+                
+            alpha_errors_by_config[i, :]/=n_runs
+            sigma_errors_by_config[i, :]/=n_runs
+            best_i = np.argmin(alpha_errors_by_config[i] + sigma_errors_by_config[i])
+            print(f">>> best found is {target_max_ns[best_i]}")
+
+        alpha_errors_by_config = alpha_errors_by_config/MAX_ALPHA
+        sigma_errors_by_config = sigma_errors_by_config/MAX_SIGMA
+
+        best_Ns_by_config = np.argmin(alpha_errors_by_config + sigma_errors_by_config, axis=1)
+
+        if self.save_ablation:
+            save_file = os.path.join(self.save_root, "best_n_trials_index.npy")
+            np.save(save_file, best_Ns_by_config)
+
+            save_file = os.path.join(self.save_root, "slope_configs.npy")
+            np.save(save_file, configs)
+
+            save_file = os.path.join(self.save_root, "n_trials.npy")
+            np.save(save_file, target_max_ns)
+
+            save_file = os.path.join(self.save_root, "alpha_errors_by_Ns.npy")
+            np.save(save_file, alpha_errors_by_config)
+
+            save_file = os.path.join(self.save_root, "sigma_errors_by_Ns.npy")
+            np.save(save_file, sigma_errors_by_config)
+        
+        print(f"best Ns:")
+        print(best_Ns_by_config)
+        print("-------------")
     
 if __name__ == "__main__":
 
@@ -186,7 +260,8 @@ if __name__ == "__main__":
         [45],
         [65],
         [10, 20,30,40,50,60, 70, 80],
-        [10]
+        [10],
+        [MAX_ALPHA-10]
         ]
     sigmas = [
         [0.10, 0.20, 0.4],
@@ -194,16 +269,17 @@ if __name__ == "__main__":
         [0.5],
         [0.2],
         [0.1],
-        [0.3]
+        [0.3],
+        [MAX_SIGMA-0.1]
         ]
 
     probs = [0.10, 0.30, 0.80]
     diffs = [(0.1,0.1), (0.4, 0.4), (0.8, 0.8), (0.95,0.95)]
     modes = ["filtering", "sharpening"]
 
-    days = 15
+    days =30
     trials_per_day = 30
-    interval = 5
+    interval = 15
 
     evaluator = "PDEP"
     kids_ds = False
@@ -211,41 +287,55 @@ if __name__ == "__main__":
     update_evaluator_stats = True
     init_evaluator_stats = False
 
-    update_child = False
-    child_alpha_std = 0.45
-    child_sigma_std = 0.003
-    child_improve_step = 1
-
     target_prob = probs[2]
     target_diff = diffs[0]
     mode = modes[0]
     save_trials = False
     save_plots = True
-    alpha_i = 0
-    sigma_i = 0
+    alpha_i = 3
+    sigma_i = 1
     mock = True
     estimate_step = 1
     target_C = np.logspace(-2, 3, 6, base=10)
-    last_n_days = 200
+    last_n_days = 500
+
+    target_n_trials = np.linspace(100, 1800, 18)
+    target_slopes = -np.logspace(-4, -2, 10, base=10)/trials_per_day
+    local_target_slope = target_slopes[8]
+
+    update_child = False
+    improver_parameters_options =   [
+                                        [0.45, 0.003, 1],
+                                        [-0.3/trials_per_day, -0.002/trials_per_day, 1],
+                                        [-0.05/trials_per_day, -0.0002/trials_per_day, 1],
+                                        [-0.7/trials_per_day, -0.005/trials_per_day, 1],
+                                        [local_target_slope*MAX_ALPHA, local_target_slope*MAX_SIGMA, 1]                                  
+                                    ]
+
+    pars_i = 4
+    improver_type_options = ["normal", "linear", "linear", "linear", "linear"]
+    improver_type = improver_type_options[pars_i]
+
 
     estimation_duration = 1
     estimator_type = "ASD"
-    estimator_max_trials = 500
+    estimator_max_trials = 180
+    estimator_min_trials = 50
 
     make_plots = True
-    save_ablation = False
-    n_runs = 1
-
-    suite_name = "ASD_const"
+    save_ablation = True
+    n_runs = 2
+    suite_name = "C_ablation5"
     sr = SimulationsRunner( days, trials_per_day, interval, evaluator, kids_ds, update_evaluator_stats, update_child, suite_name, 
                             target_prob, target_diff, mode, save_trials, save_plots, alphas[alpha_i], sigmas[sigma_i], mock, estimate_step,
-                            child_alpha_std, child_sigma_std, child_improve_step, target_C, make_plots, save_ablation, estimation_duration, 
-                            estimator_type, init_evaluator_stats, estimator_max_trials)
+                            target_C, make_plots, save_ablation, estimation_duration, 
+                            estimator_type, init_evaluator_stats, estimator_max_trials, estimator_min_trials,improver_type, improver_parameters_options[pars_i])
 
     start_time = time.time()
 
-    sr.simulation_suite()
-    #sr.ablation_sim(last_n_days, n_runs)
+    #sr.simulation_suite()
+    sr.ablation_C(last_n_days, n_runs)
+    #sr.ablation_n_trials(target_slopes, target_n_trials, n_runs)
 
 
     duration = 1000  # milliseconds

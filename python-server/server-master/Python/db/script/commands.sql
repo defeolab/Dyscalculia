@@ -42,3 +42,49 @@ CREATE TABLE player_info (
     
     PRIMARY KEY (player_id)
 );
+
+CREATE TABLE PDEP_player_info (
+    player_id bigint(20) unsigned,
+    
+    alpha decimal(5,2),
+    sigma decimal(5, 4),
+    
+    PRIMARY KEY (player_id)
+);
+
+CREATE TABLE PDEP_probability_history (
+    player_id bigint(20) unsigned,
+    
+    error_probability decimal(5, 4),
+    perceived_difficulty decimal(5,4),
+    
+    PRIMARY KEY (player_id)
+);
+
+CREATE TABLE PDEP_trial_result (
+	trial_result_id bigint(20) unsigned auto_increment,
+    player_id bigint(20) unsigned,
+    correct bit(1),
+    prediction bit(1),
+    decision_time bigint(20),
+    
+    ND decimal(5,4),
+    NND decimal(5,4),
+    id_in_lookup_table bigint(20) unsigned,
+    
+    area_1_circle_radius decimal (5,2),
+    area_1_size_of_chicken decimal (5,2),
+    area_1_average_space_between decimal (5,2),
+    area_1_number_of_chickens int(11),
+    area_2_circle_radius decimal (5,2),
+    area_2_size_of_chicken decimal (5,2),
+    area_2_average_space_between decimal (5,2),
+    area_2_number_of_chickens int(11),
+    chicken_show_time decimal(5,2),
+    created datetime,
+    PRIMARY KEY (trial_result_id)
+);
+
+
+
+

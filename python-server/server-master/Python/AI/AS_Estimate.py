@@ -5,6 +5,8 @@ from sklearn.svm import LinearSVC
 from typing import Tuple, List
 from AI.AS_functionals import *
 from AI.ai_utils import *
+from AI.ImprovementHandler import find_best_fit, poly_fitted_data_from_parameters
+from AI.ai_consts import *
 import math
 
 class Estimator_Interface:
@@ -15,10 +17,10 @@ class Estimator_Interface:
     def get_trial(self) -> Tuple[np.ndarray, float]:
         pass
 
-    def append_trial(self, trial: List[float], mode: str) -> None:
+    def append_trial(self, trial: List[float], mode: str = "") -> None:
         self.trials.append(trial)
 
-    def append_prediction(self, predicted_right: bool, mode: str) -> None:
+    def append_prediction(self, predicted_right: bool, mode: str = "") -> None:
         self.predictions.append(predicted_right)
 
     def produce_estimate(self, prev_norm: np.ndarray, prev_sigma: np.ndarray) -> Tuple[float, float, np.ndarray, str]:
@@ -37,10 +39,11 @@ class ASD_Estimator(Estimator_Interface):
     """
 
 
-    def __init__(self, max_trials_to_consider: int = 50, denoiser_type: str = "OneClassSVM"):
+    def __init__(self, max_trials_to_consider: int = 50, min_trials_to_consider:int = 30, denoiser_type: str = "simple_denoising"):
         super().__init__()
         self.max_trials_to_consider = max_trials_to_consider
         self.denoiser_type = denoiser_type
+        self.min_trials_to_consider = min_trials_to_consider
 
     def produce_estimate(self, prev_norm: np.ndarray, prev_sigma: np.ndarray) -> Tuple[float, float, np.ndarray, str]:
         """
@@ -60,8 +63,62 @@ class ASD_Estimator(Estimator_Interface):
 
         return 45.0, 0.1, unit_vector(np.array([-1,1])), "support"        
 
+    def second_pass_estimation(self, alpha_data: List[float], sigma_data: List[float], improve_assumption: bool = True)-> Tuple[List[float], List[float], List[np.ndarray]]:
+        if PERFORM_ABLATION_C:
+            return alpha_data, sigma_data, make_norms_list(alpha_data, sigma_data)
+        n_samples = len(alpha_data)
+        trials = np.array(self.trials[-n_samples:])
+        predictions = np.array(self.predictions[-n_samples:])
 
-#TODO estimator with esplicit trial suggestion like professor asked
+        np_alpha_data = np.array(alpha_data)/MAX_ALPHA
+        np_sigma_data = np.array(sigma_data)/MAX_SIGMA
+
+        trial_n = np.linspace(self.min_trials_to_consider, n_samples, n_samples-self.min_trials_to_consider)
+
+        alpha_improve_pars, alpha_improve_type = find_best_fit(trial_n, np_alpha_data[self.min_trials_to_consider:])
+        sigma_improve_pars, sigma_improve_type = find_best_fit(trial_n, np_sigma_data[self.min_trials_to_consider:])
+
+        restraining_slope = -max(abs(alpha_improve_pars[0]), abs(sigma_improve_pars[0]))
+        lb, ind = fetch_estimation_window_ia(5000, np_alpha_data, np_sigma_data, self.max_trials_to_consider, restraining_slope)
+        print(f"second pass found slopes: {alpha_improve_pars[0]} for alpha and {sigma_improve_pars[0]} for sigma")
+        print(f"second pass considering {ind-lb} trials")
+        #print(restraining_slope)
+        #assert True == False
+
+        ret_alphas = []
+        ret_sigmas = []
+        ret_norms = []
+
+        for i in range(0, n_samples):
+            if i < self.min_trials_to_consider:
+                ret_alphas.append(alpha_data[i])
+                ret_sigmas.append(sigma_data[i])
+                ret_norms.append(unit_vector([-1,1]))    
+                continue
+
+            lower_bound, upper_bound = fetch_estimation_window_ia(i, np_alpha_data, np_sigma_data, self.max_trials_to_consider, restraining_slope)
+            
+            target_trials = trials[lower_bound:upper_bound]
+            target_predictions = predictions[lower_bound:upper_bound]
+
+
+            #print(f"target with shape {target_trials.shape}, max was {self.max_trials_to_consider}, maxL was {trials.shape}, i: {i}")
+            if self.denoiser_type == "OneClassSVM":
+                (curr_alpha, curr_sigma, curr_norm) = produce_estimate_denoising_OCSVM(target_trials, target_predictions)
+
+            elif self.denoiser_type == "simple_denoising":
+                prev_norm = ret_norms[i-1] if i != 0 else np.array(unit_vector([-1, 1]))
+                prev_sigma = ret_sigmas[i-1] if i != 0 else 0.3
+                (curr_alpha, curr_sigma, curr_norm) = produce_estimate_simple_denoising(target_trials, target_predictions, prev_norm, prev_sigma)
+
+
+            ret_alphas.append(curr_alpha)
+            ret_sigmas.append(curr_sigma)
+            ret_norms.append(curr_norm)
+        
+        return ret_alphas, ret_sigmas, ret_norms
+
+#unused
 class ASE_Estimator(Estimator_Interface):
     def __init__(self, n_trials_per_cycle: int = 10, max_trials_to_consider: int = 90):
         super().__init__()

@@ -1,26 +1,29 @@
 import unittest
 from AI.ai_utils import *
 from AI.TrialAdapter import TrialAdapter
-from AI.ai_plot import plot_trials, FigSaver, plot_player_cycle3D, plot_ablation_C
+from AI.ai_plot import plot_trials, FigSaver, plot_player_cycle3D, plot_ablation_C, plot_monthly_stats, make_tables, plot_stats
+from AI.ImprovementHandler import *
 from AI.PDEP_Evaluator import PDEP_Evaluator
 from dummy_client_handler import SimulatedClient
 from AI.PlayerSimulator import PlayerSimulator
 from AI.AS_Estimate import ASD_Estimator, ASE_Estimator
 from AI.PDEP_functionals import PDEP_find_trial, compute_error_probability_2d
 from AI.AS_functionals import *
+from sklearn.svm import LinearSVC
 import time
 import os
 import functools
 import scipy as sp
-
+import matplotlib.pyplot as plt
+from AI.ai_consts import *
 
 import winsound
 
 
-BASE_PATH_FOR_PICS = "C:\\Users\\fblan\\Desktop\\thesis_pics"
+BASE_PATH_FOR_PICS = ".\\experiments"
 BASE_PATH_FOR_CASUAL_PICS = "C:\\Users\\fblan\\Desktop\\thesis pics\\test"
 
-BASE_PATH_FOR_SAVING_TRIALS = "C:\\Users\\fblan\\Dyscalculia\\python-server\\server-master\\Python\\AI\\precomputed_data"
+BASE_PATH_FOR_SAVING_TRIALS = ".\\AI\\precomputed_data"
 
 def to_trial(nd, nnd):
     return [-1,-1,-1,-1,-1,-1,-1,-1,nd,nnd]
@@ -45,6 +48,34 @@ class TestAI(unittest.TestCase):
         self.ax = lambda x: x*self.a
 
         self.integral_bound = 5
+
+        prec_path = os.path.join(BASE_PATH_FOR_SAVING_TRIALS, "PDEP", "precompute_improving")
+
+        path = os.path.join(prec_path, "alpha_65_sigma_50.npy")
+        self.trial_data = np.load(path)
+
+        path = os.path.join(prec_path, "fp_alpha.npy")
+        self.fp_alpha = np.load(path)
+
+        path = os.path.join(prec_path, "sp_alpha.npy")
+        self.sp_alpha = np.load(path)
+        
+        path = os.path.join(prec_path, "sim_alpha.npy")
+        self.sim_alpha = np.load(path)
+        
+        path = os.path.join(prec_path, "fp_sigma.npy")
+        self.fp_sigma = np.load(path)
+        
+        path = os.path.join(prec_path, "sp_sigma.npy")
+        self.sp_sigma = np.load(path)
+        
+        path = os.path.join(prec_path, "sim_sigma.npy")
+        self.sim_sigma = np.load(path)
+
+
+
+
+
 
     def test_probability(self):
         trials = get_mock_trials(32, True)
@@ -311,7 +342,7 @@ class TestAI(unittest.TestCase):
         #print(CS)
         #print(ERR_CS)
 
-        #plot_ablation_C(CONFIGS, CS, BEST_CS)
+        plot_ablation_C(CONFIGS, CS, BEST_CS)
 
     
     def test_ASE(self):
@@ -332,6 +363,26 @@ class TestAI(unittest.TestCase):
         plot_trials(np.array([-0.6, 0.2]), t, c, a, ann_str= True)
         
 
+    def test_monthly_plot(self):
+        stat1 = [np.random.normal(0.5) for i in range(0, 120)]
+        stat2 = [np.random.normal(0.5) for i in range(0, 120)]
+        
+        plot_monthly_stats([stat1, stat2], 4, 1, figsaver="asdsad")
+    
+    def test_table(self):
+        
+        base_root = os.path.join(BASE_PATH_FOR_PICS, "PDEP")
+        figsaver = FigSaver(base_root, "test")
+
+        n_stats = 2 
+        tpd = 2
+        n_months = 2
+        main_stat = [i for i in range(0, n_months*30*tpd)]
+        secondary_stats = [[-i for i in range(0, n_months*30*tpd)] for j in range(0,n_stats)]
+        main_label = "alpha"
+        secondary_labels=["first pass", "second pass"]
+
+        make_tables(main_stat, secondary_stats, tpd, n_months, main_label = main_label, secondary_labels=secondary_labels, figsaver=figsaver)
 
     def test_misc(self):
         sigma = 0.8
@@ -374,12 +425,150 @@ class TestAI(unittest.TestCase):
 
         print(p2d)
         print(p1d)
-        
-        
 
+    def test_improvement_1D(self):
 
+        mock_trials = [[t[0], t[1]] for t in self.trial_data]
+
+        correct_to_lr = lambda x,y: (y==1) == (x >0)
+        mock_preds = [correct_to_lr(t[0], t[2]) for t in self.trial_data]
+
+        e = ASD_Estimator(180, 30, "simple_denoising")
+        
+        data_x = np.linspace(1, self.fp_alpha.shape[0], self.fp_alpha.shape[0])
+
+        e.trials = mock_trials
+        e.predictions = mock_preds
+
+        e.max_trials_to_consider = 90
+
+        ad, sd, sn = e.second_pass_estimation(self.fp_alpha, self.fp_sigma)
+
+        #assert True == False
+
+        plt.plot(data_x, self.sim_alpha, color = "red")
+        plt.plot(data_x, self.fp_alpha, color="orange")
+        plt.plot(data_x, ad, color="blue")
+        plt.ylim([-5,95])
+        plt.show()
+
+        plt.plot(data_x, self.sim_sigma, color="blue")
+        plt.plot(data_x, self.fp_sigma, color="green")
+        plt.plot(data_x, sd, color="purple")
+        plt.ylim([-0.1,0.7])
+        plt.show()
     
+    def test_slopes(self):
+        n = 5400
+        data_x = np.linspace(1, n, n)
+        norm_slope = -0.0001/30
+        alpha_slope = norm_slope*MAX_ALPHA
+        sigma_slope = norm_slope*MAX_SIGMA
+
+        data_alpha = np.clip(data_x*alpha_slope + MAX_ALPHA, 0, 1000)
+        data_sigma = np.clip(data_x*sigma_slope + MAX_SIGMA, 0, 1000)
+
+        plt.plot(data_x, data_alpha, color="red")
+        plt.ylim([-5,MAX_ALPHA+5])
+        plt.show()
         
+        plt.plot(data_x, data_sigma, color="green")
+        plt.ylim([-0.1,MAX_SIGMA+0.1])
+        plt.show()
+
+        data_alpha = data_alpha/MAX_ALPHA
+        data_sigma = data_sigma/MAX_SIGMA
+
+        plt.plot(data_x, data_alpha, color="red")
+        plt.plot(data_x, data_sigma, color="green")
+        plt.show()
+        
+    def test_best_Ns(self):
+        print("---------")
+        print(BEST_N_INDEXES)
+        print("---------")
+        print(BEST_NS)
+        print("---------")
+        print(SLOPE_CONFIGS)
+        print("---------")
+        print(N_TRIALS)
+        print("---------")
+        alphamins=np.argmin(ERR_A_NS, axis=1)
+        sigmamins = np.argmin(ERR_S_NS, axis=1)
+        print(alphamins)
+        print(sigmamins)
+        print("---------")
+        #print(ERR_S_NS[9])
+
+        
+        #filepath = os.path.join(PATH_FOR_N_ABLATION, "n_trials.npy")
+        #nv = np.array([ 100,  200,  300,  400,  500,  600,  700,  800,  900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800])
+        #np.save(filepath, nv)
+        #filepath = os.path.join(PATH_FOR_N_ABLATION, "best_n_trials_index.npy")
+        #nv = np.array([17,17,17, 13, 9, 9, 6, 4, 1, 0])
+        #np.save(filepath, nv)
+
+        x = SLOPE_CONFIGS[0]
+        y = N_TRIALS[BEST_N_INDEXES]
+
+
+        #fig = plt.figure()
+        #ax = fig.gca()
+        #ax.set_xscale("log")
+        plt.scatter(x, y, color = "red")
+        plt.plot(x, y, color = "blue")
+        plt.xlabel("slopes (unit/trial)")
+        plt.ylabel("window width (number of trials)")
+
+        plt.show()
+    
+    def test_trial_mirroring(self):
+        n_trials_to_consider = 180
+        mock_trials = [np.array([t[0], t[1]]) for t in self.trial_data[-n_trials_to_consider:]]
+        correct_to_lr = lambda x,y: (y==1) == (x >0)
+        mock_preds = [correct_to_lr(t[0], t[2]) for t in self.trial_data[-n_trials_to_consider:]]
+
+        mirror_trials, mirror_preds = mirror_trials_list(mock_trials, mock_preds)
+        model = LinearSVC(dual=False, C= 100)
+        model.fit(mock_trials, mock_preds)
+        norm1 = unit_vector(np.array([-model.coef_[0][1], model.coef_[0][0]]))
+
+        print("regular")
+        print(norm1)
+        print(model.intercept_)
+
+        model = LinearSVC(dual=False, C= 100)
+        model.fit(mirror_trials, mirror_preds)
+        norm2 = unit_vector(np.array([-model.coef_[0][1], model.coef_[0][0]]))
+
+        print("mirror")
+        print(norm2)
+        print(model.intercept_)
+
+        model = LinearSVC(dual=False, C= 100, fit_intercept=False)
+        model.fit(mock_trials, mock_preds)
+        norm3 = unit_vector(np.array([-model.coef_[0][1], model.coef_[0][0]]))
+
+        print("no fit no mirror")
+        print(norm3)
+        print(model.intercept_)
+
+        model = LinearSVC(dual=False, C= 100, fit_intercept=False)
+        model.fit(mirror_trials, mirror_preds)
+        norm4 = unit_vector(np.array([-model.coef_[0][1], model.coef_[0][0]]))
+
+        print("no fit with mirror")
+        print(norm4)
+        print(model.intercept_)
+
+        n_t = n_trials_to_consider
+        t,c,a = return_plottable_list(mock_trials[0:n_t], mock_preds[0: n_t])
+        plot_trials(norm1, t, c, a, ann_str=True, estimated_boundary=norm3)
+        
+        t,c,a = return_plottable_list(mirror_trials[0: n_t], mirror_preds[0: n_t])
+        plot_trials(norm2, t, c, a, ann_str=True, estimated_boundary=norm4)
+        
+                
 
 if __name__ == "__main__":
     tc = TestAI()
@@ -398,9 +587,14 @@ if __name__ == "__main__":
     #tc.test_misc()
     #tc.test_PDEP_update()
     #tc.test_std_loglikelihood()
-    #tc.test_study_optimal_C()
-    tc.test_ASE()
-
+    tc.test_study_optimal_C()
+    #tc.test_ASE()
+    #tc.test_monthly_plot()
+    #tc.test_table()
+    #tc.test_improvement_1D()
+    #tc.test_slopes()
+    #tc.test_best_Ns()
+    #tc.test_trial_mirroring()
 
     duration = 1000  # milliseconds
     freq = 440  # Hz
