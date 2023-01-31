@@ -32,7 +32,7 @@ class TrialAdapter:
             self.lookup_table['nd_LogRatio'] = self.lookup_table['nd_LogRatio']/max_nd
             self.lookup_table['nnd_LogRatio'] = self.lookup_table['nnd_LogRatio']/max_nnd
 
-    def find_trial(self, target_nd_coord: float, target_nnd_coord: float) -> List[Any]:
+    def find_trial(self, target_nd_coord: float, target_nnd_coord: float, cardinality_factor: int = 100) -> List[Any]:
         
         self.lookup_table["DistanceFromTarget"] = (((self.lookup_table["nd_LogRatio"])-target_nd_coord)**2) + (((self.lookup_table["nnd_LogRatio"])-target_nnd_coord)**2)
 
@@ -42,6 +42,9 @@ class TrialAdapter:
             r = self.lookup_table.sort_values(by=['DistanceFromTarget']).iloc[i]
             id = int(r[0])
             i+=1
+            if int(r["NumLeft"] >cardinality_factor) or int(r["NumRight"] > cardinality_factor):
+                continue
+
             if id not in self.recent_ids[-self.memory:] and id +1 not in self.recent_ids[-self.memory:] and id-1 not in self.recent_ids[-self.memory:]:
                 okay = True  
 

@@ -34,12 +34,11 @@ def create_trial_from_array(array):
     
     # Receiving the array as parameter, it creates an object of class 'Trial',
     # needed in order to let the communication with the client work properly.
-    
     return Trial(area_1_circle_radius = array[0], area_2_circle_radius = array[1],
                  area_1_size_of_chicken = array[2], area_2_size_of_chicken = array[3],
                  area_1_average_space_between = array[4], area_2_average_space_between = array[5],
                  area_1_number_of_chickens = array[6], area_2_number_of_chickens = array[7],
-                 chicken_show_time = array[8], max_trial_time = array[9])
+                 chicken_show_time = array[8], max_trial_time = array[9], ND = array[10], NND = array[11], question_type=array[12])
 
 
 # create the random matrix for the real game (NOT USED)

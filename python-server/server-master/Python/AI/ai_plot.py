@@ -4,7 +4,7 @@ import enum
 from AI.PlayerSimulator import PlayerSimulator
 from typing import List, Tuple, Any, Callable
 import matplotlib.pyplot as plt
-from AI.ai_utils import angle_between, unit_vector
+from AI.ai_utils import angle_between, unit_vector, vcol
 from AI.ai_consts import *
 import numpy as np
 import os
@@ -114,7 +114,8 @@ def plot_trials(boundary_vector: np.ndarray,
     colors = {True: 'green', False: 'red'}
 
     coords = list(map(lambda x: x[8:],trials))
-
+    transform_mat = np.linalg.inv(np.array([[boundary_vector[0], boundary_vector[1]], [boundary_vector[1], -boundary_vector[0]]]))
+        
 
     for i, coord in enumerate(coords):
         #print(corrects[i])
@@ -139,7 +140,9 @@ def plot_trials(boundary_vector: np.ndarray,
             ax.annotate(str(round(annotations[i],2)), (coord[0], coord[1]), color="red")
         
         if plot_dist:
-            proj = [boundary_vector[0] * coord[0], boundary_vector[1]*coord[1]]
+            proj = np.dot(transform_mat, vcol(np.array([coord[0], coord[1]])))
+            #proj = [boundary_vector[0] * coord[0], boundary_vector[1]*coord[1]]
+            proj = boundary_vector*proj[0]
             ax.plot([proj[0], coord[0]], [proj[1], coord[1]], color="red")
         #print(f">>{coord}")
         

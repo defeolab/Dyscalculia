@@ -73,10 +73,6 @@ class TestAI(unittest.TestCase):
         self.sim_sigma = np.load(path)
 
 
-
-
-
-
     def test_probability(self):
         trials = get_mock_trials(32, True)
         probs = []
@@ -89,20 +85,22 @@ class TestAI(unittest.TestCase):
         plot_trials(self.boundary_vector, trials,corrects, probs)
     
     def test_PDEP_Evaluator(self):
-        eval = PDEP_Evaluator(self.alpha, self.sigma, self.target_error_prob, self.target_perceived_diff, self.norm_feats)
+        s=0.3
+        eval = PDEP_Evaluator(self.alpha, s, self.target_error_prob, self.target_perceived_diff, self.norm_feats)
 
         error_probs = np.linspace(0, 1, num=5)
+        error_probs = [0.7]
         trials = []
         prob_diffs = []
         corrects = []
         for p in error_probs:
-            nd,nnd,diff =PDEP_find_trial(p, self.target_perceived_diff, self.transform_mat, self.boundary_vector,self.sigma, self.norm_feats)
+            nd,nnd,diff =PDEP_find_trial(p, self.target_perceived_diff, self.transform_mat, self.boundary_vector,s, self.norm_feats)
             print(f"{p}-{nd}-{nnd}-{diff}")
             trials.append(to_trial(nd,nnd))
-            prob_diffs.append(f"{round(p,2)} - {round(diff,2)}")
+            prob_diffs.append("")#f"{round(p,2)} - {round(diff,2)}")
             corrects.append(True)
 
-        #plot_trials(self.boundary_vector, trials, corrects, prob_diffs, ann_str=True, sharp_std=self.sigma)
+        plot_trials(unit_vector(self.boundary_vector), trials, corrects, prob_diffs, ann_str=True, sharp_std=s, plot_dist=True)
     
     def test_player_cycle_simple(self):
         client = SimulatedClient(0.5, 0.5, alpha = 20, sigma= 0.2, evaluator="simple", norm_feats=True)
@@ -385,11 +383,14 @@ class TestAI(unittest.TestCase):
         make_tables(main_stat, secondary_stats, tpd, n_months, main_label = main_label, secondary_labels=secondary_labels, figsaver=figsaver)
 
     def test_misc(self):
-        sigma = 0.8
-        nd_variable = -0.3
+        sigma = 0.3
+        nd_variable = -0.6
         nnd_variable = 0.9
         integral_bound = 5
-        boundary_vector = unit_vector([-1,0.1])
+        boundary_vector = unit_vector([-1,10])
+
+        print(f"{sp.special.erf(200)} - {sp.special.erf(-200)} - {sp.special.erf(1/math.sqrt(2))}")
+        #assert False == True
 
         transform_mat=np.linalg.inv(np.array([[boundary_vector[0], boundary_vector[1]], [boundary_vector[1], -boundary_vector[0]]]))
 
@@ -576,7 +577,7 @@ if __name__ == "__main__":
     start_time = time.time()
 
     #tc.test_probability()
-    #tc.test_PDEP_Evaluator()
+    tc.test_PDEP_Evaluator()
     #tc.test_player_cycle_simple()
     #tc.test_player_cycle_PDEP()
     #tc.test_trial_adapter()
@@ -587,7 +588,7 @@ if __name__ == "__main__":
     #tc.test_misc()
     #tc.test_PDEP_update()
     #tc.test_std_loglikelihood()
-    tc.test_study_optimal_C()
+    #tc.test_study_optimal_C()
     #tc.test_ASE()
     #tc.test_monthly_plot()
     #tc.test_table()
@@ -595,6 +596,7 @@ if __name__ == "__main__":
     #tc.test_slopes()
     #tc.test_best_Ns()
     #tc.test_trial_mirroring()
+
 
     duration = 1000  # milliseconds
     freq = 440  # Hz

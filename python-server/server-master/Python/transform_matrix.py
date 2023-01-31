@@ -54,6 +54,9 @@ def TransformMatrix(trials_matrix_original):
         trials_row.append(row[1])   # Number of Chicken 2
         trials_row.append(row[6])
         trials_row.append(row[7])
+        trials_row.append(row[8])   # ND   
+        trials_row.append(row[9])   # NND
+        trials_row.append(row[10])  # type of question (greater fence/smaller fence)
         
         trials_matrix.append(trials_row)
     

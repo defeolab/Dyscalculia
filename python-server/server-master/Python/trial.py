@@ -13,7 +13,7 @@ class Trial:
                  area_1_size_of_chicken = None, area_2_size_of_chicken = None,
                  area_1_average_space_between = None, area_2_average_space_between = None,
                  area_1_number_of_chickens = None, area_2_number_of_chickens = None,
-                 chicken_show_time = None, max_trial_time = None   ):
+                 chicken_show_time = None, max_trial_time = None, ND = None, NND = None, question_type = None):
         
         if area_1_data is None or area_2_data is None:
             self.area1Data = AreaData(area_1_circle_radius, area_1_size_of_chicken, area_1_average_space_between, area_1_number_of_chickens)
@@ -24,6 +24,9 @@ class Trial:
             
         self.chickenShowTime = chicken_show_time
         self.maxTrialTime = max_trial_time
+        self.ND = ND
+        self.NND = NND 
+        self.question_type = question_type
                 
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__)

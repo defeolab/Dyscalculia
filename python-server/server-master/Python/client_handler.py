@@ -105,8 +105,11 @@ class PlayerHandler(Thread) :
             print("SENDING TRIALS TO GAME")
 
             print("Diff: " + str(self.player_evaluator.get_stats(0)))
+
+            trial = self.player_evaluator.get_trial()
+            trial[0].append(self.player_evaluator.get_question_type())
             
-            trials_matrix = TransformMatrix(self.player_evaluator.get_trial())
+            trials_matrix = TransformMatrix(trial)
             return convert_trials_to_json(convert_matrix_to_trials(trials_matrix))
    
 
