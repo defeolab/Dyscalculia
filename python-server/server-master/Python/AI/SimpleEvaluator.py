@@ -105,10 +105,8 @@ class PlayerEvaluator:
             False -> more animals
             True  -> fewer animals
         """
-
-        #default behaviour: return False
-        print(f"history: {self.get_correctness_history()}")
-        return True
+        history = self.get_correctness_history()
+        return random.choice([True, False])
 
     def db_update(self, db: DBConnector, player_id: int, results_to_add: List[TrialResult]):
         """
