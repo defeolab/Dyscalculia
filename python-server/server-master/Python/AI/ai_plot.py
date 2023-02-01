@@ -48,6 +48,14 @@ class FigSaver:
         plt.savefig(figpath, format= "png")
         plt.close()
 
+    def save_np_array(self, arrays: Tuple[List[Any], str], root_type: str = "main"):
+        root = self.root if root_type == "main" else self.monthly_root
+
+        for (data, name) in arrays:
+            savepath = os.path.join(root, f"{name.replace(' ', '_')}.npy")
+            a = np.array(data)
+            np.save(savepath, a)
+
     def save_player_cycle_3D(self, ax):
         elev = [0, 60, 90]
         az = [10, 45, 75]
@@ -204,22 +212,34 @@ def plot_stats( statlist: List[List[float]],
                 labels: List[str] = ['local_accuracy', 'cumulative_accuracy'],
                 main_stat: str = "alpha",
                 figsaver: FigSaver = None,
-                lim_bounds: List[float] = [-0.1, MAX_SIGMA+0.1]):
+                lim_bounds: List[float] = [-0.1, MAX_SIGMA+0.1],
+                save_as_ndarray: bool = True,
+                title: str = None,
+                xlabel: str = None):
 
     fig = plt.figure()
     ax = fig.gca()
     x = np.linspace(1, length, length)
 
-    colors = ["green", "red", "blue", "orange", "yellow"]
-
+    colors = ["green", "red", "blue", "orange", "brown", "pink", "gray", "teal", "yellow", "purple", "magenta"]
+    to_save = []
+    to_save.append((x, f"x_data_{main_stat}"))
     for i, dl in enumerate(statlist):
         ax.plot(x, dl, color= colors[i], label=labels[i])
-
-    plt.title(f"Plot for {main_stat}")
+        to_save.append((dl, labels[i]))
+    
+    if title is None:
+        plt.title(f"Plot for {main_stat}")
+    else:
+        plt.title(title)
 
     ax.legend()
 
-    plt.xlabel("trial")
+    if xlabel is None:
+        plt.xlabel("trial")
+    else:
+        plt.xlabel(xlabel)
+
     if main_stat == "alpha":
         plt.ylabel("alpha (degrees)")
     elif main_stat == "sigma":
@@ -230,10 +250,14 @@ def plot_stats( statlist: List[List[float]],
     plt.ylim(lim_bounds)
     plt.grid(True)
     
+
     if figsaver is None:
         plt.show()
     else:
         figsaver.save_summary_stats(f"{labels[0]}-{labels[1]}")
+        if save_as_ndarray:
+            figsaver.save_np_array(to_save, "main")
+    
 
 def plot_monthly_stats( statlist: List[List[float]], 
                         tpd: int,
@@ -243,7 +267,8 @@ def plot_monthly_stats( statlist: List[List[float]],
                         labels: List[str] = ['local_accuracy', 'cumulative_accuracy'], 
                         figsaver: FigSaver = None,
                         lim_bounds: List[float] = [-0.1, MAX_SIGMA+0.1],
-                        length: int = -1):
+                        length: int = -1,
+                        save_as_ndarray: bool = True):
     
     if figsaver is None:
         return
@@ -263,11 +288,13 @@ def plot_monthly_stats( statlist: List[List[float]],
             reduced.append(sum(ds)/tpd)
         daily_statlist.append(reduced)
     
-    colors = ["green", "red", "blue", "orange", "yellow"]
-
+    colors = ["green", "red", "blue", "orange", "brown", "pink", "gray", "teal", "yellow", "purple", "magenta"]
+    to_save = []
+    to_save.append((x, "x_data"))
     for i, dl in enumerate(daily_statlist):
         ax.plot(x, dl, color= colors[i], label=labels[i])
-
+        to_save.append((dl, f"{month_n}_{labels[i]}"))
+        
     if month_n >= 0:
         plt.title(f"Month n° {month_n}")
     else:
@@ -287,7 +314,10 @@ def plot_monthly_stats( statlist: List[List[float]],
     plt.ylim(lim_bounds)
     plt.grid(True)
     
-    figsaver.save_summary_stats(f"{month_n}-{labels[0]}-{labels[1]}", "monthly")
+    if figsaver is not None:
+        figsaver.save_summary_stats(f"{month_n}-{labels[0]}-{labels[1]}", "monthly")
+        if save_as_ndarray:
+            figsaver.save_np_array(to_save, "monthly")
 
 def vec_reshape_by_day(vec: List[Any], trials_per_day: int):
     ret = []
@@ -526,3 +556,42 @@ def plot_ablation_C(configs: np.ndarray, Cs: np.ndarray, best_Cs: np.ndarray):
     ax.set_ylabel('sigma', fontsize=20, rotation=150)
     ax.set_zlabel('best C', fontsize=20, rotation=150)
     plt.show()
+
+def plot_comparisons(   root:str,
+                        labels:List[str],
+                        folder_prefix: str="plot_save_trials_", 
+                        suffix_set: List[str] =[str(i) for i in range(0,10+1)], 
+                        subfolder_name: str = "alpha_80_sigma_20",
+                        metric_name: str = "second_pass_alpha",
+                        main_stat: str = "alpha",
+                        monthly: bool = False,
+                        title: str = None,
+                        xlabel: str = None,
+                        xlength: int = None,
+                        ):
+
+    x=[]
+    stats = []
+    for i, suffix in enumerate(suffix_set):
+        if monthly == False:
+            path = os.path.join(root, folder_prefix+suffix, subfolder_name, f"{metric_name}.npy")
+        else:
+            path = os.path.join(root, folder_prefix+suffix, subfolder_name, "monthly", f"-1_{metric_name}.npy")
+        
+        print(path)
+        if i == 0:
+            xpath = os.path.join(root, folder_prefix+suffix, subfolder_name, f"x_data_alpha.npy")
+            x = np.load(xpath)
+        y = np.load(path)
+        stats.append(y)
+
+    if main_stat == "alpha":
+        bounds = [-5, MAX_ALPHA+5]  
+    elif main_stat == "sigma": 
+        bounds = [-0.1, MAX_SIGMA+0.1]
+    else:
+        bounds = [-0.1, 1.1]
+
+    length = x.shape[0] if monthly == False else int(x.shape[0]/30) 
+    length = xlength if xlength is not None else length 
+    plot_stats(stats, length, labels, main_stat=main_stat,save_as_ndarray=False, lim_bounds=bounds, xlabel=xlabel, title=title)

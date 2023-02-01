@@ -1,7 +1,7 @@
 import unittest
 from AI.ai_utils import *
 from AI.TrialAdapter import TrialAdapter
-from AI.ai_plot import plot_trials, FigSaver, plot_player_cycle3D, plot_ablation_C, plot_monthly_stats, make_tables, plot_stats
+from AI.ai_plot import plot_trials, FigSaver, plot_player_cycle3D, plot_ablation_C, plot_monthly_stats, make_tables, plot_stats, plot_comparisons
 from AI.ImprovementHandler import *
 from AI.PDEP_Evaluator import PDEP_Evaluator
 from dummy_client_handler import SimulatedClient
@@ -568,7 +568,26 @@ class TestAI(unittest.TestCase):
         t,c,a = return_plottable_list(mirror_trials[0: n_t], mirror_preds[0: n_t])
         plot_trials(norm2, t, c, a, ann_str=True, estimated_boundary=norm4)
         
-                
+    def test_joint_plots(self):
+        root_path = os.path.join(BASE_PATH_FOR_PICS, "PDEP")
+        target_slopes = -np.logspace(-4, -2, 10, base=10)
+        target_slopes = target_slopes[6:]
+        labels = [f"Daily Slope = {round(t, 2)}°" for t in target_slopes*MAX_ALPHA]
+        labels.append("Null slope")
+        plot_comparisons(root_path, labels, monthly=True, suffix_set=[str(i) for i in range(6,10+1)], title="Second Pass alpha", xlabel="day")
+
+        labels = [f"Daily Slope = {round(t, 4)} units" for t in target_slopes*MAX_SIGMA]
+        labels.append("Null slope")
+        plot_comparisons(root_path, labels, monthly=True, suffix_set=[str(i) for i in range(6,10+1)], title="Second Pass Sigma", xlabel="day", metric_name="second_pass_sigma", main_stat="sigma", subfolder_name="alpha_30_sigma_30")
+
+        labels = [f"Daily Unified Slope = {round(t, 4)} units" for t in target_slopes]
+        labels.append("Null slope")
+        plot_comparisons(root_path, labels, monthly=False, suffix_set=[str(i) for i in range(6,10+1)], title="Accuracy (regular mode)", xlabel="day", metric_name="cumulative_accuracty", main_stat="accuracy", subfolder_name="alpha_80_sigma_40", xlength=65)
+
+        labels = [f"Daily Unified Slope = {round(t, 4)} units" for t in target_slopes]
+        labels.append("Null slope")
+        plot_comparisons(root_path, labels, monthly=False, suffix_set=[str(i) for i in range(6,10+1)], title="Accuracy (easy mode)", xlabel="day", metric_name="cumulative_accuracy", main_stat="accuracy", subfolder_name="alpha_75_sigma_40", xlength=65)
+
 
 if __name__ == "__main__":
     tc = TestAI()
@@ -587,7 +606,7 @@ if __name__ == "__main__":
     #tc.test_misc()
     #tc.test_PDEP_update()
     #tc.test_std_loglikelihood()
-    tc.test_study_optimal_C()
+    #tc.test_study_optimal_C()
     #tc.test_ASE()
     #tc.test_monthly_plot()
     #tc.test_table()
@@ -595,6 +614,8 @@ if __name__ == "__main__":
     #tc.test_slopes()
     #tc.test_best_Ns()
     #tc.test_trial_mirroring()
+    tc.test_joint_plots()
+
 
     duration = 1000  # milliseconds
     freq = 440  # Hz

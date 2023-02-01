@@ -52,7 +52,8 @@ class SimulationsRunner(unittest.TestCase):
                     estimator_max_trials: int,
                     estimator_min_trials: int,
                     improver_type: str,
-                    improver_parameters: List[float]):
+                    improver_parameters: List[float],
+                    difficulty: str):
         
         self.days = days
         self.trials_per_day = trials_per_day
@@ -81,6 +82,7 @@ class SimulationsRunner(unittest.TestCase):
         self.improver_type = improver_type
         self.improver_parameters = improver_parameters
         self.estimator_min_trials = estimator_min_trials
+        self.difficulty = difficulty
 
         self.base_root = os.path.join(BASE_PATH_FOR_PICS, self.evaluator)
         self.base_root = os.path.join(self.base_root, suite_name)
@@ -108,7 +110,7 @@ class SimulationsRunner(unittest.TestCase):
                                             save_file=save_file, estimation_duration=self.estimation_duration, 
                                             estimator_type=self.estimator_type, init_evaluator=self.init_evaluator_stats,
                                             estimator_max_trials=self.estimator_max_trials, estimator_min_trials=self.estimator_min_trials,
-                                            improver_type=self.improver_type, improver_parameters=self.improver_parameters)
+                                            improver_type=self.improver_type, improver_parameters=self.improver_parameters, difficulty=self.difficulty)
                 
                 if self.evaluator == "PDEP":
                     handler.player_evaluator.target_error_prob = self.target_prob
@@ -261,7 +263,9 @@ if __name__ == "__main__":
         [65],
         [10, 20,30,40,50,60, 70, 80],
         [10],
-        [MAX_ALPHA-10]
+        [MAX_ALPHA-10],
+        [30],
+        [75],
         ]
     sigmas = [
         [0.10, 0.20, 0.4],
@@ -272,12 +276,15 @@ if __name__ == "__main__":
         [0.3],
         [MAX_SIGMA-0.1]
         ]
+    alpha_i = 7
+    sigma_i = 6
+
 
     probs = [0.10, 0.30, 0.80]
     diffs = [(0.1,0.1), (0.4, 0.4), (0.8, 0.8), (0.95,0.95)]
     modes = ["filtering", "sharpening"]
 
-    days =30
+    days =65
     trials_per_day = 30
     interval = 15
 
@@ -292,8 +299,7 @@ if __name__ == "__main__":
     mode = modes[0]
     save_trials = False
     save_plots = True
-    alpha_i = 3
-    sigma_i = 1
+
     mock = True
     estimate_step = 1
     target_C = np.logspace(-2, 3, 6, base=10)
@@ -301,9 +307,9 @@ if __name__ == "__main__":
 
     target_n_trials = np.linspace(100, 1800, 18)
     target_slopes = -np.logspace(-4, -2, 10, base=10)/trials_per_day
-    local_target_slope = target_slopes[8]
-
-    update_child = False
+    
+    local_target_slope = target_slopes[7]
+    update_child = True
     improver_parameters_options =   [
                                         [0.45, 0.003, 1],
                                         [-0.3/trials_per_day, -0.002/trials_per_day, 1],
@@ -325,17 +331,35 @@ if __name__ == "__main__":
     make_plots = True
     save_ablation = True
     n_runs = 2
-    suite_name = "C_ablation5"
+    suite_name = "plot_save_trials_7"
+    difficulties = ["regular", "easy"]
+    diff_i = 1
+
     sr = SimulationsRunner( days, trials_per_day, interval, evaluator, kids_ds, update_evaluator_stats, update_child, suite_name, 
                             target_prob, target_diff, mode, save_trials, save_plots, alphas[alpha_i], sigmas[sigma_i], mock, estimate_step,
                             target_C, make_plots, save_ablation, estimation_duration, 
-                            estimator_type, init_evaluator_stats, estimator_max_trials, estimator_min_trials,improver_type, improver_parameters_options[pars_i])
+                            estimator_type, init_evaluator_stats, estimator_max_trials, estimator_min_trials,improver_type, 
+                            improver_parameters_options[pars_i], difficulties[diff_i])
 
     start_time = time.time()
 
     #sr.simulation_suite()
-    sr.ablation_C(last_n_days, n_runs)
+    #sr.ablation_C(last_n_days, n_runs)
     #sr.ablation_n_trials(target_slopes, target_n_trials, n_runs)
+    for i in range(0,len(target_slopes)+1):
+        if i == len(target_slopes):
+            update_child = False
+            print("slope is none")
+        else:
+            local_target_slope = target_slopes[i]
+            print(f">>>>> slope is {local_target_slope}")
+        suite_name = f"plot_save_trials_{i}"
+        sr = SimulationsRunner( days, trials_per_day, interval, evaluator, kids_ds, update_evaluator_stats, update_child, suite_name, 
+                            target_prob, target_diff, mode, save_trials, save_plots, alphas[alpha_i], sigmas[sigma_i], mock, estimate_step,
+                            target_C, make_plots, save_ablation, estimation_duration, 
+                            estimator_type, init_evaluator_stats, estimator_max_trials, estimator_min_trials,improver_type, 
+                            [0, local_target_slope*MAX_SIGMA, 1], difficulties[diff_i])
+        sr.simulation_suite()
 
 
     duration = 1000  # milliseconds

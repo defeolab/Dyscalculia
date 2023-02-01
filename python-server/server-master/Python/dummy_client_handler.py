@@ -55,7 +55,8 @@ class SimulatedClient:
                     estimator_max_trials: int = 180,
                     estimator_min_trials: int = 30,
                     improver_type: str = "linear",
-                    improver_parameters: List[float] = [1, 0.01, 5]):
+                    improver_parameters: List[float] = [1, 0.01, 5],
+                    difficulty: str = "regular"):
 
         self.filtering_diff = filtering_diff
         self.sharpening_diff = sharpening_difficulty
@@ -77,7 +78,7 @@ class SimulatedClient:
         elif evaluator == "PDEP":
             init_alpha = self.alpha if init_evaluator else 45
             init_sigma = self.sigma if init_evaluator else 0.3
-            self.player_evaluator = PDEP_Evaluator(init_alpha, init_sigma, norm_feats=norm_feats,kids_ds=kids_ds, estimation_duration=estimation_duration, estimator_type=estimator_type, estimator_max_trials=estimator_max_trials, estimation_min_trials=estimator_min_trials)
+            self.player_evaluator = PDEP_Evaluator(init_alpha, init_sigma, norm_feats=norm_feats,kids_ds=kids_ds, estimation_duration=estimation_duration, estimator_type=estimator_type, estimator_max_trials=estimator_max_trials, estimation_min_trials=estimator_min_trials, difficulty=difficulty)
 
     def run(self, trials: int, plot: bool, history_size: int = 10) -> None:
 
@@ -224,7 +225,7 @@ class SimulatedClient:
         print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} final evaluator stats are: {self.player_evaluator.get_stats_as_str()}")
 
         if make_plots:
-            plot_stats([local_accuracies, cumulative_accuracies], days, figsaver=figsaver, labels=["local accuracy", "cumulative_accuracty"], main_stat="accuracy", lim_bounds=accuracy_bounds)
+            plot_stats([local_accuracies, cumulative_accuracies], days, figsaver=figsaver, labels=["local accuracy", "cumulative_accuracy"], main_stat="accuracy", lim_bounds=accuracy_bounds)
             label1 = self.player_evaluator.get_labels_for_stats(0)
             if self.evaluator == "PDEP":
                 sp_alpha, sp_sigma, sp_norms = self.player_evaluator.second_pass_estimation(t1_stat1_history, t1_stat2_history)
