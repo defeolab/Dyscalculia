@@ -189,6 +189,14 @@ class PDEP_Evaluator(PlayerEvaluator):
             sc = 1.0 if correct else 0.0
             t=np.array([nd,nnd, sc, decision_time])
             self.trials.append(t)
+    
+    def get_correctness_history(self) -> List[bool]:
+        if len(self.estimator.trials) == 0:
+            return []
+        trials = np.array(self.estimator.trials)
+        preds = np.array(self.estimator.predictions)
+        print(trials.shape)
+        return (trials[:, 0] > 0) == preds
 
     def db_set_running_results(self, db: DBConnector, player_id: int) -> None:
         """

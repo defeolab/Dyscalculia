@@ -91,6 +91,12 @@ class PlayerEvaluator:
             after get_trial or set_trial has been called, use this function to update the player statistics based on the player response
         """
         pass
+    
+    def get_correctness_history(self) -> List[bool]:
+        """
+            returns the history of the answers (correct/incorrect), in a way that is independent from the evaluator's subclass
+        """
+        pass
 
     def get_question_type(self) -> bool:
         """
@@ -101,6 +107,7 @@ class PlayerEvaluator:
         """
 
         #default behaviour: return False
+        print(f"history: {self.get_correctness_history()}")
         return True
 
     def db_update(self, db: DBConnector, player_id: int, results_to_add: List[TrialResult]):
@@ -134,7 +141,7 @@ class SimpleEvaluator(PlayerEvaluator):
         self.mode = "filtering"
         self.normalize_vars = normalize_vars
         self.always_update_step = always_update_step
-
+        self.correctness_history = []
         if old_table:
             self.lookup_table = pandas.read_csv("./dataset/legacy/lookup_table.csv")
 
@@ -245,6 +252,7 @@ class SimpleEvaluator(PlayerEvaluator):
         self.last_diffs = [0.5, 0.5]
 
     def update_statistics(self, correct: int, decision_time: float) -> None:
+        self.correctness_history.append(correct==1)
         self.running_results[self.mode + "_total"] += 1
         self.running_results[self.mode + "_correct"] += correct
         self.running_results[self.mode + "_acc"] = self.running_results[self.mode + "_correct"] / self.running_results[self.mode + "_total"]
@@ -344,5 +352,8 @@ class SimpleEvaluator(PlayerEvaluator):
                 self.running_results[t_mode + "_diff"] += step
 
         return step_fi, step_sh
+    
+    def get_correctness_history(self) -> List[bool]:
+        return self.correctness_history
 
         
