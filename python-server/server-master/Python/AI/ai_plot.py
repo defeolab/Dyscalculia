@@ -245,7 +245,7 @@ def plot_stats( statlist: List[List[float]],
     elif main_stat == "sigma":
         plt.ylabel("sigma (ND-NND units)")
     else: 
-        plt.ylabel("accuracy")
+        plt.ylabel(main_stat)
 
     plt.ylim(lim_bounds)
     plt.grid(True)
@@ -318,6 +318,15 @@ def plot_monthly_stats( statlist: List[List[float]],
         figsaver.save_summary_stats(f"{month_n}-{labels[0]}-{labels[1]}", "monthly")
         if save_as_ndarray:
             figsaver.save_np_array(to_save, "monthly")
+
+def average_by_day(vec: List[Any], trials_per_day: int) -> np.ndarray:
+    vec_per_day = vec_reshape_by_day(vec, trials_per_day)
+    ret = []
+
+    for v in vec_per_day:
+        ret.append(sum(v)/trials_per_day)
+    
+    return np.array(ret)
 
 def vec_reshape_by_day(vec: List[Any], trials_per_day: int):
     ret = []

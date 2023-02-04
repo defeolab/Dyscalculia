@@ -45,7 +45,7 @@ class GameServer:
             
                 # Accepting player connection
                 client, address = self.server_socket.accept()
-
+                print(address)
                 if self.always_new_player:
                     player_id = self.db.add_player("0")
                 else:

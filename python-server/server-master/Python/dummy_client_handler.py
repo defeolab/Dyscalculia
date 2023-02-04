@@ -1,6 +1,6 @@
 from typing import Any, Dict, Tuple, List
 from AI.PlayerSimulator import PlayerSimulator
-from AI.ai_plot import plot_trials, plot_stats, FigSaver, plot_player_cycle3D, plot_monthly_stats, make_tables
+from AI.ai_plot import plot_trials, plot_stats, FigSaver, plot_player_cycle3D, plot_monthly_stats, make_tables, average_by_day
 from AI.ai_utils import get_mock_trials, save_npy
 import numpy as np
 from distributions import GaussianThreshold, UniformOutput
@@ -254,6 +254,23 @@ class SimulatedClient:
             plot_stats([t1_stat2_history, sim_sigma_history,sp_sigma], days*trials_per_day, labels=sigma_labels, figsaver=figsaver, main_stat="sigma")
         
             plot_stats([t2_stat1_history, t2_stat2_history], days*trials_per_day, labels=self.player_evaluator.get_labels_for_stats(1), figsaver=figsaver, main_stat="accuracy", lim_bounds=accuracy_bounds)
+
+            #normalized plot for alpha, sigma and accuracy
+
+            plot_stats  (   [   
+                                average_by_day(sp_alpha, trials_per_day)/MAX_ALPHA,
+                                average_by_day(sp_sigma, trials_per_day)/MAX_SIGMA,
+                                cumulative_accuracies
+                            ],
+                            days,
+                            ["Normalized Alpha", "Normalized Sigma", "Cumulative Accuracy"], 
+                            main_stat="Normalized angle - Normalized std - Accuracy %",
+                            lim_bounds=[-0.1, 1.1],
+                            save_as_ndarray=False,
+                            title= f"Unified plot (unified daily LR = {round((self.player.improver.slope_alpha/MAX_ALPHA)*trials_per_day, 4)})",
+                            xlabel="days",
+                            figsaver=figsaver
+                        )
 
             make_tables(sim_alpha_history, [t1_stat1_history, sp_alpha], trials_per_day, n_months=month_n-1, main_label="alpha", secondary_labels=["FP", "SP"], figsaver=figsaver)
             make_tables(sim_sigma_history, [t1_stat2_history, sp_sigma], trials_per_day, n_months=month_n-1, main_label="sigma", secondary_labels=["FP", "SP"], figsaver=figsaver)

@@ -582,11 +582,11 @@ class TestAI(unittest.TestCase):
 
         labels = [f"Daily Unified Slope = {round(t, 4)} units" for t in target_slopes]
         labels.append("Null slope")
-        plot_comparisons(root_path, labels, monthly=False, suffix_set=[str(i) for i in range(6,10+1)], title="Accuracy (regular mode)", xlabel="day", metric_name="cumulative_accuracty", main_stat="accuracy", subfolder_name="alpha_80_sigma_40", xlength=65)
+        plot_comparisons(root_path, labels, monthly=False, suffix_set=[str(i) for i in range(6,10+1)], title="Accuracy (easy mode)", xlabel="day", metric_name="cumulative_accuracy", main_stat="accuracy", subfolder_name="alpha_75_sigma_40", xlength=65)
 
         labels = [f"Daily Unified Slope = {round(t, 4)} units" for t in target_slopes]
         labels.append("Null slope")
-        plot_comparisons(root_path, labels, monthly=False, suffix_set=[str(i) for i in range(6,10+1)], title="Accuracy (easy mode)", xlabel="day", metric_name="cumulative_accuracy", main_stat="accuracy", subfolder_name="alpha_75_sigma_40", xlength=65)
+        plot_comparisons(root_path, labels, monthly=False, suffix_set=[str(i) for i in range(6,10+1)], title="Accuracy (regular mode)", xlabel="day", metric_name="cumulative_accuracty", main_stat="accuracy", subfolder_name="alpha_80_sigma_40", xlength=65)
 
 
 if __name__ == "__main__":
