@@ -574,11 +574,11 @@ class TestAI(unittest.TestCase):
         target_slopes = target_slopes[6:]
         labels = [f"Daily Slope = {round(t, 2)}°" for t in target_slopes*MAX_ALPHA]
         labels.append("Null slope")
-        plot_comparisons(root_path, labels, monthly=True, suffix_set=[str(i) for i in range(6,10+1)], title="Second Pass alpha", xlabel="day")
+        plot_comparisons(root_path, labels, monthly=True, suffix_set=[str(i) for i in range(6,10+1)], title="Second Pass alpha", xlabel="day", plot_dists=True)
 
         labels = [f"Daily Slope = {round(t, 4)} units" for t in target_slopes*MAX_SIGMA]
         labels.append("Null slope")
-        plot_comparisons(root_path, labels, monthly=True, suffix_set=[str(i) for i in range(6,10+1)], title="Second Pass Sigma", xlabel="day", metric_name="second_pass_sigma", main_stat="sigma", subfolder_name="alpha_30_sigma_30")
+        plot_comparisons(root_path, labels, monthly=True, suffix_set=[str(i) for i in range(6,10+1)], title="Second Pass Sigma", xlabel="day", metric_name="second_pass_sigma", main_stat="sigma", subfolder_name="alpha_30_sigma_30", plot_dists=True)
 
         labels = [f"Daily Unified Slope = {round(t, 4)} units" for t in target_slopes]
         labels.append("Null slope")

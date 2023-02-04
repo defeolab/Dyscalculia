@@ -568,20 +568,29 @@ def plot_comparisons(   root:str,
                         title: str = None,
                         xlabel: str = None,
                         xlength: int = None,
+                        plot_dists: bool = False
                         ):
 
     x=[]
     stats = []
+    actuals = []
     for i, suffix in enumerate(suffix_set):
         if monthly == False:
             path = os.path.join(root, folder_prefix+suffix, subfolder_name, f"{metric_name}.npy")
+            if plot_dists:
+                dist_path = os.path.join(root, folder_prefix+suffix, subfolder_name, f"actual_{main_stat}.npy")
         else:
             path = os.path.join(root, folder_prefix+suffix, subfolder_name, "monthly", f"-1_{metric_name}.npy")
-        
-        print(path)
+            if plot_dists:
+                dist_path = os.path.join(root, folder_prefix+suffix, subfolder_name, "monthly", f"-1_actual_{main_stat}.npy")
+        #print(path)
         if i == 0:
             xpath = os.path.join(root, folder_prefix+suffix, subfolder_name, f"x_data_alpha.npy")
             x = np.load(xpath)
+
+        if plot_dists:
+            actual = np.load(dist_path)
+            actuals.append(actual)
         y = np.load(path)
         stats.append(y)
 
@@ -595,3 +604,12 @@ def plot_comparisons(   root:str,
     length = x.shape[0] if monthly == False else int(x.shape[0]/30) 
     length = xlength if xlength is not None else length 
     plot_stats(stats, length, labels, main_stat=main_stat,save_as_ndarray=False, lim_bounds=bounds, xlabel=xlabel, title=title)
+
+    dists = []
+    if plot_dists:
+        for stat, act in zip(stats, actuals):
+            dists.append(stat - act)
+
+        plot_stats(dists, length, labels, main_stat=main_stat,save_as_ndarray=False, lim_bounds=[-0.2, 0.2] if main_stat == "sigma" else [-10, 10], xlabel=xlabel, title=f"Distance for {main_stat}")
+    
+    
