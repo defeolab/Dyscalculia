@@ -332,9 +332,9 @@ if __name__ == "__main__":
     make_plots = True
     save_ablation = False
     n_runs = 2
-    suite_name = "unified_plots_easy_10"
+    suite_name = "test_final_unified"
     difficulties = ["regular", "easy"]
-    diff_i = 0
+    diff_i = 1
 
     sr = SimulationsRunner( days, trials_per_day, interval, evaluator, kids_ds, update_evaluator_stats, update_child, suite_name, 
                             target_prob, target_diff, mode, save_trials, save_plots, alphas[alpha_i], sigmas[sigma_i], mock, estimate_step,
@@ -344,7 +344,7 @@ if __name__ == "__main__":
 
     start_time = time.time()
 
-    sr.simulation_suite()
+    #sr.simulation_suite()
     #sr.ablation_C(last_n_days, n_runs)
     #sr.ablation_n_trials(target_slopes, target_n_trials, n_runs)
     discarded_slopes_i = [0,1,2,3,4,5]
@@ -359,7 +359,7 @@ if __name__ == "__main__":
             print(f">>>>> slope is {local_target_slope}")
         
 
-        suite_name = f"unified_plots_regular_{i}"
+        suite_name = f"unified_plots_easy_v2_{i}"
         sr = SimulationsRunner( days, trials_per_day, interval, evaluator, kids_ds, update_evaluator_stats, update_child, suite_name, 
                             target_prob, target_diff, mode, save_trials, save_plots, alphas[alpha_i], sigmas[sigma_i], mock, estimate_step,
                             target_C, make_plots, save_ablation, estimation_duration, 

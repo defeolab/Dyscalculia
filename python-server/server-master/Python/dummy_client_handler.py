@@ -256,18 +256,20 @@ class SimulatedClient:
             plot_stats([t2_stat1_history, t2_stat2_history], days*trials_per_day, labels=self.player_evaluator.get_labels_for_stats(1), figsaver=figsaver, main_stat="accuracy", lim_bounds=accuracy_bounds)
 
             #normalized plot for alpha, sigma and accuracy
+            norm_slope_alpha = abs(round((self.player.improver.slope_alpha/MAX_ALPHA)*trials_per_day, 4))*100
+            norm_slope_sigma = abs(round((self.player.improver.slope_sigma/MAX_SIGMA)*trials_per_day, 4))*100
 
             plot_stats  (   [   
                                 average_by_day(sp_alpha, trials_per_day)/MAX_ALPHA,
-                                average_by_day(sp_sigma, trials_per_day)/MAX_SIGMA,
+                                1-(average_by_day(sp_sigma, trials_per_day)/MAX_SIGMA),
                                 cumulative_accuracies
                             ],
                             days,
-                            ["Normalized Alpha", "Normalized Sigma", "Cumulative Accuracy"], 
-                            main_stat="Normalized angle - Normalized std - Accuracy %",
+                            ["Estimated Non-Numerical Interference (NNI)", "Estimated Numerical Acuity (NA)", "Cumulative Accuracy"], 
+                            main_stat="NNI Score - NA score - Accuracy %",
                             lim_bounds=[-0.1, 1.1],
                             save_as_ndarray=False,
-                            title= f"Unified plot (unified daily LR = {round((self.player.improver.slope_alpha/MAX_ALPHA)*trials_per_day, 4)})",
+                            title= f"Daily NNI decrease = {norm_slope_alpha}%; Daily NA gain = {norm_slope_sigma}%",
                             xlabel="days",
                             figsaver=figsaver
                         )

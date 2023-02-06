@@ -1,7 +1,7 @@
 import unittest
 from AI.ai_utils import *
 from AI.TrialAdapter import TrialAdapter
-from AI.ai_plot import plot_trials, FigSaver, plot_player_cycle3D, plot_ablation_C, plot_monthly_stats, make_tables, plot_stats, plot_comparisons
+from AI.ai_plot import plot_trials, FigSaver, plot_player_cycle3D, plot_ablation_C, plot_monthly_stats, make_tables, plot_stats, plot_comparisons, average_by_day
 from AI.ImprovementHandler import *
 from AI.PDEP_Evaluator import PDEP_Evaluator
 from dummy_client_handler import SimulatedClient
@@ -588,6 +588,63 @@ class TestAI(unittest.TestCase):
         labels.append("Null slope")
         plot_comparisons(root_path, labels, monthly=False, suffix_set=[str(i) for i in range(6,10+1)], title="Accuracy (regular mode)", xlabel="day", metric_name="cumulative_accuracty", main_stat="accuracy", subfolder_name="alpha_80_sigma_40", xlength=65)
 
+    def test_unified_plots(self):
+        root_path = os.path.join(BASE_PATH_FOR_PICS, "PDEP")
+        n = 8
+        root_path = os.path.join(root_path, f"unified_plots_regular_v2_{n}", "alpha_55_sigma_30")
+
+        f_accs = os.path.join(root_path, "cumulative_accuracy.npy")
+        cumulative_accuracies = np.load(f_accs)
+
+        f_sp_alpha = os.path.join(root_path, "second_pass_alpha.npy")
+        sp_alpha = np.load(f_sp_alpha)
+
+        f_a_alpha = os.path.join(root_path, "actual_alpha.npy")
+        a_alpha = np.load(f_a_alpha)
+
+        f_sp_sigma = os.path.join(root_path, "second_pass_sigma.npy")
+        sp_sigma = np.load(f_sp_sigma)
+
+        f_a_sigma = os.path.join(root_path, "actual_sigma.npy")
+        a_sigma = np.load(f_a_sigma)
+
+        target_slopes = -np.logspace(-4, -2, 10, base=10)
+        target_slope = 0.0 if n == 10 else target_slopes[n] 
+        norm_slope_alpha = abs(round(target_slope,4))*100
+        norm_slope_sigma = abs(round(target_slope,4))*100
+
+        trials_per_day = 30
+
+
+        plot_stats  (   [   
+                            average_by_day(sp_alpha, trials_per_day)/MAX_ALPHA,
+                            1-(average_by_day(sp_sigma, trials_per_day)/MAX_SIGMA),
+                            cumulative_accuracies
+                        ],
+                        65,
+                        ["Estimated Non-Numerical Interference (NNI)", "Estimated Numerical Acuity (NA)", "Cumulative Accuracy"], 
+                        main_stat="NNI Score - NA score - Accuracy %",
+                        lim_bounds=[-0.1, 1.1],
+                        save_as_ndarray=False,
+                        title= f"Daily NNI decrease = {norm_slope_alpha}%; Daily NA gain = {norm_slope_sigma}%",
+                        xlabel="days",
+                    )
+
+        plot_stats  (   [   
+                            average_by_day(sp_alpha, trials_per_day)/MAX_ALPHA,
+                            1-(average_by_day(sp_sigma, trials_per_day)/MAX_SIGMA),
+                            average_by_day(a_alpha, trials_per_day)/MAX_ALPHA,
+                            1-(average_by_day(a_sigma, trials_per_day)/MAX_SIGMA),
+                            cumulative_accuracies
+                        ],
+                        65,
+                        ["Estimated Non-Numerical Interference (NNI)",  "Estimated Numerical Acuity (NA)", "Actual NNI", "Actual NA", "Cumulative Accuracy"], 
+                        main_stat="NNI Score - NA score - Accuracy %",
+                        lim_bounds=[-0.1, 1.1],
+                        save_as_ndarray=False,
+                        title= f"Daily NNI decrease = {norm_slope_alpha}%; Daily NA gain = {norm_slope_sigma}%",
+                        xlabel="days",
+                    )
 
 if __name__ == "__main__":
     tc = TestAI()
@@ -614,7 +671,8 @@ if __name__ == "__main__":
     #tc.test_slopes()
     #tc.test_best_Ns()
     #tc.test_trial_mirroring()
-    tc.test_joint_plots()
+    #tc.test_joint_plots()
+    tc.test_unified_plots()
 
 
     duration = 1000  # milliseconds
