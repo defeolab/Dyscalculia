@@ -41,8 +41,10 @@ class TrialAdapter:
         while okay == False:
             r = self.lookup_table.sort_values(by=['DistanceFromTarget']).iloc[i]
             id = int(r[0])
+            nd = r[13]
             i+=1
-            if id not in self.recent_ids[-self.memory:] and id +1 not in self.recent_ids[-self.memory:] and id-1 not in self.recent_ids[-self.memory:]:
+            same_nd_sign = (nd >= 0) == (target_nd_coord >= 0)
+            if id not in self.recent_ids[-self.memory:] and id +1 not in self.recent_ids[-self.memory:] and id-1 not in self.recent_ids[-self.memory:] and same_nd_sign:
                 okay = True  
 
         if self.mock == False:

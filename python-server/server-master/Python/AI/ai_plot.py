@@ -4,7 +4,7 @@ import enum
 from AI.PlayerSimulator import PlayerSimulator
 from typing import List, Tuple, Any, Callable
 import matplotlib.pyplot as plt
-from AI.ai_utils import angle_between, unit_vector
+from AI.ai_utils import angle_between, unit_vector, vcol
 from AI.ai_consts import *
 import numpy as np
 import os
@@ -13,7 +13,9 @@ from mpl_toolkits import mplot3d
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator
 from tabulate import tabulate
-
+from matplotlib.patches import Arc
+from matplotlib.lines import Line2D
+import math
 
 
 class FigSaver:
@@ -101,7 +103,10 @@ def plot_trials(boundary_vector: np.ndarray,
                 sharp_std: float = None, 
                 figsaver: FigSaver = None,
                 estimated_boundary: np.ndarray = None, 
-                estimated_std: np.ndarray = None):
+                estimated_std: np.ndarray = None,
+                plot_fs: bool = False,
+                title: str = None,
+                plot_norm: bool = False):
 
     if figsaver is not None:
         #just a speedup, avoid plotting if you're not going to show or save the figure
@@ -147,14 +152,39 @@ def plot_trials(boundary_vector: np.ndarray,
             ax.annotate(str(round(annotations[i],2)), (coord[0], coord[1]), color="red")
         
         if plot_dist:
-            proj = [boundary_vector[0] * coord[0], boundary_vector[1]*coord[1]]
-            ax.plot([proj[0], coord[0]], [proj[1], coord[1]], color="red")
+            transform_mat = np.linalg.inv(np.array([[boundary_vector[0], boundary_vector[1]], [boundary_vector[1], -boundary_vector[0]]]))
+            trial_vec = np.dot(transform_mat, vcol(np.array([coord[0], coord[1]])))
+            trial_vec = trial_vec[0]*np.array(boundary_vector)
+            ax.plot([trial_vec[0], coord[0]], [trial_vec[1], coord[1]], color="orange")
         #print(f">>{coord}")
         
     if plot_stats is not None:
         plot_stats(plt)
-
     
+    if plot_fs:
+        line_1 = Line2D([0,0], [0,1], linewidth=1, linestyle = "-", color="green")
+        line_2 = Line2D([0,boundary_vector[0]], [0,boundary_vector[1]], linewidth=1, linestyle = "-", color="red")
+
+        angle_plot = get_angle_plot(line_1, line_2, 0.7, color="red")
+        angle_text = get_angle_text(angle_plot) 
+        #ax.add_line(line_1)
+        #ax.add_line(line_2)
+        ax.add_patch(angle_plot) # To display the angle arc
+        #ax.text(*angle_text) # To display the angle value
+
+        line_1 = Line2D([0,0], [0,-1], linewidth=1, linestyle = "-", color="green")
+        line_2 = Line2D([0,-boundary_vector[0]], [0,-boundary_vector[1]], linewidth=1, linestyle = "-", color="red")
+
+        angle_plot = get_angle_plot(line_1, line_2, 0.7, color="red")
+        angle_text = get_angle_text(angle_plot) 
+        #ax.add_line(line_1)
+        #ax.add_line(line_2)
+        ax.add_patch(angle_plot) # To display the angle arc
+        #ax.text(*angle_text) # To display the angle value
+    
+    if plot_norm:
+        norm = np.array(unit_vector([boundary_vector[1],-boundary_vector[0]]))
+        plt.arrow(0,0,norm[0], norm[1], width=0.01)
     ax.axis("equal")
     ax.spines['left'].set_position('zero')
     ax.spines['right'].set_color('none')
@@ -171,7 +201,9 @@ def plot_trials(boundary_vector: np.ndarray,
     #plt.xlabel("Numerical dimension", loc="left")
     #plt.ylabel("Non numerical dimension", loc="bottom")
     plt.grid(False)
-
+    if title is not None:
+        plt.title(title)
+        
     if figsaver is None:
         plt.show()
     else:
@@ -422,6 +454,46 @@ def filter_trials_per_day(trials: np.ndarray, corrects: np.ndarray, tpd: int, ma
 
     return np.array(ret_t), np.array(ret_c)
 
+def plot_gaussian_3D(mean: np.ndarray, std:float):
+    gauss_func = lambda y,x : math.exp(-0.5*(1/(std**2))*(((x-mean[0])**2)+((y-mean[1])**2)))
+    fig = plt.figure()
+    ax = plt.axes(projection='3d')
+
+    #plot optimal boundary
+    ys = np.linspace(-1, 1, 10)
+    zs = np.linspace(-1, 1, 10)
+
+    Y, Z = np.meshgrid(ys, zs)
+    X = np.array([0 for i in range(0,10)])
+
+    ax.plot_surface(X, Y, Z, color= "blue", alpha=0.6)
+
+    zline = [0, 0]
+    xline = [-1,1]
+    yline = [0,0]
+    
+
+    ax.plot3D(xline, yline, zline, color= "red")
+    zline = [0, 0]
+    yline = [-1,1]
+    xline = [0,0]
+
+    ax.plot3D(xline, yline, zline, color= "red")
+
+    ys = np.linspace(-1, 1, 50)
+    xs = np.linspace(-1, 1, 50)
+
+    Y, X = np.meshgrid(ys, xs)
+    Z = np.zeros(X.shape)
+
+    for i in range(0, X.shape[0]):
+        for j in range(0, X.shape[1]):
+            Z[i,j] = gauss_func(Y[i,j], X[i,j])
+
+    ax.plot_surface(X, Y, Z, color= "orange", alpha = 0.3)
+
+    plt.show()
+
 def plot_player_cycle3D(boundary_vectors: List[np.ndarray], 
                         estimated_vectors: List[np.ndarray], 
                         sigmas: List[float],
@@ -621,4 +693,89 @@ def plot_comparisons(   root:str,
 
         plot_stats(dists, length, labels, main_stat=main_stat,save_as_ndarray=False, lim_bounds=[-0.2, 0.2] if main_stat == "sigma" else [-10, 10], xlabel=xlabel, title=f"Distance for {main_stat}")
     
+def plot_1d_gaussians(trial: List[float], bv: List[float], std:float, i: int):
+    transform_mat =np.linalg.inv(np.array([[bv[0], bv[1]], [bv[1], -bv[0]]]))
+    trial_vec = np.dot(transform_mat, vcol(np.array(trial)))
+    dist = float(trial_vec[1])       
+
+    gauss_func = lambda x : np.exp(-0.5*(1/(std**2))*((x-dist)**2))
     
+    fig = plt.figure()
+    ax = plt.axes()
+
+    x = np.linspace(-3,0,100)
+    y = gauss_func(x)
+    ax.plot(x,y)
+    ax.fill_between(x, 0, y, color="green")
+
+    x = np.linspace(0,3,100)
+    y = gauss_func(x)
+    ax.plot(x,y)
+    ax.fill_between(x, 0, y, color="red")
+
+    y=np.linspace(0,gauss_func(0),100)
+    x=y-y
+    ax.plot(x,y,color="black")
+    
+    plt.xlabel("Distance from decision boundary")
+    plt.ylabel("Probability Density")
+
+    title = f"Point {i}: ND > 0" if trial[0]>0 else f"Point {i}: ND < 0"
+    plt.title(title)
+    plt.xlim([-1.2,1.2])
+    plt.grid(True)
+    plt.show()
+
+    
+
+
+
+
+
+#utils related to plots
+def get_angle_plot(line1, line2, offset = 1, color = None, origin = [0,0], len_x_axis = 1, len_y_axis = 1):
+
+    l1xy = line1.get_xydata()
+    
+    # Angle between line1 and x-axis
+    y1 = l1xy[1][1] - l1xy[0][1]
+    x1 = l1xy[1][0] - l1xy[0][0]
+    slope1 = y1 / float(x1)
+    # Allows you to use this in different quadrants
+    angle1 = math.degrees(math.atan2(y1, x1))
+    
+    l2xy = line2.get_xydata()
+    
+    # Angle between line2 and x-axis
+    y2 = l2xy[1][1] - l2xy[0][1]
+    x2 = l2xy[1][0] - l2xy[0][0]
+    slope2 = y2 / float(x2)
+    angle2 = math.degrees(math.atan2(y2, x2))
+    
+    theta1 = min(angle1, angle2)
+    theta2 = max(angle1, angle2)
+    
+    angle = theta2 - theta1
+    
+    if color is None:
+        color = line1.get_color() # Uses the color of line 1 if color parameter is not passed.
+    
+    return Arc(origin, len_x_axis*offset, len_y_axis*offset, 0, 
+               theta1, theta2, color=color, 
+               label = 0.1)
+
+def get_angle_text(angle_plot):
+    angle = angle_plot.get_label()[:-1] # Excluding the degree symbol
+    angle = "%0.2f"%float(angle)+u"\u00b0" # Display angle upto 2 decimal places
+
+    # Get the vertices of the angle arc
+    vertices = angle_plot.get_verts()
+
+    # Get the midpoint of the arc extremes
+    x_width = (vertices[0][0] + vertices[-1][0]) / 2.0
+    y_width = (vertices[0][1] + vertices[-1][1]) / 2.0
+
+
+    separation_radius = max(x_width/2.0, y_width/2.0)
+
+    return [x_width + separation_radius, y_width + separation_radius, angle]

@@ -89,7 +89,7 @@ class SimulatedClient:
         proposed_trials = []
         corrects = []
         times = []
-
+        anns = []
         if self.mock_trials:
             mock_trials = get_mock_trials(trials, self.norm_feats)
             trials = len(mock_trials)
@@ -98,20 +98,20 @@ class SimulatedClient:
             
             trial = mock_trials[i] if self.mock_trials else self.player_evaluator.get_trial()[0]
 
-            correct, decision_time = self.player.predict(trial)
+            correct, (decision_time, looks_right) = self.player.predict(trial)
 
             proposed_trials.append(trial)
-            corrects.append(correct)
+            corrects.append(looks_right)
             times.append(decision_time)
 
             if self.mock_trials == False:
                 self.player_evaluator.update_statistics(correct, decision_time)
-
+            anns.append("")
             performance.append(correct)
 
         
         if plot:
-            plot_trials(self.player.boundary_vector, proposed_trials, corrects, times, norm_lim=self.norm_feats)
+            plot_trials(self.player.boundary_vector, proposed_trials, corrects, anns, norm_lim=self.norm_feats, ann_str=True, sharp_std=self.sigma, plot_fs=True, title=f"Alpha = {self.alpha}°; Sigma = {self.sigma} u")
         else:
             print(f"Dummy client run, performance: {performance}, running results: {self.player_evaluator.running_results}")
         

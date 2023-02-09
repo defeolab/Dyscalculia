@@ -1,13 +1,13 @@
 import unittest
 from AI.ai_utils import *
 from AI.TrialAdapter import TrialAdapter
-from AI.ai_plot import plot_trials, FigSaver, plot_player_cycle3D, plot_ablation_C, plot_monthly_stats, make_tables, plot_stats, plot_comparisons, average_by_day
+from AI.ai_plot import *
 from AI.ImprovementHandler import *
 from AI.PDEP_Evaluator import PDEP_Evaluator
 from dummy_client_handler import SimulatedClient
 from AI.PlayerSimulator import PlayerSimulator
 from AI.AS_Estimate import ASD_Estimator, ASE_Estimator
-from AI.PDEP_functionals import PDEP_find_trial, compute_error_probability_2d
+from AI.PDEP_functionals import *
 from AI.AS_functionals import *
 from sklearn.svm import LinearSVC
 import time
@@ -646,6 +646,44 @@ class TestAI(unittest.TestCase):
                         xlabel="days",
                     )
 
+    def test_plots_for_thesis(self):
+        trials =    [
+                        [0.4, 0.6],
+                        [-0.7, -0.5],
+                        [-0.5, 0.5],
+                        [-0.2, 0.8],
+                        [-0.4, 0.5],
+                        [0.6, -0.4]
+                    ]
+        trials = [to_mock_trial(t[0],t[1]) for t in trials]
+        corrects = [True, False, False, True, True, True]
+        anns = ["" for t in trials]
+        std = 0.2
+        #plot_trials([-1, 2], trials, corrects, anns, ann_str=True, sharp_std=std)
+        #plot_gaussian_3D([0.2, 0.3], 0.3)
+        #plot_trials([-1,1], [to_mock_trial(-0.1,-0.1)], [True], [""],ann_str=True, sharp_std=0.3, plot_fs=True, plot_norm=True)
+        
+        trials =    [
+                        [-0.8, -0.7],
+                        [-0.2, 0.6],
+                        [ 0.5, 0.5],
+                        [ 0.3, -0.3],
+                    ]
+        mt=[to_mock_trial(t[0],t[1]) for t in trials]
+        std = 0.3
+        corrects = [True for t in trials]
+        anns = [f"{i+1}" for i in range(0, len(trials))]
+        #plot_trials([-1, 1], mt, corrects, anns, ann_str=True, sharp_std=std)
+
+        for i,t in enumerate(trials):
+            a = i
+            #plot_1d_gaussians(t, unit_vector([-1,1]), std, i+1) 
+        bv=unit_vector([-1,1])
+        transform_mat = np.linalg.inv(np.array([[bv[0], bv[1]], [bv[1], -bv[0]]]))
+        anns = [f"{compute_perceived_difficulty(np.array(t), transform_mat,2*math.sqrt(2))}" for t in trials]
+        plot_trials(unit_vector([-1, 1]), mt, corrects, anns, ann_str=True, plot_dist=True, plot_fs=True)
+
+
 if __name__ == "__main__":
     tc = TestAI()
 
@@ -672,8 +710,8 @@ if __name__ == "__main__":
     #tc.test_best_Ns()
     #tc.test_trial_mirroring()
     #tc.test_joint_plots()
-    tc.test_unified_plots()
-
+    #tc.test_unified_plots()
+    tc.test_plots_for_thesis()
 
     duration = 1000  # milliseconds
     freq = 440  # Hz
