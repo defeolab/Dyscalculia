@@ -277,15 +277,15 @@ if __name__ == "__main__":
         [0.3],
         [MAX_SIGMA-0.1]
         ]
-    alpha_i = 8
-    sigma_i = 5
+    alpha_i = 7
+    sigma_i = 2
 
 
     probs = [0.10, 0.30, 0.80]
     diffs = [(0.1,0.1), (0.4, 0.4), (0.8, 0.8), (0.95,0.95)]
     modes = ["filtering", "sharpening"]
 
-    days =65
+    days =180
     trials_per_day = 30
     interval = 15
 
@@ -309,7 +309,7 @@ if __name__ == "__main__":
     target_n_trials = np.linspace(100, 1800, 18)
     target_slopes = -np.logspace(-4, -2, 10, base=10)/trials_per_day
     
-    local_target_slope = target_slopes[0]
+    local_target_slope = target_slopes[7]
     update_child = True
     improver_parameters_options =   [
                                         [0.45, 0.003, 1],
@@ -332,7 +332,7 @@ if __name__ == "__main__":
     make_plots = True
     save_ablation = False
     n_runs = 2
-    suite_name = "test_final_unified"
+    suite_name = "test_clean_iterations_impr"
     difficulties = ["regular", "easy"]
     diff_i = 1
 
@@ -344,7 +344,7 @@ if __name__ == "__main__":
 
     start_time = time.time()
 
-    #sr.simulation_suite()
+    sr.simulation_suite()
     #sr.ablation_C(last_n_days, n_runs)
     #sr.ablation_n_trials(target_slopes, target_n_trials, n_runs)
     discarded_slopes_i = [0,1,2,3,4,5]
@@ -365,7 +365,7 @@ if __name__ == "__main__":
                             target_C, make_plots, save_ablation, estimation_duration, 
                             estimator_type, init_evaluator_stats, estimator_max_trials, estimator_min_trials,improver_type, 
                             [local_target_slope*MAX_ALPHA, local_target_slope*MAX_SIGMA, 1], difficulties[diff_i])
-        sr.simulation_suite()
+        #sr.simulation_suite()
 
 
     duration = 1000  # milliseconds

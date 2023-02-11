@@ -706,12 +706,14 @@ def plot_1d_gaussians(trial: List[float], bv: List[float], std:float, i: int):
     x = np.linspace(-3,0,100)
     y = gauss_func(x)
     ax.plot(x,y)
-    ax.fill_between(x, 0, y, color="green")
+    color = "green" if (trial[0]<0) else "red"
+    ax.fill_between(x, 0, y, color=color)
 
     x = np.linspace(0,3,100)
     y = gauss_func(x)
     ax.plot(x,y)
-    ax.fill_between(x, 0, y, color="red")
+    color = "green" if (trial[0]>0) else "red"
+    ax.fill_between(x, 0, y, color=color)
 
     y=np.linspace(0,gauss_func(0),100)
     x=y-y

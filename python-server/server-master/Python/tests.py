@@ -89,20 +89,24 @@ class TestAI(unittest.TestCase):
         plot_trials(self.boundary_vector, trials,corrects, probs)
     
     def test_PDEP_Evaluator(self):
-        eval = PDEP_Evaluator(self.alpha, self.sigma, self.target_error_prob, self.target_perceived_diff, self.norm_feats)
 
-        error_probs = np.linspace(0, 1, num=5)
+        error_prob = 0.1
         trials = []
         prob_diffs = []
         corrects = []
-        for p in error_probs:
-            nd,nnd,diff =PDEP_find_trial(p, self.target_perceived_diff, self.transform_mat, self.boundary_vector,self.sigma, self.norm_feats)
-            print(f"{p}-{nd}-{nnd}-{diff}")
-            trials.append(to_trial(nd,nnd))
-            prob_diffs.append(f"{round(p,2)} - {round(diff,2)}")
+        n = 5
+        sigma = 0.20
+        alpha = 30
+
+        eval = PDEP_Evaluator(alpha, sigma, error_prob, self.target_perceived_diff, self.norm_feats)
+        for i in range(0,n):
+            nd,nnd,diff =PDEP_find_trial(eval.target_error_prob, eval.target_perceived_diff,eval.transform_mat, eval.boundary_vector,eval.sigma, eval.norm_feats)
+            #print(f"{p}-{nd}-{nnd}-{diff}")
+            trials.append(to_mock_trial(nd,nnd))
+            prob_diffs.append(f"S: {round(diff,2)}")
             corrects.append(True)
 
-        #plot_trials(self.boundary_vector, trials, corrects, prob_diffs, ann_str=True, sharp_std=self.sigma)
+        plot_trials(eval.boundary_vector, trials, corrects, prob_diffs, ann_str=True, sharp_std=sigma, title=f"Target Error Prob = {error_prob}")
     
     def test_player_cycle_simple(self):
         client = SimulatedClient(0.5, 0.5, alpha = 20, sigma= 0.2, evaluator="simple", norm_feats=True)
@@ -677,11 +681,22 @@ class TestAI(unittest.TestCase):
 
         for i,t in enumerate(trials):
             a = i
-            #plot_1d_gaussians(t, unit_vector([-1,1]), std, i+1) 
+            plot_1d_gaussians(t, unit_vector([-1,1]), std, i+1) 
         bv=unit_vector([-1,1])
         transform_mat = np.linalg.inv(np.array([[bv[0], bv[1]], [bv[1], -bv[0]]]))
-        anns = [f"{compute_perceived_difficulty(np.array(t), transform_mat,2*math.sqrt(2))}" for t in trials]
-        plot_trials(unit_vector([-1, 1]), mt, corrects, anns, ann_str=True, plot_dist=True, plot_fs=True)
+        max_dec_score = 2*math.sqrt(2)
+        anns = [f"{compute_perceived_difficulty(np.array(t), transform_mat, max_dec_score)}" for t in trials]
+        #plot_trials(unit_vector([-1, 1]), mt, corrects, anns, ann_str=True, plot_dist=True, plot_fs=True)
+        #eval = PDEP_Evaluator(self.alpha, self.sigma, self.target_error_prob, self.target_perceived_diff, self.norm_feats)
+
+        target_error_prob = 0.8
+        anns = []
+        for t in trials:
+            score = global_fitness_score(np.array(t), target_error_prob, 0.1, std, transform_mat, max_dec_score)
+            anns.append(f"S: {round(score, 2)}")
+
+        #plot_trials(unit_vector([-1, 1]), mt, corrects, anns, ann_str=True, plot_fs=True,sharp_std=std, title=f"Target error probability: {target_error_prob}")
+
 
 
 if __name__ == "__main__":

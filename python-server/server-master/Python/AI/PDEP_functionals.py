@@ -57,7 +57,12 @@ def compute_error_probability_1d(trial_vec:np.ndarray, sigma: float, transform_m
         val = custom_erf(np.abs(dist), sigma)
         return val + (1-val)/2
     
-
+def global_fitness_score(trial_vec: np.ndarray, target_error_prob: float, target_perceived_diff: float, sigma: float, transform_mat: np.ndarray, max_dec_score: float):
+    return  np.abs(target_error_prob-compute_error_probability_1d(trial_vec, sigma,transform_mat)) + \
+            0.2*np.abs(target_perceived_diff-compute_perceived_difficulty(trial_vec, transform_mat, max_dec_score)) 
+    
+def global_ga_fitness(trial_vec: np.ndarray, trial_idx: int, target_error_prob: float,  target_perceived_diff:float, sigma:float, transform_mat:np.ndarray):
+    return np.clip(1/global_fitness_score(trial_vec, target_error_prob, target_perceived_diff, sigma, transform_mat),0.001, 1000)
 
 def compute_perceived_difficulty(trial_vec: np.ndarray, decision_matrix: np.ndarray, max_decision_score: float):
         
