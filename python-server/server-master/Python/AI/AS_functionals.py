@@ -15,7 +15,7 @@ from AI.ai_consts import *
 DEBUG_D = False
 DEBUG_S = False
 DEBUG_PC = False
-PATH_FOR_C_ABLATION = ".\\AI\\precomputed_data\\PDEP\\C_ablation5"
+PATH_FOR_C_ABLATION = ".\\AI\\precomputed_data\\PDEP\\C_ablation"
 PATH_FOR_N_ABLATION = ".\\AI\\precomputed_data\\PDEP\\N_trials_ablation_fixed"
 PERFORM_ABLATION_C = False
 PERFORM_ABLATION_N_TRIALS = False
@@ -38,11 +38,11 @@ if PERFORM_ABLATION_C == False:
     filepath = os.path.join(PATH_FOR_C_ABLATION, "Cs.npy")
     CS : np.ndarray = np.load(filepath)
 
-    filepath = os.path.join(PATH_FOR_C_ABLATION, "alpha_errors_by_Cs.npy")
+    filepath = os.path.join(PATH_FOR_C_ABLATION, "errors_by_Cs.npy")
     ERR_A_CS : np.ndarray = np.load(filepath)
 
     filepath = os.path.join(PATH_FOR_C_ABLATION, "sigma_errors_by_Cs.npy")
-    ERR_S_CS : np.ndarray = np.load(filepath)
+    #ERR_S_CS : np.ndarray = np.load(filepath)
 
 if PERFORM_ABLATION_N_TRIALS == False:
     #filepath = os.path.join(PATH_FOR_N_ABLATION, "best_n_trials_index.npy")

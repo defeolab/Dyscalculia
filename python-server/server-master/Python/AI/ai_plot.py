@@ -106,7 +106,8 @@ def plot_trials(boundary_vector: np.ndarray,
                 estimated_std: np.ndarray = None,
                 plot_fs: bool = False,
                 title: str = None,
-                plot_norm: bool = False):
+                plot_norm: bool = False,
+                plot_links: bool = False):
 
     if figsaver is not None:
         #just a speedup, avoid plotting if you're not going to show or save the figure
@@ -131,6 +132,10 @@ def plot_trials(boundary_vector: np.ndarray,
 
     for i, coord in enumerate(coords):
         #print(corrects[i])
+        if i % 2 == 1 and plot_links:
+            prev = coords[i-1]
+            ax.plot([prev[0], coord[0]], [prev[1], coord[1]], color="blue")
+
         ax.scatter(coord[0], 
             coord[1], 
             color = colors[corrects[i]])
@@ -257,6 +262,8 @@ def plot_stats( statlist: List[List[float]],
     to_save = []
     to_save.append((x, f"x_data_{main_stat}"))
     for i, dl in enumerate(statlist):
+        if len(dl) ==0:
+            continue
         ax.plot(x, dl, color= colors[i], label=labels[i])
         to_save.append((dl, labels[i]))
     
@@ -286,7 +293,12 @@ def plot_stats( statlist: List[List[float]],
     if figsaver is None:
         plt.show()
     else:
-        figsaver.save_summary_stats(f"{labels[0]}-{labels[1]}")
+        name = labels[0]
+        for i, l in enumerate(labels):
+            if i ==0:
+                continue
+            name += f"-{l}"
+        figsaver.save_summary_stats(name)
         if save_as_ndarray:
             figsaver.save_np_array(to_save, "main")
     
@@ -314,6 +326,8 @@ def plot_monthly_stats( statlist: List[List[float]],
         x = np.linspace(1, length, length)
 
     for l in statlist:
+        if len(l) ==0:
+            continue
         daily_stat = vec_reshape_by_day(l, tpd)
         reduced = []
         for ds in daily_stat:
@@ -324,6 +338,8 @@ def plot_monthly_stats( statlist: List[List[float]],
     to_save = []
     to_save.append((x, "x_data"))
     for i, dl in enumerate(daily_statlist):
+        if len(dl) ==0:
+            continue
         ax.plot(x, dl, color= colors[i], label=labels[i])
         to_save.append((dl, f"{month_n}_{labels[i]}"))
         
@@ -398,9 +414,9 @@ def make_tables( main_stat: List[float],
             avg_dist = np.average(dist)
             dist_std = np.std(dist)
             max_dist = np.max(dist)
-            monthly_data.append(avg_dist)
-            monthly_data.append(dist_std)
-            monthly_data.append(max_dist)
+            monthly_data.append(round(avg_dist,2))
+            monthly_data.append(round(dist_std,2))
+            monthly_data.append(round(max_dist,2))
         
         data.append(monthly_data)
 
@@ -413,9 +429,9 @@ def make_tables( main_stat: List[float],
         avg_dist = np.average(dist)
         dist_std = np.std(dist)
         max_dist = np.max(dist)
-        last_row.append(avg_dist)
-        last_row.append(dist_std)
-        last_row.append(max_dist)
+        last_row.append(round(avg_dist,2))
+        last_row.append(round(dist_std,2))
+        last_row.append(round(max_dist,2))
 
     data.append(last_row)
     

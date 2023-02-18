@@ -142,7 +142,7 @@ class TestAI(unittest.TestCase):
                 anns.append("")
 
         vec = np.array([0,1])
-        plot_trials(vec, raw, corrects, anns, ann_str=True, norm_lim=True)
+        plot_trials(vec, raw, corrects, anns, ann_str=True, norm_lim=True, plot_links = True)
 
     def test_3D_plot(self):
         player = PlayerSimulator(45, 0.5)
@@ -342,7 +342,7 @@ class TestAI(unittest.TestCase):
         print(BEST_CS)
         #rint(CS[BEST_CS[1]])
         #print(find_expected_optimal_C(np.array([-0.6,0.4]), 0.50))
-        print(CONFIGS)
+        #print(CONFIGS)
         #print(CS)
         #print(ERR_CS)
 
@@ -512,18 +512,21 @@ class TestAI(unittest.TestCase):
         #nv = np.array([17,17,17, 13, 9, 9, 6, 4, 1, 0])
         #np.save(filepath, nv)
 
-        x = SLOPE_CONFIGS[0]
+        x = np.abs(SLOPE_CONFIGS[0])
         y = N_TRIALS[BEST_N_INDEXES]
 
-
+        valid_indexes = np.array([0,4,5,6,7,8,9])
+        x = x[valid_indexes]
+        y = y[valid_indexes]
         #fig = plt.figure()
         #ax = fig.gca()
-        #ax.set_xscale("log")
+        
         plt.scatter(x, y, color = "red")
         plt.plot(x, y, color = "blue")
-        plt.xlabel("slopes (unit/trial)")
-        plt.ylabel("window width (number of trials)")
-
+        plt.xlabel("normalized unsigned slopes (unit/trial)")
+        plt.ylabel("Optimal z")
+        plt.xscale("log")
+        plt.grid(True)
         plt.show()
     
     def test_trial_mirroring(self):
@@ -578,7 +581,24 @@ class TestAI(unittest.TestCase):
         target_slopes = target_slopes[6:]
         labels = [f"Daily Slope = {round(t, 2)}°" for t in target_slopes*MAX_ALPHA]
         labels.append("Null slope")
-        plot_comparisons(root_path, labels, monthly=True, suffix_set=[str(i) for i in range(6,10+1)], title="Second Pass alpha", xlabel="day", plot_dists=True)
+        folder_prefix = "unified_plots_easy_v3_"
+        subfolder_name="alpha_55_sigma_30"
+
+        plot_comparisons(root_path, labels, monthly=True, folder_prefix=folder_prefix, suffix_set=[str(i) for i in range(6,10+1)], title="Second Pass alpha", xlabel="day", plot_dists=True, subfolder_name=subfolder_name)
+
+        labels = [f"Daily Slope = {round(t, 4)} units" for t in target_slopes*MAX_SIGMA]
+        labels.append("Null slope")
+        plot_comparisons(root_path, labels, monthly=True, suffix_set=[str(i) for i in range(6,10+1)], title="Second Pass Sigma", xlabel="day", metric_name="second_pass_sigma", main_stat="sigma", subfolder_name=subfolder_name, plot_dists=True,folder_prefix=folder_prefix)
+
+        labels = [f"Daily Unified Slope = {round(t, 4)} units" for t in target_slopes]
+        labels.append("Null slope")
+        plot_comparisons(root_path, labels, monthly=False, suffix_set=[str(i) for i in range(6,10+1)], title="Accuracy (easy mode)", xlabel="day", metric_name="cumulative_accuracy", main_stat="accuracy", subfolder_name=subfolder_name, xlength=60,folder_prefix=folder_prefix)
+
+        labels = [f"Daily Unified Slope = {round(t, 4)} units" for t in target_slopes]
+        labels.append("Null slope")
+        plot_comparisons(root_path, labels, monthly=False, suffix_set=[str(i) for i in range(6,10+1)], title="Accuracy (regular mode)", xlabel="day", metric_name="cumulative_accuracy", main_stat="accuracy", subfolder_name=subfolder_name, xlength=60,folder_prefix=folder_prefix)
+        """
+        plot_comparisons(root_path, labels, monthly=True, folder_prefix=folder_prefix, suffix_set=[str(i) for i in range(6,10+1)], title="Second Pass alpha", xlabel="day", plot_dists=True)
 
         labels = [f"Daily Slope = {round(t, 4)} units" for t in target_slopes*MAX_SIGMA]
         labels.append("Null slope")
@@ -591,7 +611,7 @@ class TestAI(unittest.TestCase):
         labels = [f"Daily Unified Slope = {round(t, 4)} units" for t in target_slopes]
         labels.append("Null slope")
         plot_comparisons(root_path, labels, monthly=False, suffix_set=[str(i) for i in range(6,10+1)], title="Accuracy (regular mode)", xlabel="day", metric_name="cumulative_accuracty", main_stat="accuracy", subfolder_name="alpha_80_sigma_40", xlength=65)
-
+        """
     def test_unified_plots(self):
         root_path = os.path.join(BASE_PATH_FOR_PICS, "PDEP")
         n = 8
@@ -663,7 +683,7 @@ class TestAI(unittest.TestCase):
         corrects = [True, False, False, True, True, True]
         anns = ["" for t in trials]
         std = 0.2
-        #plot_trials([-1, 2], trials, corrects, anns, ann_str=True, sharp_std=std)
+        plot_trials([-1, 2], trials, corrects, anns, ann_str=True, sharp_std=std)
         #plot_gaussian_3D([0.2, 0.3], 0.3)
         #plot_trials([-1,1], [to_mock_trial(-0.1,-0.1)], [True], [""],ann_str=True, sharp_std=0.3, plot_fs=True, plot_norm=True)
         
@@ -681,7 +701,7 @@ class TestAI(unittest.TestCase):
 
         for i,t in enumerate(trials):
             a = i
-            plot_1d_gaussians(t, unit_vector([-1,1]), std, i+1) 
+            #plot_1d_gaussians(t, unit_vector([-1,1]), std, i+1) 
         bv=unit_vector([-1,1])
         transform_mat = np.linalg.inv(np.array([[bv[0], bv[1]], [bv[1], -bv[0]]]))
         max_dec_score = 2*math.sqrt(2)
@@ -698,6 +718,66 @@ class TestAI(unittest.TestCase):
         #plot_trials(unit_vector([-1, 1]), mt, corrects, anns, ann_str=True, plot_fs=True,sharp_std=std, title=f"Target error probability: {target_error_prob}")
 
 
+    def test_plot_generic_comparison(self):
+        root_path = os.path.join(BASE_PATH_FOR_PICS, "PDEP")
+
+        root_path_1 = os.path.join(root_path, f"unified_plots_regular_v2_10", "alpha_55_sigma_30")
+    
+        f_a_alpha_1 = os.path.join(root_path_1, "actual_alpha.npy")
+        a_alpha_1 = np.load(f_a_alpha_1)
+
+        root_path_2 = os.path.join(root_path, f"unified_plots_regular_v2_7", "alpha_55_sigma_30")
+    
+        f_a_alpha_2 = os.path.join(root_path_2, "actual_alpha.npy")
+        a_alpha_2 = np.load(f_a_alpha_2)
+
+        root_path_3 = os.path.join(root_path, f"unified_plots_regular_v2_9", "alpha_55_sigma_30")
+    
+        f_a_alpha_3 = os.path.join(root_path_3, "actual_alpha.npy")
+        a_alpha_3 = np.load(f_a_alpha_3)
+
+        target_slopes = -np.logspace(-4, -2, 10, base=10)
+        
+        trials_per_day = 30
+
+        l = 1500
+        plot_stats  (   [   
+                            a_alpha_1[0:l] + 20,
+                            a_alpha_2[0:l] + 20,
+                            a_alpha_3[0:l] + 20
+                        ],
+                        l,
+                        [f"lr = {0.0} deg/it", f"lr = {round(target_slopes[7]*MAX_ALPHA, 2)} deg/it", f"lr = {round(target_slopes[9]*MAX_ALPHA, 2)} deg/it"], 
+                        main_stat="Alpha (degrees)",
+                        lim_bounds=[-5, 95],
+                        save_as_ndarray=False,
+                        title= f"Alpha improvement",
+                        xlabel="iterations (it)",
+                    )
+
+    def test_distance(self):
+        root_path = os.path.join(BASE_PATH_FOR_PICS, "PDEP")
+
+        root_path_1 = os.path.join(root_path, f"fp_sp_fixed_studies", "alpha_10_sigma_40")
+
+        f_a_a = os.path.join(root_path_1, "actual_alpha.npy")
+        aa = np.load(f_a_a)
+
+        f_a_a = os.path.join(root_path_1, "estimated_alpha.npy")
+        fp_a = np.load(f_a_a)
+
+        print(np.sum(np.abs(fp_a - aa))/fp_a.shape[0])
+
+        f_a_s = os.path.join(root_path_1, "actual_sigma.npy")
+        a_s = np.load(f_a_s)
+
+        f_a_s = os.path.join(root_path_1, "estimated_sigma.npy")
+        fp_s = np.load(f_a_s)
+
+        print(np.sum(np.abs(fp_s - a_s))/fp_s.shape[0])
+
+
+        
 
 if __name__ == "__main__":
     tc = TestAI()
@@ -708,7 +788,7 @@ if __name__ == "__main__":
     #tc.test_PDEP_Evaluator()
     #tc.test_player_cycle_simple()
     #tc.test_player_cycle_PDEP()
-    #tc.test_trial_adapter()
+    tc.test_trial_adapter()
     #tc.test_3D_plot()
     #tc.test_precompute()
     #tc.test_AS()
@@ -726,7 +806,9 @@ if __name__ == "__main__":
     #tc.test_trial_mirroring()
     #tc.test_joint_plots()
     #tc.test_unified_plots()
-    tc.test_plots_for_thesis()
+    #tc.test_plots_for_thesis()
+    #tc.test_plot_generic_comparison()
+    #tc.test_distance()
 
     duration = 1000  # milliseconds
     freq = 440  # Hz

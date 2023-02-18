@@ -101,7 +101,7 @@ class SimulatedClient:
             correct, (decision_time, looks_right) = self.player.predict(trial)
 
             proposed_trials.append(trial)
-            corrects.append(looks_right)
+            corrects.append(correct)
             times.append(decision_time)
 
             if self.mock_trials == False:
@@ -111,7 +111,7 @@ class SimulatedClient:
 
         
         if plot:
-            plot_trials(self.player.boundary_vector, proposed_trials, corrects, anns, norm_lim=self.norm_feats, ann_str=True, sharp_std=self.sigma, plot_fs=True, title=f"Alpha = {self.alpha}°; Sigma = {self.sigma} u")
+            plot_trials(self.player.boundary_vector, proposed_trials, corrects, anns, norm_lim=self.norm_feats, ann_str=True, sharp_std=None, plot_fs=True, title=f"Alpha = {self.alpha}°; Sigma = {self.sigma} u")
         else:
             print(f"Dummy client run, performance: {performance}, running results: {self.player_evaluator.running_results}")
         
@@ -225,10 +225,10 @@ class SimulatedClient:
         print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} final evaluator stats are: {self.player_evaluator.get_stats_as_str()}")
 
         if make_plots:
-            plot_stats([local_accuracies, cumulative_accuracies], days, figsaver=figsaver, labels=["local accuracy", "cumulative_accuracy"], main_stat="accuracy", lim_bounds=accuracy_bounds)
+            plot_stats([local_accuracies, cumulative_accuracies], days, figsaver=figsaver, labels=["local accuracy", "cumulative accuracy"], main_stat="accuracy", lim_bounds=accuracy_bounds, xlabel="day")
             label1 = self.player_evaluator.get_labels_for_stats(0)
             if self.evaluator == "PDEP":
-                sp_alpha, sp_sigma, sp_norms = self.player_evaluator.second_pass_estimation(t1_stat1_history, t1_stat2_history)
+                sp_alpha, sp_sigma, sp_norms = self.player_evaluator.second_pass_estimation(t1_stat1_history, t1_stat2_history) if update_evaluator_stats else ([], [], [-1,1])
 
 
             for i in range(0, month_n-1):
@@ -246,10 +246,15 @@ class SimulatedClient:
                                     ], 
                                     trials_per_day, i+1, labels=sigma_labels, figsaver=figsaver, lim_bounds=sigma_bounds, main_stat="sigma")
             
+            
             plot_monthly_stats( [t1_stat1_history,sim_alpha_history,sp_alpha],trials_per_day, -1, labels=alpha_labels, figsaver=figsaver, lim_bounds=alpha_bounds, main_stat="alpha", length = days)
             plot_monthly_stats( [t1_stat2_history,sim_sigma_history,sp_sigma],trials_per_day, -1, labels=sigma_labels, figsaver=figsaver, lim_bounds=sigma_bounds, main_stat="sigma", length=days)
             #plot_monthly_stats( [t2_stat1_history, t2_stat2_history], trials_per_day, -1, main_stat="accuracy",labels=self.player_evaluator.get_labels_for_stats(1), figsaver=figsaver, lim_bounds=accuracy_bounds )
         
+            plot_stats([t1_stat1_history, sim_alpha_history], days*trials_per_day, labels=alpha_labels[0:2], figsaver=figsaver, lim_bounds=[-5, 95], main_stat="alpha")
+            plot_stats([t1_stat2_history, sim_sigma_history], days*trials_per_day, labels=sigma_labels[0:2], figsaver=figsaver, main_stat="sigma")
+        
+
             plot_stats([t1_stat1_history, sim_alpha_history, sp_alpha], days*trials_per_day, labels=alpha_labels, figsaver=figsaver, lim_bounds=[-5, 95], main_stat="alpha")
             plot_stats([t1_stat2_history, sim_sigma_history,sp_sigma], days*trials_per_day, labels=sigma_labels, figsaver=figsaver, main_stat="sigma")
         
@@ -273,9 +278,9 @@ class SimulatedClient:
                             xlabel="days",
                             figsaver=figsaver
                         )
-
-            make_tables(sim_alpha_history, [t1_stat1_history, sp_alpha], trials_per_day, n_months=month_n-1, main_label="alpha", secondary_labels=["FP", "SP"], figsaver=figsaver)
-            make_tables(sim_sigma_history, [t1_stat2_history, sp_sigma], trials_per_day, n_months=month_n-1, main_label="sigma", secondary_labels=["FP", "SP"], figsaver=figsaver)
+            if update_evaluator_stats:
+                make_tables(sim_alpha_history, [t1_stat1_history, sp_alpha], trials_per_day, n_months=month_n-1, main_label="alpha", secondary_labels=["FP", "SP"], figsaver=figsaver)
+                make_tables(sim_sigma_history, [t1_stat2_history, sp_sigma], trials_per_day, n_months=month_n-1, main_label="sigma", secondary_labels=["FP", "SP"], figsaver=figsaver)
             
             if self.evaluator == "PDEP":
                 plot_player_cycle3D(sim_boundary_vectors, e_bvs, sim_sigmas, e_sigmas, proposed_trials, corrects, trials_per_day, figsaver= figsaver)
