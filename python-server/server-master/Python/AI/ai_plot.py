@@ -252,11 +252,16 @@ def plot_stats( statlist: List[List[float]],
                 lim_bounds: List[float] = [-0.1, MAX_SIGMA+0.1],
                 save_as_ndarray: bool = True,
                 title: str = None,
-                xlabel: str = None):
+                xlabel: str = None,
+                months_as_x: bool = False,
+                n_months: float = None):
 
     fig = plt.figure()
     ax = fig.gca()
     x = np.linspace(1, length, length)
+    
+    if months_as_x:
+        x = np.linspace(0, n_months, length)
 
     colors = ["green", "red", "blue", "orange", "brown", "pink", "gray", "teal", "yellow", "purple", "magenta"]
     to_save = []

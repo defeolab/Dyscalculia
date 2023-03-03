@@ -4,6 +4,8 @@ from AI.PDEP_functionals import PDEP_find_trial
 from typing import Any
 from AI.AS_Estimate import ASD_Estimator, ASE_Estimator
 from trial_result import TrialResult
+from AI.DifficultyController import DifficultyController
+from AI.Trial_Proposer import PDEP_TrialProposer
 
 from db.db_connector import DBConnector
 
@@ -48,15 +50,15 @@ class PDEP_Evaluator(PlayerEvaluator):
                     estimator_type: str = "ASD",
                     estimator_max_trials: int = 180,
                     estimation_duration: int = 10):
-        self.trial_adapter = TrialAdapter(mock,True, norm_feats, kids_ds)
         self.alpha = init_alpha
         self.sigma = init_sigma
         self.target_error_prob = init_prob
         self.target_perceived_diff = init_perceived_diff
         self.norm_feats = norm_feats
         self.estimation_min_trials = estimation_min_trials
+        self.estimate_step = estimate_step
 
-        self.mode = "support"
+        self.mode = "support" #should always be support, the other mode has been deprecated during development and is supported only for ASE_Estimator
 
         self.boundary_vector = unit_vector(np.array([-math.sin(math.radians(self.alpha)), math.cos(math.radians(self.alpha))]))
 
@@ -65,24 +67,18 @@ class PDEP_Evaluator(PlayerEvaluator):
 
         #variables used during update phase
         self.iteration = 0
-        self.update_step = update_step
-        self.history = np.array(([False for i in range(0, update_step)]))
 
-        self.memory = 6 if difficulty == "regular" else 14
-        self.prob_choice_iteration = 0
-        self.prob_history = np.array([3 for i in range(0, self.memory)])
-        self.target_probs = np.array([0.1, 0.2, 0.3, 0.4, 0.6, 0.7, 0.8, 0.9]) if difficulty == "regular" else np.array([0.1, 0.1, 0.1, 0.1,0.1, 0.2, 0.2, 0.2,0.2,0.2, 0.3,0.3, 0.3, 0.4,0.4, 0.6, 0.7, 0.8])
-        self.trials = []
-        self.estimate_step = estimate_step
-        self.estimator_type = estimator_type
-        self.estimation_duration = estimation_duration
-
+        #initialize the PDEP pipeline
+        self.difficulty_controller = DifficultyController(update_step, difficulty, init_prob, init_perceived_diff)
+        self.trial_proposer = PDEP_TrialProposer()
+        self.trial_adapter = TrialAdapter(mock,True, norm_feats, kids_ds)
         if estimator_type == "ASD":
             print("using ASD")
             self.estimator = ASD_Estimator(max_trials_to_consider=estimator_max_trials, min_trials_to_consider=self.estimation_min_trials, denoiser_type="simple_denoising")
         else:
             print("using ASE")
             self.estimator = ASE_Estimator(n_trials_per_cycle=estimation_duration, max_trials_to_consider=estimator_max_trials)
+        
 
     def get_stats(self, type: int) -> Any:
         if type == 0:
@@ -121,12 +117,11 @@ class PDEP_Evaluator(PlayerEvaluator):
             to the target one (for now, as low as possible).
             This is meant to support the growth of mathematical skills of the child
         """
+        self.target_error_prob, self.target_perceived_diff = self.difficulty_controller.get_difficulty_parameters()
+        nd_variable, nnd_variable, self.last_value = self.trial_proposer.find_trial(self.target_error_prob,self.target_perceived_diff, self.transform_mat, self.boundary_vector, self.sigma, self.norm_feats)
 
-        nd_variable, nnd_variable, self.last_value = PDEP_find_trial(self.target_error_prob,self.target_perceived_diff, self.transform_mat, self.boundary_vector, self.sigma, self.norm_feats)
-
-        if self.mode == "support":
-            nd_variable, nnd_variable, self.last_value = PDEP_find_trial(self.target_error_prob,self.target_perceived_diff, self.transform_mat, self.boundary_vector, self.sigma, self.norm_feats)    
-        else:
+        if self.mode == "estimate":
+            #accessed when using ASE_Estimator (deprecated)
             trial, self.last_value = self.estimator.get_trial()
             nd_variable = trial[0]
             nnd_variable = trial[1]
@@ -144,7 +139,7 @@ class PDEP_Evaluator(PlayerEvaluator):
             for now just increase/decrease probability
         """
         self.iteration+=1
-        self.history[self.iteration%self.update_step] = correct
+        self.difficulty_controller.history[self.iteration%self.difficulty_controller.update_step] = correct
 
         self.prev_stats = [self.target_error_prob, self.target_perceived_diff]
 
@@ -154,18 +149,7 @@ class PDEP_Evaluator(PlayerEvaluator):
         prediction = True if (nd>0) == correct else False
         self.estimator.append_prediction(prediction, self.mode)
 
-        if self.iteration%self.update_step == 0 and self.mode == "support":
-            self.prob_choice_iteration+=1
-            #choose a balanced target error probability based on previously selected ones
-            unused_probs_i = []
-            for i in range(self.target_probs.shape[0]):
-                if i not in self.prob_history:
-                    unused_probs_i.append(i)
-            unused_probs_i = np.array(unused_probs_i)
-            next_prob_i = np.random.choice(unused_probs_i)
-
-            self.prob_history[self.prob_choice_iteration%self.memory] = next_prob_i
-            self.target_error_prob = self.target_probs[next_prob_i]
+        self.difficulty_controller.update_difficulty_parameters(self.iteration)
             
         if (self.iteration%self.estimate_step ==0 or self.mode == "estimate") and self.iteration > self.estimation_min_trials:
             self.mode = "estimate"
@@ -199,7 +183,7 @@ class PDEP_Evaluator(PlayerEvaluator):
 
         """
         trials_query = db.PDEP_fetch_trials_history(player_id)
-        prob_window_n = self.memory-1
+        prob_window_n = self.difficulty_controller.memory-1
 
         for i, t in enumerate(trials_query):
             if i == 0:
@@ -209,15 +193,16 @@ class PDEP_Evaluator(PlayerEvaluator):
             self.estimator.append_trial([t[0], t[1]], "")
             self.estimator.append_prediction(t[2])
 
-            if i % self.update_step == 0 and prob_window_n>=0:
-                self.prob_history[prob_window_n] = np.argmin(np.abs(self.target_probs-t[3]))
+            if i % self.difficulty_controller.update_step == 0 and prob_window_n>=0:
+                self.difficulty_controller.prob_history[prob_window_n] = np.argmin(np.abs(self.difficulty_controller.target_probs-t[3]))
                 prob_window_n-=1
         
-        self.target_error_prob = self.target_probs[self.prob_history[self.memory-1]]
-        self.prob_choice_iteration = self.memory
+        self.difficulty_controller.target_error_prob = self.difficulty_controller.target_probs[self.difficulty_controller.prob_history[self.difficulty_controller.memory-1]]
+        self.difficulty_controller.prob_choice_iteration = self.difficulty_controller.memory
         self.iteration = len(self.estimator.predictions)
         self.estimator.trials.reverse()
         self.estimator.predictions.reverse()
+        print(f">>>>>>>>>>>{self.iteration}")
 
         
     def db_update(self, db: DBConnector, player_id: int, results_to_add: List[TrialResult]):
