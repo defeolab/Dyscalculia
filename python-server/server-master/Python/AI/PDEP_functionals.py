@@ -1,5 +1,7 @@
-import pygad
 import numpy as np
+np.int = int
+np.float = float
+import pygad
 import math
 import scipy as sp
 from scipy import integrate

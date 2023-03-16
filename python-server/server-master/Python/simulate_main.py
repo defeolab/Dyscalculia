@@ -286,7 +286,7 @@ if __name__ == "__main__":
     diffs = [(0.1,0.1), (0.4, 0.4), (0.8, 0.8), (0.95,0.95)]
     modes = ["filtering", "sharpening"]
 
-    days =60
+    days =50
     trials_per_day = 30
     interval = 15
 
@@ -310,8 +310,8 @@ if __name__ == "__main__":
     target_n_trials = np.linspace(100, 1800, 18)
     target_slopes = -np.logspace(-4, -2, 10, base=10)/trials_per_day
     
-    local_target_slope = target_slopes[9]
-    update_child = False
+    local_target_slope = target_slopes[8]
+    update_child = True
     improver_parameters_options =   [
                                         [0.45, 0.003, 1],
                                         [-0.3/trials_per_day, -0.002/trials_per_day, 1],
@@ -333,7 +333,7 @@ if __name__ == "__main__":
     make_plots = True
     save_ablation = False
     n_runs = 2
-    suite_name = "test_DC_TP"
+    suite_name = "high_slope"
     difficulties = ["regular", "easy"]
     diff_i = 1
 

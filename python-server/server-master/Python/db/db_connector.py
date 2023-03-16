@@ -12,7 +12,7 @@ class DBConnector:
         self.cnx = mysql.connector.connect(user='root', password='12342234',
                                       host='127.0.0.1',
                                       database='dyscalculia')
-
+    
     def add_player(self, username):
         cursor = self.cnx.cursor()
         add_player = ("INSERT INTO player (username) VALUES ('{}')".format(username))

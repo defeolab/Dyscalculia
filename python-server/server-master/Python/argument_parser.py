@@ -71,7 +71,7 @@ def parse_arguments(args_list: List[str]) -> Namespace:
         args.kids_dataset = True
 
     if args.use_remote:
-        args.host = '192.168.1.8'
+        args.host = '192.168.56.1'
     elif args.use_lan:
         args.host = '10.0.1.16'
     else:
