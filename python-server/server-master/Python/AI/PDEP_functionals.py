@@ -1,6 +1,6 @@
 import numpy as np
-np.int = int
-np.float = float
+np.int = int        #WARNING: these two lines are here solely for compatibility of pygad with numpy versions higher than 1.22
+np.float = float    #This is a drastic measure, should be removed once we manage to change the numpy version in the pc of the lab.
 import pygad
 import math
 import scipy as sp
