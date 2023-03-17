@@ -67,7 +67,7 @@ def parse_arguments(args_list: List[str]) -> Namespace:
         args.use_lan = True
         args.always_new_player = True
         args.disable_shutdown = True
-        args.evaluator = "simple"
+        args.evaluator = "PDEP"
         args.kids_dataset = True
 
     if args.use_remote:

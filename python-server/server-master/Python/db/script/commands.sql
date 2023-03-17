@@ -43,6 +43,8 @@ CREATE TABLE player_info (
     PRIMARY KEY (player_id)
 );
 
+DROP Table PDEP_player_info;
+
 CREATE TABLE PDEP_player_info (
     player_id bigint(20) unsigned,
     
@@ -51,6 +53,8 @@ CREATE TABLE PDEP_player_info (
     
     PRIMARY KEY (player_id)
 );
+
+DROP Table PDEP_probability_history;
 
 CREATE TABLE PDEP_probability_history (
     player_id bigint(20) unsigned,
@@ -61,6 +65,8 @@ CREATE TABLE PDEP_probability_history (
     PRIMARY KEY (player_id)
 );
 
+DROP Table PDEP_trial_result;
+
 CREATE TABLE PDEP_trial_result (
 	trial_result_id bigint(20) unsigned auto_increment,
     player_id bigint(20) unsigned,
@@ -68,6 +74,12 @@ CREATE TABLE PDEP_trial_result (
     prediction bit(1),
     decision_time bigint(20),
     
+    target_error_probability DECIMAL(3, 2),
+    target_perceived_difficulty DECIMAL(3, 2),
+
+    estimated_alpha DECIMAL(5,2)
+    estimated_sigma DECIMAL(5,4)
+
     ND decimal(5,4),
     NND decimal(5,4),
     id_in_lookup_table bigint(20) unsigned,
