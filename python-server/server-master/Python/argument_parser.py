@@ -73,7 +73,7 @@ def parse_arguments(args_list: List[str]) -> Namespace:
     if args.use_remote:
         args.host = '192.168.56.1'
     elif args.use_lan:
-        args.host = '10.0.1.16'
+        args.host = '10.0.1.22'
     else:
         args.host = '127.0.0.1'
 

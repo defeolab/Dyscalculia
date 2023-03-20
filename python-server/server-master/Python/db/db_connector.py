@@ -275,7 +275,7 @@ class DBConnector:
                        area_2_data.sizeOfChicken, area_2_data.averageSpaceBetween, 
                        area_2_data.numberOfChickens, 
                        result_trial_data.chickenShowTime, now,
-                       nd, nnd, lt_id, t_ep, t_pd, e_a, e_s)
+                       float(nd), float(nnd), float(lt_id), float(t_ep), float(t_pd), float(e_a), float(e_s))
         
 
         cursor.execute(add_result, data_result)

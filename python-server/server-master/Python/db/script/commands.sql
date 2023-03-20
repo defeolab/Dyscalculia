@@ -77,8 +77,8 @@ CREATE TABLE PDEP_trial_result (
     target_error_probability DECIMAL(3, 2),
     target_perceived_difficulty DECIMAL(3, 2),
 
-    estimated_alpha DECIMAL(5,2)
-    estimated_sigma DECIMAL(5,4)
+    estimated_alpha DECIMAL(5,2),
+    estimated_sigma DECIMAL(5,4),
 
     ND decimal(5,4),
     NND decimal(5,4),
