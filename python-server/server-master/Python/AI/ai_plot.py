@@ -669,8 +669,10 @@ def plot_comparisons(   root:str,
                         monthly: bool = False,
                         title: str = None,
                         xlabel: str = None,
-                        xlength: int = None,
-                        plot_dists: bool = False
+                        xlength: int = 65,
+                        plot_dists: bool = False,
+                        monthlyfy: bool = False,
+                        n_months: float = 6.0
                         ):
 
     x=[]
@@ -694,6 +696,11 @@ def plot_comparisons(   root:str,
             actual = np.load(dist_path)
             actuals.append(actual)
         y = np.load(path)
+
+        if monthlyfy:
+            y = monthlyfy_data(xlength, y, 3)
+
+        #assert False == True
         stats.append(y)
 
     if main_stat == "alpha":
@@ -702,18 +709,40 @@ def plot_comparisons(   root:str,
         bounds = [-0.1, MAX_SIGMA+0.1]
     else:
         bounds = [-0.1, 1.1]
+    
 
     length = x.shape[0] if monthly == False else int(x.shape[0]/30) 
     length = xlength if xlength is not None else length 
-    plot_stats(stats, length, labels, main_stat=main_stat,save_as_ndarray=False, lim_bounds=bounds, xlabel=xlabel, title=title)
+    months_as_x = False
+    if monthlyfy:
+        length*=3
+        months_as_x=True
+        xlabel = "months"
+   
+    plot_stats(stats, length, labels, main_stat=main_stat,save_as_ndarray=False, lim_bounds=bounds, xlabel=xlabel, title=title,
+               months_as_x=months_as_x, n_months=n_months)
 
     dists = []
-    if plot_dists:
+    if plot_dists and monthlyfy == False:
         for stat, act in zip(stats, actuals):
             dists.append(stat - act)
 
         plot_stats(dists, length, labels, main_stat=main_stat,save_as_ndarray=False, lim_bounds=[-0.2, 0.2] if main_stat == "sigma" else [-10, 10], xlabel=xlabel, title=f"Distance for {main_stat}")
     
+def monthlyfy_data(x_length: int, y_data: np.ndarray, factor: int) -> Tuple[np.ndarray, np.ndarray]:
+    j=0
+    new_x = np.linspace(0, x_length*factor,x_length*factor)
+    new_y = np.zeros(new_x.shape[0])
+    print(x_length)
+    for i, c in enumerate(y_data):
+            cl = np.linspace(c, y_data[i+1],factor) if i != y_data.shape[0]-1 else [c for k in range(0, factor)]
+            for i in range(0,factor):
+                new_y[j] = cl[i] 
+                j+=1 
+    return new_y         
+
+   
+
 def plot_1d_gaussians(trial: List[float], bv: List[float], std:float, i: int):
     transform_mat =np.linalg.inv(np.array([[bv[0], bv[1]], [bv[1], -bv[0]]]))
     trial_vec = np.dot(transform_mat, vcol(np.array(trial)))

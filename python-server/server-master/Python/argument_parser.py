@@ -1,6 +1,7 @@
 import argparse
 from typing import List
 from argparse import Namespace
+import socket
 
 #simple parser to collect the arguments of the server
 #arguments are used by launching the main.py script from the command line and by adding parameters in the format "--<argument_name> <value>"
@@ -36,6 +37,8 @@ def parse_arguments(args_list: List[str]) -> Namespace:
     parser.add_argument("--sim_mock_trials", help="pick mock trials for the simulation (not fetched from lookup table)", 
                         action= "store_true")
     
+    parser.add_argument("--auto_ip", help="find the local ip address automatically",
+                        action="store_true")
 
     #miscellanea arguments
     parser.add_argument("--normalized_features", help= "specify that the nd-nnd space is not normalized in the range [-1,1]",
@@ -71,11 +74,17 @@ def parse_arguments(args_list: List[str]) -> Namespace:
         args.kids_dataset = True
 
     if args.use_remote:
-        args.host = '192.168.56.1'
+        args.host = '192.168.1.226'
     elif args.use_lan:
         args.host = '10.0.1.22'
     else:
         args.host = '127.0.0.1'
+
+    if args.auto_ip:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        args.host = s.getsockname()[0] 
+        s.close() 
 
     print(args.host)
     args.port = 65432

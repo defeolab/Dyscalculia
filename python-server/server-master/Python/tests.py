@@ -612,10 +612,45 @@ class TestAI(unittest.TestCase):
         labels.append("Null slope")
         plot_comparisons(root_path, labels, monthly=False, suffix_set=[str(i) for i in range(6,10+1)], title="Accuracy (regular mode)", xlabel="day", metric_name="cumulative_accuracty", main_stat="accuracy", subfolder_name="alpha_80_sigma_40", xlength=65)
         """
+    def test_joint_plots_6M(self):
+        root_path = os.path.join(BASE_PATH_FOR_PICS, "PDEP")
+        target_slopes = -np.logspace(-4, -2, 10, base=10)
+        from_index = 7
+        target_slopes = target_slopes[from_index:]
+        target_slopes = target_slopes/3
+        labels = [f"Daily Slope = {round(t, 2)}°" for t in target_slopes*MAX_ALPHA]
+        labels.append("Null slope")
+        folder_prefix = "unified_plots_easy_v2_"
+        subfolder_name="alpha_55_sigma_30"
+        xlength = 65
+
+        target_slopes = target_slopes/3
+        plot_comparisons(root_path, labels, monthly=True, folder_prefix=folder_prefix, suffix_set=[str(i) for i in range(from_index,10+1)], xlength=xlength,
+                         title="Second Pass alpha", xlabel="day", plot_dists=False, subfolder_name=subfolder_name, monthlyfy=True)
+
+        labels = [f"Daily Slope = {round(t, 4)} units" for t in target_slopes*MAX_SIGMA]
+        labels.append("Null slope")
+        plot_comparisons(root_path, labels, monthly=True, suffix_set=[str(i) for i in range(from_index,10+1)], xlength=xlength,
+                         title="Second Pass Sigma", xlabel="day", metric_name="second_pass_sigma", main_stat="sigma", 
+                         subfolder_name=subfolder_name, plot_dists=False,folder_prefix=folder_prefix, monthlyfy=True)
+
+        labels = [f"Daily Unified Slope = {round(t, 4)} units" for t in target_slopes]
+        labels.append("Null slope")
+        plot_comparisons(root_path, labels, monthly=False, suffix_set=[str(i) for i in range(from_index,10+1)], xlength=xlength,
+                         title="Accuracy (easy mode)", xlabel="day", metric_name="cumulative_accuracy", main_stat="accuracy", 
+                         subfolder_name=subfolder_name,folder_prefix=folder_prefix, monthlyfy=True)
+
+        labels = [f"Daily Unified Slope = {round(t, 4)} units" for t in target_slopes]
+        labels.append("Null slope")
+        plot_comparisons(root_path, labels, monthly=False, suffix_set=[str(i) for i in range(from_index,10+1)], xlength=xlength,
+                         title="Accuracy (regular mode)", xlabel="day", metric_name="cumulative_accuracy", main_stat="accuracy", 
+                         subfolder_name=subfolder_name,folder_prefix=folder_prefix, monthlyfy=True)
+
+ 
     def test_unified_plots(self):
         root_path = os.path.join(BASE_PATH_FOR_PICS, "PDEP")
-        n = 8
-        root_path = os.path.join(root_path, f"unified_plots_regular_v2_{n}", "alpha_55_sigma_30")
+        n = 10
+        root_path = os.path.join(root_path, f"unified_plots_easy_v2_{n}", "alpha_55_sigma_30")
 
         f_accs = os.path.join(root_path, "cumulative_accuracy.npy")
         cumulative_accuracies = np.load(f_accs)
@@ -672,7 +707,7 @@ class TestAI(unittest.TestCase):
         
     def test_unified_plots_6M(self):
         root_path = os.path.join(BASE_PATH_FOR_PICS, "PDEP")
-        n = 6
+        n = 8
         root_path = os.path.join(root_path, f"unified_plots_easy_v2_{n}", "alpha_55_sigma_30")
 
         f_accs = os.path.join(root_path, "cumulative_accuracy.npy")
@@ -692,8 +727,8 @@ class TestAI(unittest.TestCase):
 
         target_slopes = -np.logspace(-4, -2, 10, base=10)
         target_slope = 0.0 if n == 10 else target_slopes[n] 
-        norm_slope_alpha = abs(round(target_slope,4))*100
-        norm_slope_sigma = abs(round(target_slope,4))*100
+        norm_slope_alpha = abs(round(target_slope/3,4))*100
+        norm_slope_sigma = abs(round(target_slope/3,4))*100
 
         trials_per_day = 10
         n_days = 195
@@ -717,7 +752,7 @@ class TestAI(unittest.TestCase):
                         main_stat="NNI Score - NA score - Accuracy %",
                         lim_bounds=[-0.1, 1.1],
                         save_as_ndarray=False,
-                        title= f"Daily NNI decrease = {norm_slope_alpha}%; Daily NA gain = {norm_slope_sigma}%",
+                        title= f"Daily NNI decrease = {round(norm_slope_alpha,4)}%; Daily NA gain = {round(norm_slope_sigma,4)}%",
                         xlabel="months",
                         months_as_x=True,
                         n_months=6.5
@@ -735,7 +770,7 @@ class TestAI(unittest.TestCase):
                         main_stat="NNI Score - NA score - Accuracy %",
                         lim_bounds=[-0.1, 1.1],
                         save_as_ndarray=False,
-                        title= f"Daily NNI decrease = {norm_slope_alpha}%; Daily NA gain = {norm_slope_sigma}%",
+                        title= f"Daily NNI decrease = {round(norm_slope_alpha,4)}%; Daily NA gain = {round(norm_slope_sigma,4)}%",
                         xlabel="months",
                         months_as_x=True,
                         n_months=6.5
@@ -760,15 +795,16 @@ class TestAI(unittest.TestCase):
         
         trials =    [
                         [-0.8, -0.7],
-                        [-0.2, 0.6],
+                        [-0.6, 0.2],
                         [ 0.5, 0.5],
                         [ 0.3, -0.3],
                     ]
         mt=[to_mock_trial(t[0],t[1]) for t in trials]
         std = 0.3
         corrects = [True for t in trials]
-        anns = [f"{i+1}" for i in range(0, len(trials))]
-        #plot_trials([-1, 1], mt, corrects, anns, ann_str=True, sharp_std=std)
+        #anns = [f"{i+1}" for i in range(0, len(trials))]
+        anns = ["" for i in range(0, len(trials))]
+        plot_trials([-1, 1], mt, corrects, anns, ann_str=True, sharp_std=std, plot_fs=True)
 
         for i,t in enumerate(trials):
             a = i
@@ -777,7 +813,7 @@ class TestAI(unittest.TestCase):
         transform_mat = np.linalg.inv(np.array([[bv[0], bv[1]], [bv[1], -bv[0]]]))
         max_dec_score = 2*math.sqrt(2)
         anns = [f"{compute_perceived_difficulty(np.array(t), transform_mat, max_dec_score)}" for t in trials]
-        #plot_trials(unit_vector([-1, 1]), mt, corrects, anns, ann_str=True, plot_dist=True, plot_fs=True)
+        plot_trials(unit_vector([-1, 1]), mt, corrects, anns, ann_str=True, plot_dist=True, plot_fs=True)
         #eval = PDEP_Evaluator(self.alpha, self.sigma, self.target_error_prob, self.target_perceived_diff, self.norm_feats)
 
         target_error_prob = 0.8
@@ -848,7 +884,53 @@ class TestAI(unittest.TestCase):
         print(np.sum(np.abs(fp_s - a_s))/fp_s.shape[0])
 
 
+    def test_plot_lls(self):
+        sigmas = np.linspace(0.05, 0.3, 10)
+
+        trials =    [
+                            [0.4, 0.6],
+                            [-0.7, -0.5],
+                            [-0.4, 0.15],
+                            [-0.2, 0.8],
+                            [-0.4, 0.5],
+                            [0.7, -0.3],
+                            [0.1, -0.7],
+                            [-0.3, -0.6],
+                            [0.4, -0.3]
+                        ]
+        mt=[to_mock_trial(t[0],t[1]) for t in trials]
+        mt = np.array(mt)
+        corrects = [True, False, True, True, True, False, False,False, False]
+        anns = ["" for i in range(0, len(trials))]
+        trials = np.array(trials)
+        looks_right = trials[:, 0] >0
+        corrects = np.array(corrects)
+
+        norm = [-1,1]
+        transform_mat=np.linalg.inv(np.array([[norm[0], norm[1]], [norm[1], -norm[0]]]))
+
+        dists = np.dot(transform_mat, trials.T)[1, :]
+        looks_right = dists >0
+        wrong_side = looks_right != corrects
+        c_dists = dists[wrong_side]
+        d = [c for c in c_dists]
+        for i in range(0, 10):
+            d.append(0.2)
+        c_dists = np.array(d)
+        w_dists = dists[wrong_side]
+        #anns = np.array([f"{round(dists[i],2)}" for i in range(0, len(trials))])
         
+        #c_dists = np.dot(transform_mat, trials[corrects == looks_right].T)[1, :]
+        #w_dists = np.dot(transform_mat, trials[corrects != looks_right].T)[1, :]
+        
+        #plot_trials([-1, 1], mt, corrects, anns, ann_str=True, sharp_std=0.1, plot_fs=True)    
+        #plot_trials([-1, 1], mt[looks_right == False], corrects[looks_right==False], anns[looks_right==False], ann_str=True, sharp_std=0.1, plot_fs=True)    
+        for s in sigmas:
+            std = 0.3
+            #corrects = [True for t in trials]
+            #anns = [f"{i+1}" for i in range(0, len(trials))]
+            ll = compute_log_likelihood(c_dists, w_dists, s)
+            plot_trials([-1, 1], mt, corrects, anns, ann_str=True, sharp_std=s, plot_fs=True, title=f"sigma: {round(s,2)}, Log-Likelihood = {round(ll, 2)}")    
 
 if __name__ == "__main__":
     tc = TestAI()
@@ -876,10 +958,13 @@ if __name__ == "__main__":
     #tc.test_best_Ns()
     #tc.test_trial_mirroring()
     #tc.test_joint_plots()
-    tc.test_unified_plots_6M()
+    tc.test_joint_plots_6M()
+    #tc.test_unified_plots()
+    #tc.test_unified_plots_6M()
     #tc.test_plots_for_thesis()
     #tc.test_plot_generic_comparison()
     #tc.test_distance()
+    #tc.test_plot_lls()
 
     duration = 1000  # milliseconds
     freq = 440  # Hz

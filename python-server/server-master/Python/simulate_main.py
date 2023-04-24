@@ -333,7 +333,7 @@ if __name__ == "__main__":
     make_plots = True
     save_ablation = False
     n_runs = 2
-    suite_name = "high_slope"
+    suite_name = "example_sim"
     difficulties = ["regular", "easy"]
     diff_i = 1
 

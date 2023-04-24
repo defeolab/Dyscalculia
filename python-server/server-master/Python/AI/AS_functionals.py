@@ -11,12 +11,13 @@ import scipy as sp
 import os
 from AI.ImprovementHandler import find_best_fit
 from AI.ai_consts import *
+import os
 
 DEBUG_D = False
 DEBUG_S = False
 DEBUG_PC = False
-PATH_FOR_C_ABLATION = ".\\AI\\precomputed_data\\PDEP\\C_ablation"
-PATH_FOR_N_ABLATION = ".\\AI\\precomputed_data\\PDEP\\N_trials_ablation_fixed"
+PATH_FOR_C_ABLATION = os.path.join(".", "AI", "precomputed_data", "PDEP", "C_ablation")#".\\AI\\precomputed_data\\PDEP\\C_ablation"
+PATH_FOR_N_ABLATION = os.path.join(".", "AI", "precomputed_data", "PDEP", "N_trials_ablation_fixed")#".\\AI\\precomputed_data\\PDEP\\N_trials_ablation_fixed"
 PERFORM_ABLATION_C = False
 PERFORM_ABLATION_N_TRIALS = False
 C = 100
