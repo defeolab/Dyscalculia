@@ -8,10 +8,9 @@ import time
 from sys import exit
 from json.decoder import JSONDecodeError
 from threading import Thread
-from trial_result import TrialResult
-from trial_util import convert_trials_to_json, convert_matrix_to_trials
-from transform_matrix import TransformMatrix
-from trial_mode_utils import qserver_ask_for_question_recommendation
+from server_utils.trial_result import TrialResult
+from server_utils.trial_util import convert_trials_to_json, convert_matrix_to_trials
+from server_utils.transform_matrix import TransformMatrix
 import random
 import socket
 

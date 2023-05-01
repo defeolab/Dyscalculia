@@ -6,7 +6,7 @@ from AI.PDEP_Evaluator import PDEP_Evaluator
 from AI.AS_functionals import *
 from AI.ai_consts import *
 from AI.AS_Estimate import ASD_Estimator
-from dummy_client_handler import SimulatedClient
+from server_utils.dummy_client_handler import SimulatedClient
 import time
 import os
 import winsound
@@ -134,6 +134,12 @@ class SimulationsRunner(unittest.TestCase):
         return (e_alpha_hist, e_sigma_hist), (sim_alpha_hist, sim_sigma_hist), (trials, preds)
 
     def ablation_C(self, last_n_days: int, n_runs: int):
+        """
+            PERFORM ABLATION STUDY TO FIND OPTIMAL C FOR SVM.
+
+            requires setting AI.AS_Estimate.PERFORM_ABLATION_C to True
+        """
+
         target_C = np.array(self.target_C)
         i_C = np.arange(target_C.shape[0])
 
@@ -192,6 +198,13 @@ class SimulationsRunner(unittest.TestCase):
         print("-------------")
 
     def ablation_n_trials(self, target_slopes: List[float], target_max_ns: List[float], n_runs:int):
+        """
+            PERFORM ABLATION STUDY TO FIND OPTIMAL AMOUNT OF TRIALS GIVEN THE ESTIMATED LEARNING RATES.
+            
+            requires setting AI.AS_Estimate.PERFORM_ABLATION_N_TRIALS to True
+        """
+
+
         print(target_slopes)
         print(target_max_ns)
         
@@ -257,6 +270,8 @@ class SimulationsRunner(unittest.TestCase):
     
 if __name__ == "__main__":
 
+    # CHOOSE STARTING ALPHA AND SIGMA PARAMETERS
+    # a simulation will be run for each combination of these values
     alphas = [
         [10, 30, 60],
         [45],
@@ -282,36 +297,66 @@ if __name__ == "__main__":
     sigma_i = 5
 
 
-    probs = [0.10, 0.30, 0.80]
+    # PARAMETERS FOR SIMPLE EVALUATOR SIMULATIONS
     diffs = [(0.1,0.1), (0.4, 0.4), (0.8, 0.8), (0.95,0.95)]
     modes = ["filtering", "sharpening"]
+    mode = modes[0]
 
+    # LENGTH OF THE SIMULATION
     days =15
     trials_per_day = 15
+
+    # SNAPSHOT INTERVAL
     interval = 15
 
+    # CHOOSE EVALUATOR TYPE (only PDEP has full support)
     evaluator = "PDEP"
+
+    # AVOID USING LOOKUP TABLE 
+    mock = True
+
+    # CHOOSE WHICH LOOKUP TABLE TO USE
     kids_ds = False
+
+    # unused
     add_date = False
+
+    # ENABLE EVALUATOR UPDATES
+    # setting to false can be used for keeping fixed the target error probability to the specified value
     update_evaluator_stats = True
     init_evaluator_stats = False
-
+    probs = [0.10, 0.30, 0.80]
+    diffs = [(0.1,0.1), (0.4, 0.4), (0.8, 0.8), (0.95,0.95)]
     target_prob = probs[2]
     target_diff = diffs[0]
-    mode = modes[0]
+
+    # SET TO TRUE TO SAVE THE GENERATED TRIALS
+    # may require a lot of storage space. Trials are saved in AI/precomputed_data/PDEP/*suite_name*
     save_trials = False
+
+    # ENABLE STORAGE OF THE PLOTS
+    # if set to false, the plots generated during the simulation are simply shown at runtime
     save_plots = True
 
-    mock = True
+    # INTERVAL FOR ESTIMATING PLAYER'S PARAMETERS
+    # default value is 1
     estimate_step = 1
+
+    # PARAMETERS FOR ABLATION STUDIES
     target_C = np.logspace(-2, 3, 6, base=10)
     last_n_days = 500
-
     target_n_trials = np.linspace(100, 1800, 18)
-    target_slopes = -np.logspace(-4, -2, 10, base=10)/trials_per_day
-    
-    local_target_slope = target_slopes[8]
+    n_runs = 2
+
+    # SAVE ABLATION RESULTS
+    # results are saved in AI/precomputed_data/PDEP/*suite_name*
+    save_ablation = False
+
+    # PARAMETERS FOR CHOOSING SIMULATOR'S LEARNING RATES
+    # slope is expressed as normalized decrease per trial for both alpha and sigma
     update_child = True
+    target_slopes = -np.logspace(-4, -2, 10, base=10)/trials_per_day
+    local_target_slope = target_slopes[8]
     improver_parameters_options =   [
                                         [0.45, 0.003, 1],
                                         [-0.3/trials_per_day, -0.002/trials_per_day, 1],
@@ -319,24 +364,29 @@ if __name__ == "__main__":
                                         [-0.7/trials_per_day, -0.005/trials_per_day, 1],
                                         [local_target_slope*MAX_ALPHA, local_target_slope*MAX_SIGMA, 1]                                  
                                     ]
-
-    pars_i = 4
     improver_type_options = ["normal", "linear", "linear", "linear", "linear"]
+    pars_i = 4
     improver_type = improver_type_options[pars_i]
 
-
+    # PARAMETERS FOR DEPRECATED ESTIMATOR TYPE
+    # better not to modify
     estimation_duration = 1
     estimator_type = "ASD"
     estimator_max_trials = 180
     estimator_min_trials = 50
 
+    # SHOW/SAVE PLOTS
+    # set to false to avoid plot generation completely (testing purposes)
     make_plots = True
-    save_ablation = False
-    n_runs = 2
-    suite_name = "example_sim"
+
+    # SET THE DIFFICULTY
+    # PDEP tries to achieve accuracy for the simulator equal to 50% and 70% respectively
     difficulties = ["regular", "easy"]
     diff_i = 1
 
+    # NAME OF THE SIMULATIONS
+    suite_name = "example_sim"
+    
     sr = SimulationsRunner( days, trials_per_day, interval, evaluator, kids_ds, update_evaluator_stats, update_child, suite_name, 
                             target_prob, target_diff, mode, save_trials, save_plots, alphas[alpha_i], sigmas[sigma_i], mock, estimate_step,
                             target_C, make_plots, save_ablation, estimation_duration, 
@@ -345,12 +395,18 @@ if __name__ == "__main__":
 
     start_time = time.time()
 
+    # PERFORM SUITE
     sr.simulation_suite()
+
+    # PERFORM ABLATION
+    # uncomment the following lines
     #sr.ablation_C(last_n_days, n_runs)
     #sr.ablation_n_trials(target_slopes, target_n_trials, n_runs)
-    discarded_slopes_i = [0,1,2,3,4,5]
-
+    
+    # PERFORM MULTIPLE SUITES
+    # perform a suite for each of the learning rates in target_slopes
     perform_multiple_suites = False
+    discarded_slopes_i = [0,1,2,3,4,5]
     for i in range(0,len(target_slopes)+1):
         if perform_multiple_suites == False:
             break

@@ -2,9 +2,9 @@ from time import time
 from typing import Any, Tuple, List, Optional, Dict
 import random
 from db.db_connector import DBConnector
-from trial_result import TrialResult
+from server_utils.trial_result import TrialResult
 import numpy as np
-from trial_mode_utils import qserver_ask_for_question_recommendation
+from server_utils.trial_mode_utils import qserver_ask_for_question_recommendation
 
 from AI.ai_utils import compute_nd_nnd_coords
 

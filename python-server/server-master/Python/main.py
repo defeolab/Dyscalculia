@@ -1,7 +1,7 @@
 import socket
 from db.db_connector import DBConnector
-from dummy_client_handler import SimulatedClient
-from server import Create_Game, GameServer
+from server_utils.dummy_client_handler import SimulatedClient
+from server_utils.server import Create_Game, GameServer
 import sys
 from argument_parser import parse_arguments
 

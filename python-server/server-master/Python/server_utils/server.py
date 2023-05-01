@@ -1,6 +1,6 @@
 import socket
 import pandas
-from client_handler import PlayerHandler
+from server_utils.client_handler import PlayerHandler
 import select
 
 class GameServer:

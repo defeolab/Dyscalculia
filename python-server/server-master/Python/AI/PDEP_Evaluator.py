@@ -3,7 +3,7 @@ from AI.ai_utils import unit_vector
 from AI.PDEP_functionals import PDEP_find_trial
 from typing import Any
 from AI.AS_Estimate import ASD_Estimator, ASE_Estimator
-from trial_result import TrialResult
+from server_utils.trial_result import TrialResult
 from AI.DifficultyController import DifficultyController
 from AI.Trial_Proposer import PDEP_TrialProposer
 

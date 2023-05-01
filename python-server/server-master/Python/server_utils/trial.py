@@ -5,7 +5,7 @@
 # size of chickens and average space between, alongside the number of course)
 
 import json
-from area_data import AreaData
+from server_utils.area_data import AreaData
 
 class Trial:
     def __init__(self, area_1_data = None, area_2_data = None, 
