@@ -4,9 +4,8 @@
 # is possible to obtain a response vector made of 1 (in case of correct answers)
 # and 0 (in case of incorrect answers)
 
-from trial import Trial
 from area_data import AreaData
-
+from trial import Trial
 class TrialResult:
 
     def __init__(self, difficulty, decision_time, correct, mode, raw_trial_data = None, trial_data = None):

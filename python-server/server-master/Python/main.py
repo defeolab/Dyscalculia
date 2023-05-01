@@ -2,9 +2,6 @@ import socket
 from db.db_connector import DBConnector
 from dummy_client_handler import SimulatedClient
 from server import Create_Game, GameServer
-from mapping_matrix import dummy_matrix_generator
-from plot_trials import PlotTrials
-from transform_matrix import TransformMatrix
 import sys
 from argument_parser import parse_arguments
 

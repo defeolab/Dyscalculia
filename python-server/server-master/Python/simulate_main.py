@@ -286,8 +286,8 @@ if __name__ == "__main__":
     diffs = [(0.1,0.1), (0.4, 0.4), (0.8, 0.8), (0.95,0.95)]
     modes = ["filtering", "sharpening"]
 
-    days =50
-    trials_per_day = 30
+    days =15
+    trials_per_day = 15
     interval = 15
 
     evaluator = "PDEP"
@@ -349,7 +349,11 @@ if __name__ == "__main__":
     #sr.ablation_C(last_n_days, n_runs)
     #sr.ablation_n_trials(target_slopes, target_n_trials, n_runs)
     discarded_slopes_i = [0,1,2,3,4,5]
+
+    perform_multiple_suites = False
     for i in range(0,len(target_slopes)+1):
+        if perform_multiple_suites == False:
+            break
         if i in discarded_slopes_i:
             continue
         if i == len(target_slopes):
@@ -366,7 +370,7 @@ if __name__ == "__main__":
                             target_C, make_plots, save_ablation, estimation_duration, 
                             estimator_type, init_evaluator_stats, estimator_max_trials, estimator_min_trials,improver_type, 
                             [local_target_slope*MAX_ALPHA, local_target_slope*MAX_SIGMA, 1], difficulties[diff_i])
-        #sr.simulation_suite()
+        sr.simulation_suite()
 
 
     duration = 1000  # milliseconds
