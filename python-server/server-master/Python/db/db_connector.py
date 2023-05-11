@@ -1,9 +1,8 @@
 from typing import Any, Dict, List, Tuple
 import mysql.connector
 from datetime import datetime
-from trial import Trial
-from area_data import AreaData
-from trial_result import TrialResult
+from server_utils.area_data import AreaData
+from server_utils.trial_result import TrialResult
 from decimal import Decimal
 
 class DBConnector:

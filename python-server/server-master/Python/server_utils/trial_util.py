@@ -1,7 +1,7 @@
 import numpy as np
 import random
 import math
-from trial import Trial
+from server_utils.trial import Trial
 
 def convert_trials_to_json(trials):
     message = "["
