@@ -91,6 +91,17 @@ class PlayerEvaluator:
             after get_trial or set_trial has been called, use this function to update the player statistics based on the player response
         """
         pass
+    
+    def get_question_type(self) -> bool:
+        """
+            this method returns the type of question (i.e. whether we want the child to select the fence with more or fewer animals).
+
+            False -> more animals
+            True  -> fewer animals
+        """
+
+        #default behaviour: return False
+        return True
 
     def db_update(self, db: DBConnector, player_id: int, results_to_add: List[TrialResult]):
         """
