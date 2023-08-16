@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/Start.unity
+    guid: 0f00cdaa9190af24db0a6094b3a56d78
+  - enabled: 1
+    path: Assets/Scenes/TwoFences.unity
+    guid: 372a6115b73f8534fb30e938908f0dde
+  - enabled: 0
+    path: Assets/Scenes/TwoFences_Flowers.unity
+    guid: 4d0b5d5f809cc8246bd7aca6f055eaed
+  - enabled: 0
+    path: Assets/Scenes/TwoFences_DifferentColors.unity
+    guid: 9b57918315a17814f9572688f1be8110
+  - enabled: 0
+    path: Assets/Scenes/TwoFencesRemote.unity
+    guid: d9cdc20fc26c32f4b84bc1bd28c0c690
+  - enabled: 1
+    path: Assets/Scenes/SymbolicPlayHard/symbolicWithAnimation.unity
+    guid: a92a98025df871e43819f5ab998137a8
+  - enabled: 1
+    path: Assets/Scenes/SymbolicPlayHard/symbolicWithAnimation0_1.unity
+    guid: 0818ed1badac4b54bbd5393e5673a5fb
+  - enabled: 1
+    path: Assets/Scenes/SymbolicPlayHard/symbolicWithAnimation0_2.unity
+    guid: 6d51b739c3642bd4fb4ab4a39b7cf1a1
+  - enabled: 1
+    path: Assets/Scenes/SymbolicPlayHard/symbolicWithAnimation0_3.unity
+    guid: d66456ab183ee284fa92e7e058f69c71
+  - enabled: 1
+    path: Assets/Scenes/SymbolicPlayHard/symbolicWithDiffSize.unity
+    guid: 472c100eb48911f4fb659647ee1eea2d
+  - enabled: 1
+    path: Assets/Scenes/SymbolicPlayHard/symbolicWithAnimation0_4.unity
+    guid: a8175bd50ae8746499d453d54c5859e4
+  - enabled: 1
+    path: Assets/Scenes/SymbolicPlayEasy/symbolicWithAnimationEasy.unity
+    guid: 1a5ed77502709c14584b422a6d2dec01
+  - enabled: 1
+    path: Assets/Scenes/SymbolicPlayEasy/symbolicWithAnimationEasy0_1.unity
+    guid: 05b32d1903800224ba8f7d040f29ce23
+  - enabled: 1
+    path: Assets/Scenes/SymbolicPlayEasy/symbolicWithAnimationEasy0_2.unity
+    guid: e1a1c846b7d18ce4d93413405811d042
+  - enabled: 1
+    path: Assets/Scenes/SymbolicPlayEasy/symbolicWithAnimationEasy0_3.unity
+    guid: d3e1d178a1f65cd4d9fd4313d45c923f
+  - enabled: 1
+    path: Assets/Scenes/SymbolicPlayEasy/symbolicWithAnimationEasy0_4.unity
+    guid: 8d4f8322509d2f241b7ddccdefda3244
+  - enabled: 1
+    path: Assets/Scenes/SymbolicPlayEasy/symbolicWithDiffSizeEasy.unity
+    guid: f6729e8f3717d7d408852f6e8894f20d
+  m_configObjects: {}
