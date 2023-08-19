@@ -13,6 +13,9 @@ public class DataManager : MonoBehaviour
     public GameObject[] chickens_generators; //list of the generators of chickens
     public GameObject[] cows_generators; //list of the generators of cows
 
+    //public GameObject[] lion_generators; // list of the generators of lions
+
+
     public List<GameObject> activeAnimals; //list of all the animals generated in the trial
     private List<Vector3> createdPositionsArea1; //list of all the possible positions inside Area1
     private List<Vector3> createdPositionsArea2; //list of all the possible positions inside Area2
@@ -73,7 +76,8 @@ public class DataManager : MonoBehaviour
 
         //Initialize Animals
         cowORchick = Random.Range(0, 2);
-
+        Debug.Log("cowORchick");
+        Debug.Log(cowORchick);
         for (int i = 0; i < areasData.Length; i++)
         {
             if(cowORchick == 1 && (areasData[0].sizeOfChicken >= 5f && areasData[1].sizeOfChicken >= 5f))
@@ -86,15 +90,33 @@ public class DataManager : MonoBehaviour
                 }
             }
             else
+        
             {
-                for (int j = 0; j < areasData[i].getNumberOfAnimals(); j++)
+                if(cowORchick == 0)
                 {
-                    GameObject newAnimal = Instantiate(chickens_generators[i]);
-                    newAnimal.GetComponent<Animals>().SetAnimal(areas[i], i + 1, areasData[i]);
-                    activeAnimals.Add(newAnimal);
+                    for (int j = 0; j < areasData[i].getNumberOfAnimals(); j++)
+                    {
+                        //GameObject newAnimal = Instantiate(cows_generators[i]);
+                        //GameObject newAnimal = Instantiate(lion_generators[i]);
+                        GameObject newAnimal = Instantiate(chickens_generators[i]);           // @AK COWS GENERATOR
+                        newAnimal.GetComponent<Animals>().SetAnimal(areas[i], i + 1, areasData[i]);
+                        activeAnimals.Add(newAnimal);
+                    }
+                }
+                else
+                {
+                    for (int j = 0; j < areasData[i].getNumberOfAnimals(); j++)
+                    {
+                        GameObject newAnimal = Instantiate(cows_generators[i]);
+                        //GameObject newAnimal = Instantiate(lion_generators[i]);
+                        //GameObject newAnimal = Instantiate(chickens_generators[i]);           // @AK COWS GENERATOR
+                        newAnimal.GetComponent<Animals>().SetAnimal(areas[i], i + 1, areasData[i]);
+                        activeAnimals.Add(newAnimal);
+                    }
                 }
             }
             
+
         }
 
         TrialsManager.instance.area1Value = areasData[0].getNumberOfAnimals();

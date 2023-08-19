@@ -166,7 +166,7 @@ GameObject:
   - component: {fileID: 4574461204018173925}
   - component: {fileID: 6873818187832336520}
   m_Layer: 0
-  m_Name: pollo
+  m_Name: chicken
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -127,6 +127,7 @@ public class GameManager : MonoBehaviour
         float circleRadius = (float)Math.Sqrt(totalAreaOccupied / Math.PI);
         float chickenShowTime = UnityEngine.Random.Range(4, 6);
         int numberOfChickens = UnityEngine.Random.Range(2, 8);
+        Debug.Log("DEMO ONLY@AK");
         return new GameTrialData(circleRadius, sizeOfChicken, averageSpaceBetween, ratio, chickenShowTime, numberOfChickens);
     }
 

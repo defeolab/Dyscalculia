@@ -1,7 +1,11 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\python-server",
+    "\\python-server\\server-master",
+    "\\python-server\\server-master\\Python",
+    "\\python-server\\server-master\\Python\\server_utils"
   ],
-  "SelectedNode": "\\C:\\Users\\gaia1\\Documents\\0_Documenti\\Dyscalculia\\GitHubRepository",
+  "SelectedNode": "\\python-server\\server-master\\Python\\server_utils\\trial_util.py",
   "PreviewInSolutionExplorer": false
 }

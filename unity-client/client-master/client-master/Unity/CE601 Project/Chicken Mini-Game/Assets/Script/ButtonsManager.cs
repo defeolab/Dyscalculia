@@ -25,7 +25,7 @@ public class ButtonsManager : MonoBehaviour
     {
         istance_DataManager = gameObject.GetComponent<DataManager>();
         istance_ErrorTrialManager = gameObject.GetComponent<ErrorTrialManager>();
-
+        //Debug.Log("istance_DataManager",istance_DataManager);
         stopwatch = new Stopwatch();
 
         this.Buttons(false);
@@ -66,6 +66,7 @@ public class ButtonsManager : MonoBehaviour
                     stopwatch.Start();
 
                     gameText.text = "Click on the fence where there are more animals";
+                    //gameText.text = "Akshay Here";
                     gameText.GetComponent<AudioSource>().Play();
                 }
 

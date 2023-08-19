@@ -41,8 +41,10 @@ public class ChickenManager : MonoBehaviour
         area2Fence.transform.localScale = new Vector3(newScaleArea2, newScaleArea2);
 
         activeChickens = new List<Chicken>();
+        Debug.Log(activeChickens);
 
         Debug.Log(area1Data.getNumberOfAnimals());
+        Debug.Log("HERE @AK");
         Debug.Log(area2Data.getNumberOfAnimals());
         createdPositions = new List<Vector3>();
         initializeChicken(chicken, area1Data, 1, 1);

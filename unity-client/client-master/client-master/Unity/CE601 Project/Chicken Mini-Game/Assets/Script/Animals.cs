@@ -25,10 +25,13 @@ public class Animals : MonoBehaviour
     {
         animator = gameObject.GetComponent<Animator>();
         newMaterialRef = new Material[4];
+        Debug.Log(newMaterialRef);
         startWalk = false;
         arrived = false;
         setPostionError=false;
         newMaterialRef = Resources.LoadAll("Materials", typeof(Material)).Cast<Material>().ToArray();
+        Debug.Log("AK MATERIAL");
+        Debug.Log(newMaterialRef);
     }
 
     void Update()
@@ -38,6 +41,7 @@ public class Animals : MonoBehaviour
             if (startWalk)
             {
                 animator.SetBool("walk", true);
+                Debug.Log("WALKING@AK");
                 this.transform.position = Vector2.MoveTowards(this.transform.position, this.positionFinal, 5f * Time.deltaTime); //move animal to Final Position
             }
 
@@ -103,6 +107,8 @@ public class Animals : MonoBehaviour
     public void SetAnimal(GameObject area, int number, AreaTrialData areaData)
     {
         transform.localScale = new Vector3(areaData.getSizeOfAnimal(), areaData.getSizeOfAnimal(), areaData.getSizeOfAnimal());
+        print("SETANIMAL @AK");
+        Debug.Log("DEGUGANIMAL @AK");
         this.area = area;
         this.areaData = areaData;
         this.number = number;
